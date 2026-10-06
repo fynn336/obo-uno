@@ -74,8 +74,7 @@ export function hostGame(name, events) {
     const playerId = crypto.randomUUID();
     const result = reduce(state, { type: 'join', playerId, name });
     if (result.error) {
-      send(link, { type: MSG.REJECTED, reason: result.error });
-      link.conn.close({ flush: true });
+      reject(link, result.error);
       return;
     }
     state = result.state;
@@ -89,9 +88,14 @@ export function hostGame(name, events) {
     const previous = seat.link;
     seat.link = link;
     link.playerId = seat.playerId;
-    if (previous) drop(previous);
+    if (previous) reject(previous, 'Du spielst jetzt in einem anderen Tab weiter');
     clearTimeout(seat.kickTimer);
     send(link, { type: MSG.WELCOME, playerId: seat.playerId, token: seat.token });
+  }
+
+  function reject(link, reason) {
+    send(link, { type: MSG.REJECTED, reason });
+    link.conn.close({ flush: true });
   }
 
   function drop(link) {
