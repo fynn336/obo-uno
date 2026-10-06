@@ -4,6 +4,7 @@ export function viewFor(state, playerId) {
   const me = state.players.find((p) => p.id === playerId);
   const currentId = isRunning(state) ? state.players[state.current].id : null;
   return {
+    you: playerId,
     phase: state.phase,
     hostId: state.hostId,
     rules: state.rules,
