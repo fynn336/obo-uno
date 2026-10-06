@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Uno – Tests</title>
+  <style>
+    body { font: 15px/1.5 system-ui, sans-serif; margin: 2rem; background: #fafafa; color: #222; }
+    #summary { padding: 0.75rem 1rem; border-radius: 6px; font-weight: 600; color: #fff; background: #888; }
+    #summary.pass { background: #1f8a3b; }
+    #summary.fail { background: #c0262d; }
+    li.fail { color: #c0262d; }
+    li.pass::marker { content: '✓  '; color: #1f8a3b; }
+    li.fail::marker { content: '✗  '; }
+    small { display: block; }
+  </style>
+</head>
+<body>
+  <h1>Uno – Tests</h1>
+  <p id="summary">Tests laufen …</p>
+  <ul id="results"></ul>
+  <script type="module">
+    import { runTests } from './tests/testing.js';
+    import './tests/deck.test.js';
+    import './tests/rules.test.js';
+    import './tests/house-rules.test.js';
+    import './tests/uno.test.js';
+    import './tests/players.test.js';
+    import './tests/view.test.js';
+
+    const results = runTests();
+    const failed = results.filter((r) => !r.ok);
+    const summary = document.getElementById('summary');
+    summary.textContent = failed.length === 0
+      ? `Alle ${results.length} Tests grün`
+      : `${failed.length} von ${results.length} Tests fehlgeschlagen`;
+    summary.className = failed.length === 0 ? 'pass' : 'fail';
+
+    for (const result of results) {
+      const item = document.createElement('li');
+      item.className = result.ok ? 'pass' : 'fail';
+      item.textContent = result.name;
+      if (!result.ok) {
+        const detail = document.createElement('small');
+        detail.textContent = result.message;
+        item.append(detail);
+      }
+      document.getElementById('results').append(item);
+    }
+  </script>
+</body>
+</html>
