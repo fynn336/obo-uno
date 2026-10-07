@@ -11,6 +11,9 @@ const RULE_NAMES = { stacking: 'Stapeln', challenge: 'Anfechtung', drawUntilPlay
 const MAX_MINI_CARDS = 10;
 const PULSE_MS = 2000;
 const TITLE_BLINK_MS = 1000;
+const MAX_FLYING_CARDS = 6;
+const FLY_GAP_MS = 90;
+const FLY_MS = 550;
 const SOUND_GAP_MS = 140;
 // Abspielgeschwindigkeit des Kartensounds: Legen etwas heller als Ziehen
 const CARD_SOUND_RATES = { play: 1.3, draw: 1, penalty: 1, caught: 1, start: 0.9 };
@@ -262,6 +265,27 @@ function animateChanges(root, last, view, flySource) {
   let order = 0;
   for (const element of root.querySelectorAll('.fan .card')) {
     if (!known.has(Number(element.dataset.card))) flyFrom(element, pile, 'arrive', order++);
+  }
+  if (last) flyToSeats(root, last, view, pile);
+}
+
+function flyToSeats(root, last, view, pile) {
+  for (const player of view.players) {
+    const before = last.players.find((p) => p.id === player.id);
+    const seat = root.querySelector(`.seat[data-player="${player.id}"] .mini-fan`);
+    const gained = before ? player.cardCount - before.cardCount : 0;
+    if (!seat || gained <= 0) continue;
+    const to = seat.getBoundingClientRect();
+    for (let i = 0; i < Math.min(gained, MAX_FLYING_CARDS); i++) {
+      const card = h('div', {
+        class: 'flying-card',
+        style: `left:${pile.left + pile.width / 2}px;top:${pile.top + pile.height / 2}px;`
+          + `--to-x:${to.left + to.width / 2 - (pile.left + pile.width / 2)}px;`
+          + `--to-y:${to.top + to.height / 2 - (pile.top + pile.height / 2)}px;animation-delay:${i * FLY_GAP_MS}ms`,
+      });
+      document.body.append(card);
+      setTimeout(() => card.remove(), i * FLY_GAP_MS + FLY_MS);
+    }
   }
 }
 

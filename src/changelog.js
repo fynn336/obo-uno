@@ -1,6 +1,11 @@
 // Neueste Version zuerst. Die aktuelle Versionsnummer ist immer der oberste Eintrag.
 export const CHANGELOG = [
   {
+    version: '1.5.0',
+    date: '2026-10-07',
+    changes: ['Gezogene Karten fliegen sichtbar vom Stapel zum Platz des Mitspielers'],
+  },
+  {
     version: '1.4.0',
     date: '2026-10-07',
     changes: [

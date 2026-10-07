@@ -837,6 +837,28 @@ select {
   animation-delay: calc(var(--order) * 70ms);
 }
 
+.flying-card {
+  position: fixed;
+  z-index: 140;
+  width: 44px;
+  height: 66px;
+  margin: -33px 0 0 -22px;
+  border: 3px solid #fff;
+  border-radius: 6px;
+  background: radial-gradient(ellipse at center, var(--red) 35%, var(--black) 38%);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  animation: fly-to-seat 0.55s cubic-bezier(0.3, 0.7, 0.4, 1) backwards;
+}
+
+@keyframes fly-to-seat {
+  to {
+    translate: var(--to-x) var(--to-y);
+    scale: 0.5;
+    rotate: 20deg;
+  }
+}
+
 @keyframes fly-in {
   from {
     translate: var(--from-x) var(--from-y);
@@ -883,6 +905,10 @@ select {
   *::after {
     animation: none !important;
     transition: none !important;
+  }
+
+  .flying-card {
+    display: none;
   }
 }
 
