@@ -226,6 +226,43 @@ kbd {
   color: var(--muted);
 }
 
+.awards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+  margin: 0 0 1.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+.awards li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.8rem;
+  border: 3px solid var(--accent);
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.35);
+  animation: pop 0.5s ease-out backwards;
+}
+
+.awards li:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.awards li:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.awards li:nth-child(4) {
+  animation-delay: 0.45s;
+}
+
+.award-icon {
+  font-size: 2rem;
+}
+
 .confetti {
   position: fixed;
   inset: 0;

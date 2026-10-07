@@ -1,4 +1,5 @@
 import { AVATAR_COLORS, AVATAR_EMOJIS } from '../game/avatars.js';
+import { eveningAwards } from '../game/awards.js';
 import { TARGET_SCORES, TURN_TIMES } from '../game/game.js';
 import { avatarBadge } from './avatar.js';
 import { h } from './dom.js';
@@ -57,6 +58,7 @@ export function renderLobby(root, view, code, send) {
   root.replaceChildren(
     h('div', { class: 'page' },
       isOver && win && resultBanner(win, view, isNewWin),
+      isOver && win?.champion && awardList(view.players),
       h('h1', {}, 'Lobby ', h('span', { class: 'code' }, code)),
       h('p', { class: 'hint' }, 'Teile den Code oder schick deinen Freunden direkt den Link: ', inviteButton(code)),
       h('div', { class: 'panels' },
@@ -103,6 +105,16 @@ export function renderLobby(root, view, code, send) {
     celebratedEventId = win.id;
     throwConfetti();
   }
+}
+
+function awardList(players) {
+  const awards = eveningAwards(players);
+  if (awards.length === 0) return null;
+  return h('ul', { class: 'awards' }, awards.map((award) => h('li', {},
+    h('span', { class: 'award-icon' }, award.icon),
+    h('strong', {}, award.title),
+    h('span', {}, award.names.join(' & ')),
+    h('span', { class: 'hint' }, award.detail))));
 }
 
 function hostSelect({ label, action, values, current, describe }, isHost, send) {

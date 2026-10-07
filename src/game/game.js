@@ -107,7 +107,9 @@ function join(state, { playerId, name }) {
     return 'Dieser Name ist schon vergeben';
   }
   const avatar = { emoji: '', color: state.players.length % AVATAR_COLORS.length };
-  state.players.push({ id: playerId, name: trimmed, connected: true, hand: [], saidUno: false, score: 0, avatar });
+  state.players.push({
+    id: playerId, name: trimmed, connected: true, hand: [], saidUno: false, score: 0, avatar, stats: emptyStats(),
+  });
 }
 
 function setTurnTime(state, { playerId, value }) {
@@ -189,7 +191,10 @@ function start(state, { playerId }) {
   for (const player of state.players) {
     player.hand = deck.splice(0, HAND_SIZE);
     player.saidUno = false;
-    if (newEvening) player.score = 0;
+    if (newEvening) {
+      player.score = 0;
+      player.stats = emptyStats();
+    }
   }
   state.drawPile = deck;
   state.discardPile = [];
@@ -211,6 +216,7 @@ function play(state, { playerId, cardId }) {
 
   if (card.value === 'wild4') {
     state.wild4 = { playerId, guilty: player.hand.some((c) => c.color === state.activeColor) };
+    player.stats.wild4++;
   }
   player.hand.splice(player.hand.indexOf(card), 1);
   state.discardPile.push(card);
@@ -296,6 +302,8 @@ function catchUno(state, { playerId, targetId }) {
   if (catcher === target) return 'Du kannst dich nicht selbst erwischen';
   if (state.unoWindow !== targetId) return 'Da gibt es nichts zu erwischen';
   drawCards(state, target, 2);
+  target.stats.caught++;
+  catcher.stats.catches++;
   log(state, 'caught', { player: catcher.name, target: target.name });
 }
 
@@ -385,6 +393,7 @@ function drawCards(state, player, count) {
   }
   if (drawn.length > 0) {
     player.hand.push(...drawn);
+    player.stats.drawn += drawn.length;
     player.saidUno = false;
     if (state.unoWindow === player.id) state.unoWindow = null;
   }
@@ -434,6 +443,11 @@ function advance(state, steps) {
   state.current = nextIndex(state, steps);
   state.drawnCardId = null;
   state.turnNumber++;
+}
+
+// Zähler für die Abend-Auszeichnungen
+function emptyStats() {
+  return { wild4: 0, drawn: 0, caught: 0, catches: 0 };
 }
 
 function randomColor(state) {
