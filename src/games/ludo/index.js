@@ -1,5 +1,6 @@
 import { botMove } from './bot.js';
 import { createGame, reduce, TRACK, viewFor } from './game.js';
+import { awardsFor } from '../awards.js';
 import { playOutTurn, TURN_TIME_SETTING } from '../turns.js';
 
 export const ludo = {
@@ -46,7 +47,7 @@ export const ludo = {
         detail: `${inGoal(p)} von 4 im Ziel`,
       })),
     ];
-    return { ranking, awards: awards(state.players) };
+    return { ranking, awards: awardsFor(state.players, AWARDS) };
   },
 };
 
@@ -54,15 +55,6 @@ const AWARDS = [
   { icon: '💥', title: 'Rausschmeißer', count: (p) => p.captures, describe: (n) => `${n}-mal geschlagen` },
   { icon: '🙈', title: 'Pechvogel', count: (p) => p.captured, describe: (n) => `${n}-mal rausgeflogen` },
 ];
-
-function awards(players) {
-  return AWARDS.flatMap(({ icon, title, count, describe }) => {
-    const best = Math.max(0, ...players.map(count));
-    if (best === 0) return [];
-    const names = players.filter((p) => count(p) === best).map((p) => p.name);
-    return [{ icon, title, detail: describe(best), names }];
-  });
-}
 
 function inGoal(player) {
   return player.pieces.filter((position) => position >= TRACK).length;

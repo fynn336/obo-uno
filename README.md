@@ -4,7 +4,8 @@ Spieleabend mit Freunden im Browser, für 2–8 Spieler. Man trifft sich in der 
 nach jeder Partie geht es zurück in die Lounge. Es gibt keinen eigenen Server, die Spieler verbinden sich direkt
 per WebRTC ([PeerJS](https://peerjs.com/)). Alles läuft als statische Seite, z. B. kostenlos auf GitHub Pages.
 
-**Spiele:** Farbenchaos (Uno-Regeln), Würfelglück (Kniffel-Regeln) und Ludo (Mensch-ärgere-dich-nicht-Regeln).
+**Spiele:** Farbenchaos (Uno-Regeln), Würfelglück (Kniffel-Regeln), Ludo (Mensch-ärgere-dich-nicht-Regeln) und
+Mäxchen (Würfeln und Bluffen).
 
 ## Spielen
 
@@ -139,6 +140,19 @@ Der Host wählt, ob die Partie endet, wenn der Erste alle Figuren im Ziel hat, o
 fertig sind. Wer nicht fertig ist, wird nach Figuren im Ziel und zurückgelegten Feldern platziert. Auszeichnungen:
 Rausschmeißer (die meisten geschlagen) und Pechvogel (am häufigsten rausgeflogen).
 
+## Mäxchen
+
+Für 2–8 Spieler. Jeder hat 3 Leben (oder 5, je nach Einstellung des Hosts). Wer am Zug ist, würfelt verdeckt mit
+zwei Würfeln (Becher antippen oder Leertaste) und sagt einen Wert an, der höher sein muss als die letzte Ansage.
+Lügen ist erlaubt, der echte Wurf ist in der Auswahl markiert. Der Nächste glaubt es und muss dann selbst würfeln
+und höher ansagen, oder er deckt auf: Hat der Ansager gelogen, verliert er ein Leben, sonst der Aufdecker.
+Danach beginnt der Verlierer eine neue Runde.
+
+Wertung von niedrig nach hoch: 31, 32, 41 … 65, dann die Pasche 11 bis 66, ganz oben Mäxchen (21). Ein Mäxchen
+kann man nicht überbieten: Wer es glaubt, verliert ein Leben; wer ein echtes Mäxchen aufdeckt, verliert zwei.
+Wer keine Leben mehr hat, ist raus. Der Letzte gewinnt. Auszeichnungen: Lügenbaron (am häufigsten beim Lügen
+erwischt) und Spürnase (die meisten Lügen aufgedeckt).
+
 ## Verbindungsabbrüche
 
 - **Reload eines Spielers:** Wer seinen Tab neu lädt, kommt automatisch auf seinen Platz zurück.
@@ -193,6 +207,7 @@ src/games/                 Spiele; jedes beschreibt Name, Spielerzahl, Einstellu
   uno/                     Farbenchaos: Regeln (game.js), Sicht, Bot, Auszeichnungen, Oberfläche (ui/)
   kniffel/                 Würfelglück: Wertung (scoring.js), Regeln, Bot, Oberfläche (ui/)
   ludo/                    Ludo: Regeln, Bot, Brett (ui/board.js) und Oberfläche
+  maexchen/                Mäxchen: Wertung (values.js), Regeln, Bot, Oberfläche
 src/shared/                Zufall per Seed (mulberry32), Prüfung von Aktionsfeldern
 src/net/                   Netzwerk
   protocol.js              alle Nachrichtentypen und die Prüfung jeder Client-Nachricht

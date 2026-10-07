@@ -1,6 +1,15 @@
 // Neueste Version zuerst. Die aktuelle Versionsnummer ist immer der oberste Eintrag.
 export const CHANGELOG = [
   {
+    version: '2.11.0',
+    date: '2026-10-07',
+    changes: [
+      'Neues Spiel: Mäxchen für 2–8 Spieler – verdeckt würfeln, höher ansagen, bluffen und aufdecken',
+      '3 oder 5 Leben, Mäxchen schlägt alles, Computer-Gegner bluffen mit',
+      'Auszeichnungen: Lügenbaron und Spürnase',
+    ],
+  },
+  {
     version: '2.10.0',
     date: '2026-10-07',
     changes: [
