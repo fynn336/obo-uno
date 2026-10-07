@@ -67,7 +67,7 @@ test('Ereignisse: Rundenstart, Sieg und Rauswurf', () => {
   const won = play(game({ hands: [['r7'], ['g3']] }), 'p0', 'r7');
   assertEqual(won.events.at(-1).type, 'win', 'Sieg');
   assertEqual(won.events.at(-1).player, 'P0', 'Gewinner');
-  const restarted = act(won, { type: 'start', playerId: 'p0' });
+  const restarted = act(won, { type: 'nextRound', playerId: 'p0' });
   assert(eventsAfter(won, restarted)[0].type === 'start', 'Rundenstart zuerst');
   const left = act(game({ hands: [['r1'], ['g2'], ['g3']] }), { type: 'leave', playerId: 'p2' });
   assertEqual(left.events.at(-1), { id: left.events.at(-1).id, type: 'left', player: 'P2' }, 'Rauswurf');

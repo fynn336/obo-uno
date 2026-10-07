@@ -1,4 +1,4 @@
-import { AVATAR_COLORS } from '../game/avatars.js';
+import { AVATAR_COLORS } from '../lounge/avatars.js';
 import { h } from './dom.js';
 
 export function avatarBadge(player, style = '') {

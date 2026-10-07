@@ -1,9 +1,11 @@
+import { readFields } from '../shared/fields.js';
+
 export const PEER_PREFIX = 'dfuno-';
 export const PING_INTERVAL_MS = 2000;
 export const SILENCE_TIMEOUT_MS = 8000;
 export const CONNECT_TIMEOUT_MS = 15000;
 export const RECONNECT_GRACE_MS = 60000;
-export const HOST_LEFT = 'Der Host hat das Spiel verlassen';
+export const HOST_LEFT = 'Der Host hat die Lounge verlassen';
 
 export const MSG = {
   // Client → Host
@@ -18,25 +20,21 @@ export const MSG = {
   PING: 'ping',
 };
 
+// Aktionen, die Clients schicken dürfen. Spielzüge stecken in move und prüft das jeweilige Spiel.
 const ACTION_FIELDS = {
-  setRule: { rule: 'string', value: 'boolean' },
-  setTarget: { value: 'number' },
-  setTurnTime: { value: 'number' },
   setAvatar: { emoji: 'string', color: 'number' },
   addBot: {},
   removeBot: { targetId: 'string' },
-  start: {},
-  play: { cardId: 'number' },
-  chooseColor: { color: 'string' },
-  draw: {},
-  pass: {},
-  challenge: {},
-  callUno: {},
-  catchUno: { targetId: 'string' },
+  selectGame: { gameId: 'string' },
+  setSetting: { gameId: 'string', key: 'string', value: ['boolean', 'number'] },
+  startGame: {},
+  abortGame: {},
+  newEvening: {},
+  move: { move: 'object' },
 };
 
 export function readClientMessage(data) {
-  if (!isObject(data)) return null;
+  if (typeof data !== 'object' || data === null) return null;
   if (data.type === MSG.PING) return { type: MSG.PING };
   if (data.type === MSG.JOIN && typeof data.name === 'string' && (data.token === null || typeof data.token === 'string')) {
     // Ältere Clients schicken keine Version; sie werden vom Host als veraltet abgelehnt.
@@ -50,17 +48,7 @@ export function readClientMessage(data) {
   return null;
 }
 
-// Übernimmt nur bekannte Aktionen mit korrekt typisierten Feldern; playerId setzt immer der Host.
+// playerId setzt immer der Host, nie der Client.
 export function readAction(raw) {
-  if (!isObject(raw) || !Object.hasOwn(ACTION_FIELDS, raw.type)) return null;
-  const action = { type: raw.type };
-  for (const [key, type] of Object.entries(ACTION_FIELDS[raw.type])) {
-    if (typeof raw[key] !== type) return null;
-    action[key] = raw[key];
-  }
-  return action;
-}
-
-function isObject(value) {
-  return typeof value === 'object' && value !== null;
+  return readFields(raw, ACTION_FIELDS);
 }

@@ -1,10 +1,9 @@
-import { isRunning } from './game/game.js';
+import { GAME_UIS } from './games/ui.js';
 import { joinGame, savedSession } from './net/client.js';
-import { hostGame } from './net/host.js';
+import { hostLounge } from './net/host.js';
 import { unlockAudio } from './ui/audio.js';
 import { renderCorner } from './ui/corner.js';
-import { renderLobby, renderStart, renderWaiting } from './ui/lobby.js';
-import { handleTableKey, renderTable } from './ui/table.js';
+import { renderLounge, renderStart, renderWaiting } from './ui/lounge.js';
 import { updateIfOutdated } from './update.js';
 
 const TOAST_MS = 3000;
@@ -36,8 +35,8 @@ function showStart(message) {
 }
 
 function create(name) {
-  renderWaiting(app, 'Lobby wird erstellt …');
-  session = hostGame(name, events);
+  renderWaiting(app, 'Lounge wird eröffnet …');
+  session = hostLounge(name, events);
   if (session) window.addEventListener('beforeunload', confirmLeave);
 }
 
@@ -51,9 +50,21 @@ function send(action) {
   session?.send(action);
 }
 
+function sendMove(move) {
+  send({ type: 'move', move });
+}
+
+function abortGame() {
+  if (confirm('Partie wirklich beenden? Es gibt dann keine Punkte.')) send({ type: 'abortGame' });
+}
+
 function render() {
-  if (isRunning(view)) renderTable(app, view, send);
-  else renderLobby(app, view, code, send);
+  if (!view.game) {
+    renderLounge(app, view, code, send);
+    return;
+  }
+  const gameView = { ...view.game, turnEndsIn: view.turnEndsIn };
+  GAME_UIS[view.gameId].render(app, gameView, sendMove, view.you === view.hostId ? abortGame : null);
 }
 
 function showToast(message) {
@@ -70,7 +81,7 @@ function confirmLeave(event) {
 document.addEventListener('keydown', (event) => {
   const dialogOpen = document.querySelector('dialog[open]') !== null;
   const inControl = event.target.closest('input, select');
-  if (view && isRunning(view) && !dialogOpen && !inControl) handleTableKey(event);
+  if (view?.game && !dialogOpen && !inControl) GAME_UIS[view.gameId].handleKey(event, view.game);
 });
 
 if (!(await updateIfOutdated())) {

@@ -6,7 +6,7 @@ const AWARDS = [
 ];
 
 // Pro Kategorie gewinnt der Höchstwert; bei Gleichstand alle, ohne einen einzigen Treffer niemand.
-export function eveningAwards(players) {
+export function gameAwards(players) {
   return AWARDS.flatMap(({ stat, icon, title, describe }) => {
     const best = Math.max(0, ...players.map((p) => p.stats[stat]));
     if (best === 0) return [];

@@ -1,6 +1,19 @@
 // Neueste Version zuerst. Die aktuelle Versionsnummer ist immer der oberste Eintrag.
 export const CHANGELOG = [
   {
+    version: '2.0.0',
+    date: '2026-10-07',
+    changes: [
+      'Die OBO Lounge: erst treffen, dann spielen – der Raum bleibt für den ganzen Abend',
+      'Spielauswahl in der Lounge, Uno heißt dort „Farbenchaos“',
+      'Abendwertung über alle Partien: Platz 1/2/3 bringt 3/2/1 ⭐, 🏆 für den Spieler des Abends',
+      'Wer während einer Partie kommt, wartet in der Lounge und spielt ab der nächsten mit',
+      'Host kann eine laufende Partie beenden und zurück in die Lounge',
+      'Farbenchaos: Bei Punktgleichstand entscheiden die Restpunkte auf der Hand',
+      '„Du bist dran“ im Tab-Titel hört auf zu blinken, sobald man nicht mehr dran ist',
+    ],
+  },
+  {
     version: '1.10.1',
     date: '2026-10-07',
     changes: ['Automatisches Update: Nach einer neuen Version reicht normales Neuladen (F5), kein Strg+F5 mehr nötig'],

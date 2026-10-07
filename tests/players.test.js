@@ -1,63 +1,11 @@
 import { test, assert, assertEqual } from './testing.js';
-import { act, codes, currentId, game, handOf, lobby, play, rejected } from './setup.js';
+import { act, codes, currentId, game, handOf, play, rejected } from './setup.js';
 
 const DRAW_PILE = ['y1', 'y2', 'y3', 'y4', 'y5', 'y6'];
-const join = (playerId, name) => ({ type: 'join', playerId, name });
 const leave = (playerId) => ({ type: 'leave', playerId });
 
-test('Lobby: Beitritt mit gültigem, eindeutigem Namen', () => {
-  let s = lobby(1);
-  s = act(s, join('a', '  Anna  '));
-  assertEqual(s.players.map((p) => p.name), ['P0', 'Anna'], 'Namen');
-  rejected(s, join('b', 'anna'));
-  rejected(s, join('b', '   '));
-  rejected(s, join('b', 'x'.repeat(17)));
-});
-
-test('Lobby: höchstens 8 Spieler', () => {
-  const s = lobby(8);
-  assertEqual(rejected(s, join('p8', 'P8')), 'Die Lobby ist voll', 'Fehler');
-});
-
-test('Lobby: Beitritt während einer Runde abgelehnt, nach Rundenende erlaubt', () => {
-  let s = game({ hands: [['r1'], ['g2']] });
-  assertEqual(rejected(s, join('x', 'Xaver')), 'Das Spiel läuft bereits', 'Fehler');
-  s = play(s, 'p0', 'r1');
-  s = act(s, join('x', 'Xaver'));
-  assertEqual(s.players.length, 3, 'Spieler');
-});
-
-test('Lobby: nur der Host startet, ab 2 Spielern', () => {
-  rejected(lobby(1), { type: 'start', playerId: 'p0' });
-  rejected(lobby(2), { type: 'start', playerId: 'p1' });
-  const s = act(lobby(2), { type: 'start', playerId: 'p0' });
-  assert(s.phase === 'playing' || s.phase === 'chooseColor', `Phase ${s.phase}`);
-  rejected(s, { type: 'start', playerId: 'p0' });
-});
-
-test('Lobby: nur der Host ändert Hausregeln, nur außerhalb einer Runde', () => {
-  let s = lobby(2);
-  rejected(s, { type: 'setRule', playerId: 'p1', rule: 'stacking', value: true });
-  rejected(s, { type: 'setRule', playerId: 'p0', rule: 'toString', value: true });
-  s = act(s, { type: 'setRule', playerId: 'p0', rule: 'stacking', value: true });
-  assertEqual(s.rules.stacking, true, 'Stapeln');
-  s = act(s, { type: 'start', playerId: 'p0' });
-  rejected(s, { type: 'setRule', playerId: 'p0', rule: 'challenge', value: true });
-});
-
-test('Avatar: Standardfarben verschieden, Auswahl nur aus der Liste', () => {
-  let s = lobby(3);
-  assertEqual(s.players.map((p) => p.avatar), [0, 1, 2].map((color) => ({ emoji: '', color })), 'Standard');
-  s = act(s, { type: 'setAvatar', playerId: 'p1', emoji: '🦊', color: 5 });
-  assertEqual(s.players[1].avatar, { emoji: '🦊', color: 5 }, 'gewählt');
-  rejected(s, { type: 'setAvatar', playerId: 'p1', emoji: '💩', color: 0 });
-  rejected(s, { type: 'setAvatar', playerId: 'p1', emoji: '🦊', color: 8 });
-  rejected(s, { type: 'setAvatar', playerId: 'p1', emoji: '🦊', color: 1.5 });
-  rejected(s, { type: 'setAvatar', playerId: 'nobody', emoji: '🦊', color: 0 });
-});
-
-test('Lobby: Verlassen entfernt den Spieler sofort', () => {
-  const s = act(lobby(3), leave('p1'));
+test('Rauswurf zwischen den Runden: Spieler wird einfach entfernt', () => {
+  const s = act(play(game({ hands: [['r1'], ['g2'], ['g3']] }), 'p0', 'r1'), leave('p1'));
   assertEqual(s.players.map((p) => p.id), ['p0', 'p2'], 'Spieler');
 });
 
@@ -137,8 +85,8 @@ test('Ungültig: unspielbare oder fremde Karte', () => {
 });
 
 test('Ungültig: falsche Phase', () => {
-  const inLobby = lobby(2);
-  rejected(inLobby, { type: 'draw', playerId: 'p0' });
+  const betweenRounds = play(game({ hands: [['r1'], ['g2']] }), 'p0', 'r1');
+  rejected(betweenRounds, { type: 'draw', playerId: 'p1' });
   const playing = game({ hands: [['W', 'g1'], ['r3']] });
   rejected(playing, { type: 'chooseColor', playerId: 'p0', color: 'red' });
   rejected(playing, { type: 'challenge', playerId: 'p0' });
@@ -148,7 +96,7 @@ test('Ungültig: falsche Phase', () => {
 });
 
 test('Ungültig: unbekannte Aktion', () => {
-  const s = lobby(2);
+  const s = game({ hands: [['r1'], ['g2']] });
   rejected(s, { type: 'cheat', playerId: 'p0' });
   rejected(s, { type: 'constructor', playerId: 'p0' });
 });

@@ -1,4 +1,4 @@
-import { h } from './dom.js';
+import { h } from '../../../ui/dom.js';
 
 export const COLOR_NAMES = { red: 'Rot', yellow: 'Gelb', green: 'Grün', blue: 'Blau' };
 

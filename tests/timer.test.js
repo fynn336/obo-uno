@@ -1,15 +1,16 @@
 import { test, assert, assertEqual } from './testing.js';
-import { act, currentId, game, handOf, lobby, play, rejected } from './setup.js';
+import { uno } from '../src/games/uno/index.js';
+import { act, currentId, game, handOf, play, rejected } from './setup.js';
 
 const timeout = (playerId) => ({ type: 'timeout', playerId });
 
-test('Zug-Timer: Einstellung nur durch den Host, nur erlaubte Werte', () => {
-  let s = lobby(2);
-  assertEqual(s.turnTime, 0, 'Standard aus');
-  rejected(s, { type: 'setTurnTime', playerId: 'p1', value: 30 });
-  rejected(s, { type: 'setTurnTime', playerId: 'p0', value: 45 });
-  s = act(s, { type: 'setTurnTime', playerId: 'p0', value: 30 });
-  assertEqual(s.turnTime, 30, 'gesetzt');
+test('Zug-Timer: aus bei 0 Sekunden, sonst neuer Schlüssel bei jedem Zug', () => {
+  assertEqual(uno.timer(game({ hands: [['r1', 'g1'], ['g2']] })), null, 'aus');
+  const s = { ...game({ hands: [['r1', 'g1'], ['g2']] }), turnTime: 30 };
+  const before = uno.timer(s);
+  assertEqual([before.playerId, before.seconds], ['p0', 30], 'Spieler und Dauer');
+  const after = uno.timer(play(s, 'p0', 'r1'));
+  assert(after.key !== before.key && after.playerId === 'p1', 'neuer Zug');
 });
 
 test('Zug-Timer: normaler Zug – 1 Karte ziehen, Zug endet, auch wenn sie passt', () => {
@@ -41,7 +42,7 @@ test('Zug-Timer: offene Farbwahl wird zufällig getroffen', () => {
 
 test('Zug-Timer: nur für den Spieler am Zug, nur während der Runde', () => {
   rejected(game({ hands: [['g1'], ['g2']] }), timeout('p1'));
-  rejected(lobby(2), timeout('p0'));
+  rejected(play(game({ hands: [['r1'], ['g2']] }), 'p0', 'r1'), timeout('p1'));
 });
 
 test('Zug-Timer: jeder Spielerwechsel erhöht den Zugzähler', () => {

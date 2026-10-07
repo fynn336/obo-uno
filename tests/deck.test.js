@@ -1,7 +1,7 @@
-import { COLORS, createDeck, isPlayable } from '../src/game/deck.js';
-import { nextRandom } from '../src/game/rng.js';
+import { COLORS, createDeck, isPlayable } from '../src/games/uno/deck.js';
+import { nextRandom } from '../src/shared/rng.js';
 import { test, assert, assertEqual } from './testing.js';
-import { card, lobby, act } from './setup.js';
+import { card, newGame } from './setup.js';
 
 test('Deck: 108 Karten mit eindeutigen IDs', () => {
   const deck = createDeck();
@@ -62,6 +62,5 @@ test('Zufall: gleicher Seed ergibt gleiche Folge, anderer Seed eine andere', () 
 });
 
 test('Rundenstart: gleicher Seed ergibt gleiche Verteilung', () => {
-  const started = () => act(lobby(3), { type: 'start', playerId: 'p0' });
-  assertEqual(started(), started(), 'State');
+  assertEqual(newGame(3), newGame(3), 'State');
 });

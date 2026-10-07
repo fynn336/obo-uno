@@ -1,21 +1,9 @@
-import { botAction } from '../src/game/bot.js';
-import { reduce } from '../src/game/game.js';
+import { botAction } from '../src/games/uno/bot.js';
+import { isRunning, reduce } from '../src/games/uno/game.js';
 import { test, assertEqual } from './testing.js';
-import { act, codes, game, lobby, player, rejected } from './setup.js';
+import { act, codes, game, newGame, player } from './setup.js';
 
 const MAX_STEPS = 3000;
-
-test('Bots: Host fügt hinzu und entfernt, Namen eindeutig, höchstens 8 Spieler', () => {
-  let s = act(lobby(2), { type: 'addBot', playerId: 'p0' });
-  s = act(s, { type: 'addBot', playerId: 'p0' });
-  assertEqual(s.players.slice(2).map((p) => [p.name, p.bot, p.avatar.emoji]), [['Bot Anton', true, '🤖'], ['Bot Berta', true, '🤖']], 'Bots');
-  rejected(s, { type: 'addBot', playerId: 'p1' });
-  rejected(s, { type: 'removeBot', playerId: 'p0', targetId: 'p1' });
-  s = act(s, { type: 'removeBot', playerId: 'p0', targetId: 'bot-0' });
-  assertEqual(s.players.map((p) => p.name), ['P0', 'P1', 'Bot Berta'], 'entfernt');
-  rejected(lobby(8), { type: 'addBot', playerId: 'p0' });
-  rejected(act(s, { type: 'start', playerId: 'p0' }), { type: 'addBot', playerId: 'p0' });
-});
 
 test('Bots: Aktionskarten vor Zahlen, Wild-Karten zuletzt', () => {
   const s = game({ hands: [['W', 'r3', 'rS', 'g9'], ['g1']] });
@@ -38,17 +26,15 @@ test('Bots: spielen ganze Partien mit allen Hausregel-Kombinationen ohne abgeleh
     { stacking: true, challenge: true, drawUntilPlayable: true }];
   for (const [i, rules] of ruleSets.entries()) {
     for (let seed = 1; seed <= 6; seed++) {
-      let s = { ...lobby(4, rules), seed: seed * 97 + i };
-      s.players.forEach((p) => { p.bot = true; });
-      s = act(s, { type: 'start', playerId: 'p0' });
+      let s = newGame(4, rules, seed * 97 + i);
       let steps = 0;
-      while (s.phase !== 'roundOver' && steps++ < MAX_STEPS) {
+      while (isRunning(s) && steps++ < MAX_STEPS) {
         const action = botAction(s, s.players[s.current].id);
         const result = reduce(s, action);
         if (result.error) throw new Error(`Seed ${seed}, Regeln ${JSON.stringify(rules)}: ${action.type} abgelehnt: ${result.error}`);
         s = result.state;
       }
-      assertEqual(s.phase, 'roundOver', `Seed ${seed}, Regeln ${JSON.stringify(rules)} endet`);
+      assertEqual(isRunning(s), false, `Seed ${seed}, Regeln ${JSON.stringify(rules)} endet`);
     }
   }
 });

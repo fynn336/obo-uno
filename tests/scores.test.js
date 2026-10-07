@@ -1,7 +1,8 @@
-import { cardPoints } from '../src/game/deck.js';
-import { viewFor } from '../src/game/view.js';
+import { cardPoints } from '../src/games/uno/deck.js';
+import { viewFor } from '../src/games/uno/view.js';
 import { test, assertEqual } from './testing.js';
-import { act, card, game, lobby, play, player, rejected } from './setup.js';
+import { uno } from '../src/games/uno/index.js';
+import { act, card, game, play, player, rejected } from './setup.js';
 
 test('Punkte: Kartenwerte nach offizieller Wertung', () => {
   assertEqual(['r0', 'g7', 'b9', 'yS', 'rR', 'g+2', 'W', 'W+4'].map((code) => cardPoints(card(code))),
@@ -28,29 +29,25 @@ test('Punkte: Rundenende durch Rauswurf bringt keine Punkte', () => {
   assertEqual(s.events.at(-1).points, 0, 'im Ereignis');
 });
 
-test('Punkte: Ziel erreicht – Abend gewonnen, nächste Runde beginnt bei 0', () => {
-  let s = game({ hands: [['r7'], ['W', 'W', 'W', 'W']] });
-  s = { ...s, target: 200 };
+test('Punkte: Ziel erreicht – Partie vorbei, Ergebnis nach Punkten', () => {
+  let s = { ...game({ hands: [['r7'], ['W', 'W', 'W', 'W'], ['g3']] }), target: 200 };
+  s.players[2].score = 150;
   s = play(s, 'p0', 'r7');
-  assertEqual(s.championId, 'p0', 'Abendsieger');
+  assertEqual(s.phase, 'gameOver', 'Phase');
   assertEqual(s.events.at(-1).champion, true, 'im Ereignis');
-  s = act(s, { type: 'start', playerId: 'p0' });
-  assertEqual(s.championId, null, 'zurückgesetzt');
-  assertEqual(s.players.map((p) => p.score), [0, 0], 'Punkte zurückgesetzt');
+  rejected(s, { type: 'nextRound', playerId: 'p0' });
+  assertEqual(uno.result(s).ranking.map((r) => [r.playerId, r.place]), [['p0', 1], ['p2', 2], ['p1', 3]], 'Platzierung');
+  assertEqual(uno.result(game({ hands: [['r7'], ['g3']] })), null, 'kein Ergebnis während der Partie');
 });
 
-test('Punkte: Punktestand bleibt zwischen Runden ohne Abendsieg erhalten', () => {
+test('Punkte: Gleichstand – weniger Restpunkte auf der Hand gewinnt, sonst geteilter Platz', () => {
+  let s = { ...game({ hands: [['r7'], ['W', 'W', 'W', 'W'], ['g3'], ['g3']] }), target: 200 };
+  s = play(s, 'p0', 'r7');
+  assertEqual(uno.result(s).ranking.map((r) => [r.playerId, r.place]), [['p0', 1], ['p2', 2], ['p3', 2], ['p1', 4]], 'Plätze');
+});
+
+test('Punkte: Punktestand bleibt zwischen den Runden erhalten', () => {
   let s = play(game({ hands: [['r7'], ['g3']] }), 'p0', 'r7');
-  s = act(s, { type: 'start', playerId: 'p0' });
+  s = act(s, { type: 'nextRound', playerId: 'p0' });
   assertEqual(player(s, 'p0').score, 3, 'Punkte');
-});
-
-test('Punkteziel: nur Host, nur erlaubte Werte, nicht während der Runde', () => {
-  let s = lobby(2);
-  assertEqual(s.target, 500, 'Standard');
-  rejected(s, { type: 'setTarget', playerId: 'p1', value: 200 });
-  rejected(s, { type: 'setTarget', playerId: 'p0', value: 250 });
-  s = act(s, { type: 'setTarget', playerId: 'p0', value: 300 });
-  assertEqual(s.target, 300, 'geändert');
-  rejected(act(s, { type: 'start', playerId: 'p0' }), { type: 'setTarget', playerId: 'p0', value: 200 });
 });

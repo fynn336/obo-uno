@@ -1,15 +1,8 @@
-import { AVATAR_COLORS, AVATAR_EMOJIS } from './avatars.js';
+import { nextRandom } from '../../shared/rng.js';
 import { COLORS, cardPoints, createDeck, isPlayable } from './deck.js';
-import { nextRandom } from './rng.js';
 
 const HAND_SIZE = 7;
-export const MAX_PLAYERS = 8;
-const MAX_NAME_LENGTH = 16;
 const MAX_EVENTS = 30;
-export const TARGET_SCORES = [200, 300, 500];
-export const TURN_TIMES = [0, 30, 60];
-const BOT_NAMES = ['Bot Anton', 'Bot Berta', 'Bot Carla', 'Bot Dieter', 'Bot Emil', 'Bot Frieda', 'Bot Gustav'];
-const BOT_EMOJI = '🤖';
 const PENALTIES = { draw2: 2, wild4: 4 };
 const RUNNING_PHASES = ['playing', 'chooseColor', 'challengeWindow'];
 const UNO_WINDOW_CLOSERS = ['play', 'draw', 'pass', 'chooseColor', 'challenge', 'callUno', 'timeout'];
@@ -19,19 +12,18 @@ const PHASE_HINTS = {
   challengeWindow: 'Fechte an oder ziehe',
 };
 
-export function createGame({ hostId, hostName, seed }) {
+// Neue Partie mit den Spielern aus der Lounge; die erste Runde wird sofort ausgeteilt.
+export function createGame({ players, hostId, settings, seed }) {
   const state = {
-    phase: 'lobby',
+    phase: 'playing',
     hostId,
-    rules: { stacking: false, challenge: false, drawUntilPlayable: false },
-    target: 500,
+    rules: { stacking: settings.stacking, challenge: settings.challenge, drawUntilPlayable: settings.drawUntilPlayable },
+    target: settings.target,
     // Sekunden pro Zug, 0 = aus; die Uhr selbst läuft beim Host
-    turnTime: 0,
+    turnTime: settings.turnTime,
     // zählt jeden Spielerwechsel, damit der Host-Timer einen neuen Zug erkennt
     turnNumber: 0,
-    // Wer das Punkteziel erreicht hat; beim nächsten Rundenstart beginnt ein neuer Abend
-    championId: null,
-    players: [],
+    players: players.map(({ id, name }) => ({ id, name, hand: [], saidUno: false, score: 0, stats: emptyStats() })),
     drawPile: [],
     discardPile: [],
     current: 0,
@@ -51,7 +43,8 @@ export function createGame({ hostId, hostName, seed }) {
     events: [],
     seed,
   };
-  return reduce(state, { type: 'join', playerId: hostId, name: hostName });
+  startRound(state);
+  return state;
 }
 
 export function reduce(state, action) {
@@ -98,50 +91,6 @@ export function revealStartCard(state) {
   }
 }
 
-function join(state, { playerId, name }) {
-  if (isRunning(state)) return 'Das Spiel läuft bereits';
-  const trimmed = name.trim();
-  if (trimmed.length === 0 || trimmed.length > MAX_NAME_LENGTH) {
-    return `Der Name muss 1–${MAX_NAME_LENGTH} Zeichen lang sein`;
-  }
-  if (state.players.length >= MAX_PLAYERS) return 'Die Lobby ist voll';
-  if (isNameTaken(state, trimmed)) return 'Dieser Name ist schon vergeben';
-  addPlayer(state, playerId, trimmed, false);
-}
-
-function addBot(state, { playerId }) {
-  if (playerId !== state.hostId) return 'Nur der Host kann Computer-Gegner hinzufügen';
-  if (isRunning(state)) return 'Computer-Gegner nur in der Lobby hinzufügen';
-  if (state.players.length >= MAX_PLAYERS) return 'Die Lobby ist voll';
-  const index = BOT_NAMES.findIndex((name) => !isNameTaken(state, name));
-  if (index === -1) return 'Keine Computer-Gegner mehr frei';
-  addPlayer(state, `bot-${index}`, BOT_NAMES[index], true);
-}
-
-function removeBot(state, { playerId, targetId }) {
-  if (playerId !== state.hostId) return 'Nur der Host kann Computer-Gegner entfernen';
-  if (isRunning(state)) return 'Computer-Gegner nur in der Lobby entfernen';
-  const index = state.players.findIndex((p) => p.id === targetId && p.bot);
-  if (index === -1) return 'Kein Computer-Gegner';
-  state.players.splice(index, 1);
-}
-
-function addPlayer(state, id, name, bot) {
-  const avatar = { emoji: bot ? BOT_EMOJI : '', color: state.players.length % AVATAR_COLORS.length };
-  state.players.push({ id, name, bot, connected: true, hand: [], saidUno: false, score: 0, avatar, stats: emptyStats() });
-}
-
-function isNameTaken(state, name) {
-  return state.players.some((p) => p.name.toLowerCase() === name.toLowerCase());
-}
-
-function setTurnTime(state, { playerId, value }) {
-  if (playerId !== state.hostId) return 'Nur der Host kann die Zugzeit ändern';
-  if (isRunning(state)) return 'Die Zugzeit kann nur in der Lobby geändert werden';
-  if (!TURN_TIMES.includes(value)) return 'Ungültige Zugzeit';
-  state.turnTime = value;
-}
-
 // Zeit abgelaufen: Farbwahl zufällig, offene Strafe ziehen, gezogene Karte behalten, sonst 1 Karte ziehen.
 function timeout(state, { playerId }) {
   if (!isRunning(state) || currentPlayer(state).id !== playerId) return 'Kein laufender Zug dieses Spielers';
@@ -159,13 +108,7 @@ function timeout(state, { playerId }) {
   }
 }
 
-function setAvatar(state, { playerId, emoji, color }) {
-  const player = findPlayer(state, playerId);
-  if (!player) return 'Unbekannter Spieler';
-  if (!AVATAR_EMOJIS.includes(emoji) || !Number.isInteger(color) || !AVATAR_COLORS[color]) return 'Ungültiger Avatar';
-  player.avatar = { emoji, color };
-}
-
+// Ein Spieler verlässt die Partie. Zwischen den Runden wird er einfach entfernt.
 function leave(state, { playerId }) {
   const index = state.players.findIndex((p) => p.id === playerId);
   if (index === -1) return 'Unbekannter Spieler';
@@ -183,41 +126,19 @@ function leave(state, { playerId }) {
   removePlayer(state, index);
 }
 
-function setConnected(state, { playerId, connected }) {
-  const player = findPlayer(state, playerId);
-  if (!player) return 'Unbekannter Spieler';
-  player.connected = connected;
-}
-
-function setRule(state, { playerId, rule, value }) {
-  if (playerId !== state.hostId) return 'Nur der Host kann die Regeln ändern';
-  if (isRunning(state)) return 'Regeln können nur in der Lobby geändert werden';
-  if (!Object.hasOwn(state.rules, rule)) return 'Unbekannte Regel';
-  state.rules[rule] = value;
-}
-
-function setTarget(state, { playerId, value }) {
-  if (playerId !== state.hostId) return 'Nur der Host kann das Punkteziel ändern';
-  if (isRunning(state)) return 'Das Punkteziel kann nur in der Lobby geändert werden';
-  if (!TARGET_SCORES.includes(value)) return 'Ungültiges Punkteziel';
-  state.target = value;
-}
-
-function start(state, { playerId }) {
-  if (playerId !== state.hostId) return 'Nur der Host kann starten';
-  if (isRunning(state)) return 'Das Spiel läuft bereits';
+function nextRound(state, { playerId }) {
+  if (playerId !== state.hostId) return 'Nur der Host startet die nächste Runde';
+  if (state.phase !== 'roundOver') return 'Die Runde läuft noch';
   if (state.players.length < 2) return 'Es braucht mindestens 2 Spieler';
-  const newEvening = state.championId !== null;
-  state.championId = null;
+  startRound(state);
+}
+
+function startRound(state) {
   const deck = createDeck();
   shuffle(state, deck);
   for (const player of state.players) {
     player.hand = deck.splice(0, HAND_SIZE);
     player.saidUno = false;
-    if (newEvening) {
-      player.score = 0;
-      player.stats = emptyStats();
-    }
   }
   state.drawPile = deck;
   state.discardPile = [];
@@ -330,9 +251,8 @@ function catchUno(state, { playerId, targetId }) {
   log(state, 'caught', { player: catcher.name, target: target.name });
 }
 
-const handlers = {
-  join, addBot, removeBot, leave, setConnected, setRule, setTarget, setTurnTime, setAvatar, timeout, start, play, chooseColor, draw, pass, challenge, callUno, catchUno,
-};
+// leave und timeout löst nur der Host aus, alle anderen sind Spielzüge.
+const handlers = { leave, timeout, nextRound, play, chooseColor, draw, pass, challenge, callUno, catchUno };
 
 export function handPoints(hand) {
   return hand.reduce((sum, card) => sum + cardPoints(card), 0);
@@ -451,10 +371,10 @@ function endRound(state, winnerId, scored) {
   const winner = findPlayer(state, winnerId);
   const points = scored ? state.players.reduce((sum, p) => sum + handPoints(p.hand), 0) : 0;
   winner.score += points;
-  if (winner.score >= state.target) state.championId = winnerId;
-  state.phase = 'roundOver';
+  const wonGame = winner.score >= state.target;
+  state.phase = wonGame ? 'gameOver' : 'roundOver';
   state.winnerId = winnerId;
-  log(state, 'win', { player: winner.name, points, champion: state.championId === winnerId });
+  log(state, 'win', { player: winner.name, points, champion: wonGame });
   state.pendingDraw = 0;
   state.drawnCardId = null;
   state.wild4 = null;
@@ -468,7 +388,7 @@ function advance(state, steps) {
   state.turnNumber++;
 }
 
-// Zähler für die Abend-Auszeichnungen
+// Zähler für die Auszeichnungen am Ende der Partie
 function emptyStats() {
   return { wild4: 0, drawn: 0, caught: 0, catches: 0 };
 }

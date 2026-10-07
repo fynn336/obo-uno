@@ -1,4 +1,4 @@
-import { revealStartCard } from '../src/game/game.js';
+import { revealStartCard } from '../src/games/uno/game.js';
 import { test, assert, assertEqual } from './testing.js';
 import { act, card, codes, currentId, game, handOf, play, player, rejected } from './setup.js';
 
@@ -169,10 +169,11 @@ test('Spielende: letzte Karte +2 oder Wild wirkt nicht mehr', () => {
   assertEqual(afterWild.phase, 'roundOver', 'keine Farbwahl');
 });
 
-test('Spielende: Host startet eine neue Runde', () => {
+test('Rundenende: Host startet die nächste Runde', () => {
   let s = play(game({ hands: [['r7'], ['g3'], ['g4']] }), 'p0', 'r7');
-  rejected(s, { type: 'start', playerId: 'p1' });
-  s = act(s, { type: 'start', playerId: 'p0' });
+  rejected(s, { type: 'nextRound', playerId: 'p1' });
+  s = act(s, { type: 'nextRound', playerId: 'p0' });
+  rejected(s, { type: 'nextRound', playerId: 'p0' });
   assert(s.phase === 'playing' || s.phase === 'chooseColor', `Phase ${s.phase}`);
   assertEqual(s.winnerId, null, 'Gewinner zurückgesetzt');
   const total = s.players.reduce((sum, p) => sum + p.hand.length, 0) + s.drawPile.length + s.discardPile.length;

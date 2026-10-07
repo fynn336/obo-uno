@@ -1,7 +1,5 @@
 import { VERSION } from '../changelog.js';
-import { botAction } from '../game/bot.js';
-import { createGame, isRunning, reduce } from '../game/game.js';
-import { viewFor } from '../game/view.js';
+import { createLounge, isPlaying, nextBotMove, reduce, turnTimer, viewFor } from '../lounge/lounge.js';
 import {
   CONNECT_TIMEOUT_MS,
   MSG,
@@ -16,9 +14,9 @@ import {
 const SERVER_RETRY_MS = 3000;
 const BOT_DELAY_MS = 1100;
 
-export function hostGame(name, events) {
+export function hostLounge(name, events) {
   const hostId = crypto.randomUUID();
-  const created = createGame({ hostId, hostName: name, seed: crypto.getRandomValues(new Uint32Array(1))[0] });
+  const created = createLounge({ hostId, hostName: name, seed: crypto.getRandomValues(new Uint32Array(1))[0] });
   if (created.error) {
     events.onEnd(created.error);
     return null;
@@ -26,15 +24,15 @@ export function hostGame(name, events) {
   let state = created.state;
   const seats = new Map(); // playerId → { playerId, token, link, kickTimer }
   const links = new Set(); // { conn, playerId, lastSeen }
-  let turnTimer = null;
+  let timerHandle = null;
   let turnKey = null;
   let turnDeadline = null;
   let botTimer = null;
 
-  openLobby();
+  openLounge();
   setInterval(checkLinks, PING_INTERVAL_MS);
 
-  function openLobby() {
+  function openLounge() {
     const code = String(crypto.getRandomValues(new Uint16Array(1))[0] % 10000).padStart(4, '0');
     const peer = new Peer(PEER_PREFIX + code);
     let opened = false;
@@ -50,8 +48,8 @@ export function hostGame(name, events) {
     });
     peer.on('error', (error) => {
       if (opened) return;
-      if (error.type === 'unavailable-id') openLobby();
-      else events.onEnd('Die Lobby konnte nicht erstellt werden. Bitte später noch einmal versuchen.');
+      if (error.type === 'unavailable-id') openLounge();
+      else events.onEnd('Die Lounge konnte nicht erstellt werden. Bitte später noch einmal versuchen.');
     });
   }
 
@@ -115,7 +113,7 @@ export function hostGame(name, events) {
     const seat = seats.get(link.playerId);
     if (seat?.link !== link) return;
     seat.link = null;
-    if (!isRunning(state)) {
+    if (!isPlaying(state, seat.playerId)) {
       removeSeat(seat);
       return;
     }
@@ -156,25 +154,23 @@ export function hostGame(name, events) {
 
   function scheduleBot() {
     clearTimeout(botTimer);
-    const current = isRunning(state) ? state.players[state.current] : null;
-    if (!current?.bot) return;
+    if (!nextBotMove(state)) return;
     botTimer = setTimeout(() => {
-      const action = botAction(state, current.id);
-      if (action) apply(action);
+      const next = nextBotMove(state);
+      if (next) apply({ type: 'move', playerId: next.playerId, move: next.move });
     }, BOT_DELAY_MS);
   }
 
-  // Neue Entscheidung (Zug, Phase, gezogene Karte) startet die Uhr neu; bei getrennten Spielern läuft sie nicht.
+  // Jede neue Entscheidung im Spiel startet die Uhr neu; bei getrennten Spielern läuft sie nicht.
   function scheduleTurnTimer() {
-    const current = isRunning(state) ? state.players[state.current] : null;
-    const key = current?.connected && state.turnTime > 0
-      ? `${state.turnNumber}|${state.phase}|${state.drawnCardId}|${current.id}`
-      : null;
+    const timer = turnTimer(state);
+    const waitsForConnected = timer && state.players.find((p) => p.id === timer.playerId)?.connected;
+    const key = waitsForConnected ? timer.key : null;
     if (key === turnKey) return;
     turnKey = key;
-    clearTimeout(turnTimer);
-    turnDeadline = key ? Date.now() + state.turnTime * 1000 : null;
-    if (key) turnTimer = setTimeout(() => apply({ type: 'timeout', playerId: current.id }), state.turnTime * 1000);
+    clearTimeout(timerHandle);
+    turnDeadline = key ? Date.now() + timer.seconds * 1000 : null;
+    if (key) timerHandle = setTimeout(() => apply({ type: 'timeout', playerId: timer.playerId }), timer.seconds * 1000);
   }
 
   function publish() {

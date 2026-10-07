@@ -1,4 +1,4 @@
-import { viewFor } from '../src/game/view.js';
+import { viewFor } from '../src/games/uno/view.js';
 import { test, assert, assertEqual } from './testing.js';
 import { act, codes, game, play } from './setup.js';
 

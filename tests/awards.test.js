@@ -1,4 +1,5 @@
-import { eveningAwards } from '../src/game/awards.js';
+import { gameAwards } from '../src/games/uno/awards.js';
+import { uno } from '../src/games/uno/index.js';
 import { test, assertEqual } from './testing.js';
 import { act, game, play, player } from './setup.js';
 
@@ -14,7 +15,7 @@ test('Auszeichnungen: Wild +4, gezogene Karten, Erwischt werden gezählt', () =>
 
 test('Auszeichnungen: Höchstwert gewinnt, Gleichstand teilt, null zählt nicht', () => {
   const stats = (wild4, drawn, caught, catches) => ({ wild4, drawn, caught, catches });
-  const awards = eveningAwards([
+  const awards = gameAwards([
     { name: 'Anna', stats: stats(2, 5, 0, 1) },
     { name: 'Ben', stats: stats(2, 9, 0, 0) },
   ]);
@@ -25,9 +26,9 @@ test('Auszeichnungen: Höchstwert gewinnt, Gleichstand teilt, null zählt nicht'
   ], 'Auszeichnungen');
 });
 
-test('Auszeichnungen: neuer Abend setzt die Zähler zurück', () => {
+test('Auszeichnungen: stehen im Ergebnis am Partieende', () => {
   let s = { ...game({ hands: [['r7'], ['W', 'W', 'W', 'W']] }), target: 200 };
   s.players[1].stats.drawn = 12;
-  s = act(play(s, 'p0', 'r7'), { type: 'start', playerId: 'p0' });
-  assertEqual(player(s, 'p1').stats.drawn, 0, 'zurückgesetzt');
+  s = play(s, 'p0', 'r7');
+  assertEqual(uno.result(s).awards.map((a) => [a.title, a.names]), [['Pechvogel', ['P1']]], 'Auszeichnungen');
 });

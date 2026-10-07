@@ -1,7 +1,7 @@
-import { playCardSound, playTurnGong } from './audio.js';
-import { avatarBadge } from './avatar.js';
+import { playCardSound, playTurnGong } from '../../../ui/audio.js';
+import { avatarBadge } from '../../../ui/avatar.js';
+import { h } from '../../../ui/dom.js';
 import { COLOR_NAMES, cardBack, cardFace } from './cards.js';
-import { h } from './dom.js';
 import { bannerFor, describeEvent } from './events.js';
 
 const COLOR_KEYS = { r: 'red', y: 'yellow', g: 'green', b: 'blue' };
@@ -26,18 +26,19 @@ let lastEventId = null;
 let titleBlinking = false;
 let turnDeadline = null;
 
-export function renderTable(root, view, send) {
+// abort ist nur für den Host gesetzt: Partie beenden und zurück in die Lounge.
+export function renderTable(root, view, send, abort) {
   const last = root.querySelector('.table') ? previous : null;
   const isNewView = view !== previous;
   const flySource = isNewView ? playedCardSource(root, last, view) : null;
-  latest = { root, view, send };
+  latest = { root, view, send, abort };
   previous = view;
   if (isNewView) turnDeadline = view.turnEndsIn === null ? null : Date.now() + view.turnEndsIn;
   const hand = sortHand(view.hand);
   if (isNewView) selectedId = pickSelection(view, hand);
   root.replaceChildren(
     h('div', { class: 'table' },
-      infoBar(view),
+      infoBar(view, abort),
       h('section', { class: 'room' },
         h('div', { class: 'rim' },
           h('div', { class: 'felt' },
@@ -74,9 +75,10 @@ export function handleTableKey(event) {
   event.preventDefault();
 }
 
-function infoBar(view) {
+function infoBar(view, abort) {
   const activeRules = Object.keys(RULE_NAMES).filter((rule) => view.rules[rule]);
   return h('header', { class: 'info' },
+    abort && h('button', { type: 'button', class: 'leave-game', onClick: abort }, '← Lounge'),
     h('span', { class: 'turn' }, isMyTurn(view) ? 'Du bist am Zug' : `${currentPlayer(view).name} ist am Zug`),
     h('span', {}, view.direction === 1 ? '↻ Im Uhrzeigersinn' : '↺ Gegen den Uhrzeigersinn'),
     h('span', {}, 'Farbe: ', h('span', { class: `swatch ${view.activeColor ?? ''}` }), COLOR_NAMES[view.activeColor] ?? 'wird gewählt'),
@@ -247,14 +249,18 @@ function alertTurn() {
   if (!document.hidden || titleBlinking) return;
   titleBlinking = true;
   const title = document.title;
-  const blink = setInterval(() => {
-    document.title = document.title === title ? '🔔 Du bist dran!' : title;
-  }, TITLE_BLINK_MS);
-  document.addEventListener('visibilitychange', () => {
+  const stop = () => {
     clearInterval(blink);
+    document.removeEventListener('visibilitychange', stop);
     document.title = title;
     titleBlinking = false;
-  }, { once: true });
+  };
+  const blink = setInterval(() => {
+    const stillMyTurn = latest.root.querySelector('.table') && isMyTurn(latest.view);
+    if (!stillMyTurn) stop();
+    else document.title = document.title === title ? '🔔 Du bist dran!' : title;
+  }, TITLE_BLINK_MS);
+  document.addEventListener('visibilitychange', stop);
 }
 
 function showBanner([title, subtitle]) {
@@ -325,7 +331,7 @@ function moveSelection(step) {
   if (hand.length === 0) return;
   const index = hand.findIndex((card) => card.id === selectedId);
   selectedId = hand[(index + step + hand.length) % hand.length].id;
-  renderTable(latest.root, latest.view, latest.send);
+  renderTable(latest.root, latest.view, latest.send, latest.abort);
 }
 
 function pickSelection(view, hand) {

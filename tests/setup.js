@@ -1,9 +1,12 @@
-import { createGame, reduce } from '../src/game/game.js';
+import { createGame, reduce } from '../src/games/uno/game.js';
+import { uno } from '../src/games/uno/index.js';
+import { createLounge, reduce as reduceLounge } from '../src/lounge/lounge.js';
 
 const COLOR_BY_CODE = { r: 'red', y: 'yellow', g: 'green', b: 'blue' };
 const VALUE_BY_CODE = { S: 'skip', R: 'reverse', '+2': 'draw2' };
 const CODE_BY_COLOR = { red: 'r', yellow: 'y', green: 'g', blue: 'b' };
 const CODE_BY_VALUE = { skip: 'S', reverse: 'R', draw2: '+2' };
+const UNO_DEFAULTS = Object.fromEntries(uno.settings.map((setting) => [setting.key, setting.default]));
 
 let nextCardId = 1000;
 
@@ -24,15 +27,19 @@ export function codes(cards) {
   });
 }
 
-export function lobby(playerCount, rules = {}) {
-  let { state } = createGame({ hostId: 'p0', hostName: 'P0', seed: 42 });
-  for (let i = 1; i < playerCount; i++) state = act(state, { type: 'join', playerId: `p${i}`, name: `P${i}` });
-  return { ...state, rules: { ...state.rules, ...rules } };
+// Echte Uno-Partie mit p0 … pN; p0 ist Host. Die erste Runde ist ausgeteilt.
+export function newGame(playerCount, settings = {}, seed = 42) {
+  return createGame({
+    players: Array.from({ length: playerCount }, (_, i) => ({ id: `p${i}`, name: `P${i}` })),
+    hostId: 'p0',
+    settings: { ...UNO_DEFAULTS, ...settings },
+    seed,
+  });
 }
 
 // Laufende Runde mit festen Karten. draw wird von vorne nach hinten gezogen.
 export function game({ hands, top = 'r5', color, draw = [], discard = [], rules, current = 0, direction = 1 }) {
-  const state = lobby(hands.length, rules);
+  const state = newGame(hands.length, rules);
   const topCard = card(top);
   state.players.forEach((player, i) => {
     player.hand = hands[i].map(card);
@@ -45,21 +52,27 @@ export function game({ hands, top = 'r5', color, draw = [], discard = [], rules,
     activeColor: color ?? topCard.color,
     current,
     direction,
+    pendingDraw: 0,
+    drawnCardId: null,
+    wild4: null,
+    unoWindow: null,
+    startWild: false,
+    turnNumber: 0,
+    events: [],
   };
 }
 
-export function act(state, action) {
-  const result = reduce(state, action);
-  if (result.error) throw new Error(`${action.type} abgelehnt: ${result.error}`);
-  return result.state;
+// Lounge mit p0 (Host) … pN
+export function lounge(playerCount) {
+  let { state } = createLounge({ hostId: 'p0', hostName: 'P0', seed: 42 });
+  for (let i = 1; i < playerCount; i++) state = loungeAct(state, { type: 'join', playerId: `p${i}`, name: `P${i}` });
+  return state;
 }
 
-export function rejected(state, action) {
-  const result = reduce(state, action);
-  if (!result.error) throw new Error(`${action.type} hätte abgelehnt werden müssen`);
-  if (result.state !== state) throw new Error('State wurde trotz Fehler verändert');
-  return result.error;
-}
+export const act = (state, action) => mustSucceed(reduce, state, action);
+export const rejected = (state, action) => mustFail(reduce, state, action);
+export const loungeAct = (state, action) => mustSucceed(reduceLounge, state, action);
+export const loungeRejected = (state, action) => mustFail(reduceLounge, state, action);
 
 export function play(state, playerId, code) {
   const target = player(state, playerId).hand.find((c) => codes([c])[0] === code);
@@ -77,4 +90,17 @@ export function handOf(state, playerId) {
 
 export function currentId(state) {
   return state.players[state.current].id;
+}
+
+function mustSucceed(reducer, state, action) {
+  const result = reducer(state, action);
+  if (result.error) throw new Error(`${action.type} abgelehnt: ${result.error}`);
+  return result.state;
+}
+
+function mustFail(reducer, state, action) {
+  const result = reducer(state, action);
+  if (!result.error) throw new Error(`${action.type} hätte abgelehnt werden müssen`);
+  if (result.state !== state) throw new Error('State wurde trotz Fehler verändert');
+  return result.error;
 }
