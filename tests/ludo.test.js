@@ -77,7 +77,8 @@ test('Ludo: Schlagen schickt die Figur zurück ins Haus', () => {
   let s = rollAs(withPieces(newLudo(2), [[15, 30, 31, 32], [38, BASE, BASE, BASE]]), 3);
   s = moveAs(s, 0);
   assertEqual([s.players[1].pieces[0], s.players[0].captures, s.players[1].captured], [BASE, 1, 1], 'geschlagen');
-  assertEqual(s.events.at(-1).victim, 'P1', 'im Verlauf');
+  const { victim, victimColor, victimPiece } = s.events.at(-1);
+  assertEqual([victim, victimColor, victimPiece], ['P1', 2, 0], 'im Verlauf');
 });
 
 test('Ludo: eigene Figuren blockieren, ins Ziel nur mit passender Zahl', () => {

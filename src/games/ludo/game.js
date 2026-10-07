@@ -106,8 +106,11 @@ function move(state, { playerId, piece }) {
   const from = player.pieces[piece];
   const to = targetOf(from, state.die);
   player.pieces[piece] = to;
-  const victim = to < TRACK ? capture(state, player, to) : null;
-  log(state, 'move', { player: player.name, color: player.color, piece, from, to, victim });
+  const hit = to < TRACK ? capture(state, player, to) : null;
+  log(state, 'move', {
+    player: player.name, color: player.color, piece, from, to,
+    victim: hit?.name ?? null, victimColor: hit?.color ?? null, victimPiece: hit?.piece ?? null,
+  });
   state.mustMove = false;
   if (player.pieces.every((position) => position >= TRACK)) {
     state.finished.push(player.id);
@@ -141,16 +144,16 @@ function leave(state, { playerId }) {
 // leave löst nur der Host aus.
 const handlers = { roll, move, leave };
 
-// Schlägt eine fremde Figur auf diesem Feld; liefert den Namen des Geschlagenen.
+// Schlägt eine fremde Figur auf diesem Feld; liefert { name, color, piece } des Geschlagenen.
 function capture(state, player, position) {
   const field = fieldOf(player.color, position);
   for (const other of state.players) {
-    const hit = other.pieces.findIndex((p) => p >= 0 && p < TRACK && fieldOf(other.color, p) === field);
-    if (other === player || hit === -1) continue;
-    other.pieces[hit] = BASE;
+    const piece = other.pieces.findIndex((p) => p >= 0 && p < TRACK && fieldOf(other.color, p) === field);
+    if (other === player || piece === -1) continue;
+    other.pieces[piece] = BASE;
     other.captured++;
     player.captures++;
-    return other.name;
+    return { name: other.name, color: other.color, piece };
   }
   return null;
 }

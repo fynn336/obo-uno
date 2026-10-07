@@ -4,11 +4,17 @@ import { avatarBadge } from '../../../ui/avatar.js';
 import { diePips } from '../../../ui/dice.js';
 import { h } from '../../../ui/dom.js';
 import { BASE, TRACK } from '../game.js';
-import { area, CENTER, cellOf, COLORS, goalCells, houseCells, TRACK_CELLS, yardArea } from './board.js';
+import {
+  area, CENTER, cellOf, COLORS, goalCells, houseCells, OWN_CORNER, pathCells, rotate, TRACK_CELLS, yardCells,
+} from './board.js';
 
 const COLOR_NAMES = ['Rot', 'Blau', 'Grün', 'Gelb'];
 const ROLL_SOUND_RATE = 0.75;
 const MOVE_SOUND_RATE = 1.3;
+const STEP_MS = 110;
+const HOP_PX = 10;
+const FLY_HOME_MS = 400;
+const FLY_HOME_PX = 60;
 
 let latest = null;
 let lastEventId = null;
@@ -19,16 +25,20 @@ export function renderLudo(root, view, send, abort) {
   const fresh = freshEvents(view);
   const lastMove = fresh.findLast((e) => e.type === 'move');
   const rolled = fresh.some((e) => e.type === 'roll');
+  // Das Brett ist so gedreht, dass die eigene Farbe links unten liegt.
+  const me = view.players.find((p) => p.id === view.you);
+  const turn = (OWN_CORNER - me.color + COLORS.length) % COLORS.length;
+  const at = (cell) => rotate(cell, turn);
+  const boardElement = board(view, turn, at, rolled);
   root.replaceChildren(
     h('div', { class: 'ludo' },
       h('header', { class: 'info' },
         abort && h('button', { type: 'button', class: 'leave-game', onClick: abort }, '← Lounge'),
         h('span', { class: 'turn' }, isMyTurn(view) ? 'Du bist am Zug' : `${currentPlayer(view).name} ist am Zug`)),
       h('div', { class: 'ludo-main' },
-        board(view, lastMove),
+        boardElement,
         h('aside', { class: 'ludo-side panel' },
           h('ul', { class: 'ludo-players' }, view.players.map((p) => playerRow(view, p))),
-          h('div', { class: `die ludo-die${rolled ? ' rolling' : ''}${view.die ? '' : ' idle'}` }, diePips(view.die ?? 6)),
           h('p', { class: 'status' }, statusText(view)),
           h('button', {
             type: 'button',
@@ -38,6 +48,7 @@ export function renderLudo(root, view, send, abort) {
           }, 'Würfeln', h('kbd', {}, 'Leertaste')),
           h('ol', { class: 'event-log', 'aria-label': 'Verlauf' }, view.events.map((event) => h('li', {}, describe(event))))))),
   );
+  animateMove(boardElement, lastMove, at);
   announce(fresh);
   if (isMyTurn(view) && !wasMyTurn) alertTurn(() => latest.root.querySelector('.ludo') && isMyTurn(latest.view));
 }
@@ -53,38 +64,92 @@ export function handleLudoKey(event) {
   event.preventDefault();
 }
 
-function board(view, lastMove) {
+function board(view, turn, at, rolled) {
   const used = new Map(view.players.map((p) => [p.color, p]));
-  const cells = (list, classes) => list.map((cell) => h('div', { class: classes, style: area(cell) }));
+  const place = (...cells) => area(...cells.map(at));
+  const field = (cell, classes, extraStyle = '') => h('div', {
+    class: `field ${classes}`,
+    style: `${place(cell)}${extraStyle}`,
+    'data-cell': at(cell).join(','),
+  });
+  const current = currentPlayer(view);
   return h('div', { class: 'ludo-board' },
     COLORS.map((color) => {
       const owner = used.get(color);
-      return h('div', { class: `yard team-${color}${owner ? '' : ' unused'}`, style: yardArea(color) },
+      const classes = [`yard team-${color} corner-${(color + turn) % COLORS.length}`, !owner && 'unused',
+        owner === current && 'current'];
+      return h('div', { class: classes.filter(Boolean).join(' '), style: place(...yardCells(color)) },
         owner && h('span', { class: 'yard-name' }, avatarBadge(owner), owner.id === view.you ? 'Du' : owner.name));
     }),
-    TRACK_CELLS.map((cell, field) => h('div', {
-      class: field % (TRACK / 4) === 0 ? `field start team-${field / (TRACK / 4)}` : 'field',
-      style: area(cell),
-    })),
-    COLORS.flatMap((color) => cells(goalCells(color), `field goal team-${color}`)),
-    COLORS.flatMap((color) => cells(houseCells(color), `field house team-${color}`)),
-    h('div', { class: `center team-${currentPlayer(view).color}`, style: area(CENTER) }),
-    view.players.flatMap((p) => p.pieces.map((position, piece) => pieceButton(view, p, position, piece, lastMove))));
+    TRACK_CELLS.map((cell, index) => {
+      const startOf = index % (TRACK / COLORS.length) === 0 ? index / (TRACK / COLORS.length) : null;
+      if (startOf === null) return field(cell, '');
+      const direction = `; --arrow: ${angle(at(cell), at(TRACK_CELLS[index + 1]))}deg`;
+      return field(cell, `start team-${startOf}`, direction);
+    }),
+    COLORS.flatMap((color) => goalCells(color).map((cell, i) => field(cell, `goal team-${color}`, `; --depth: ${i}`))),
+    COLORS.flatMap((color) => houseCells(color).map((cell) => field(cell, `house team-${color}`))),
+    h('div', { class: `board-center team-${current.color}`, style: place(CENTER) },
+      h('button', {
+        type: 'button',
+        class: `die${rolled ? ' rolling' : ''}${view.die ? '' : ' idle'}`,
+        disabled: !canRoll(view),
+        title: canRoll(view) ? 'Würfeln (Leertaste)' : null,
+        'aria-label': view.die ? `Würfel: ${view.die}` : 'Würfel',
+        onClick: roll,
+      }, diePips(view.die ?? 6))),
+    view.players.flatMap((p) => p.pieces.map((position, piece) => pawn(view, p, position, piece, place))));
 }
 
-function pieceButton(view, player, position, piece, lastMove) {
+// Klassische Spielfigur mit Kopf und Körper; eigene Figuren tragen ihre Nummer für die Tasten 1–4.
+function pawn(view, player, position, piece, place) {
   const mine = player.id === view.you;
   const movable = mine && isMyTurn(view) && view.movable.includes(piece);
-  const moved = lastMove && lastMove.color === player.color && lastMove.piece === piece;
   return h('button', {
     type: 'button',
-    class: `piece team-${player.color}${movable ? ' movable' : ''}${moved ? ' moved' : ''}`,
-    style: area(cellOf(player.color, position, piece)),
+    class: `piece team-${player.color}${movable ? ' movable' : ''}`,
+    style: place(cellOf(player.color, position, piece)),
+    'data-color': player.color,
+    'data-piece': piece,
     disabled: !movable,
     title: movable ? `Figur ${piece + 1} ziehen (${piece + 1})` : null,
     'aria-label': `${player.name}, Figur ${piece + 1}${position === BASE ? ' im Haus' : ''}`,
     onClick: () => move(piece),
-  }, mine ? String(piece + 1) : '');
+  }, h('span', {}, mine ? String(piece + 1) : ''));
+}
+
+// Die Figur hüpft Feld für Feld; eine geschlagene Figur fliegt danach zurück ins Haus.
+function animateMove(boardElement, event, at) {
+  if (!event || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const pieceOf = (color, piece) => boardElement.querySelector(`.piece[data-color="${color}"][data-piece="${piece}"]`);
+  const centerOf = (cell) => {
+    const rect = boardElement.querySelector(`[data-cell="${at(cell).join(',')}"]`).getBoundingClientRect();
+    return [rect.left + rect.width / 2, rect.top + rect.height / 2];
+  };
+  const cells = [cellOf(event.color, event.from, event.piece), ...pathCells(event.color, event.piece, event.from, event.to)];
+  const points = cells.map(centerOf);
+  const [endX, endY] = points.at(-1);
+  const walker = pieceOf(event.color, event.piece);
+  walker.classList.add('walking');
+  hop(walker, points.map(([x, y]) => [x - endX, y - endY]), { stepMs: STEP_MS, height: HOP_PX, delay: 0 });
+  if (event.victim === null) return;
+  const [homeX, homeY] = centerOf(houseCells(event.victimColor)[event.victimPiece]);
+  hop(pieceOf(event.victimColor, event.victimPiece), [[endX - homeX, endY - homeY], [0, 0]],
+    { stepMs: FLY_HOME_MS, height: FLY_HOME_PX, delay: (points.length - 1) * STEP_MS });
+}
+
+function hop(element, offsets, { stepMs, height, delay }) {
+  const frames = offsets.flatMap(([x, y], i) => {
+    const frame = { transform: `translate(${x}px, ${y}px)` };
+    if (i === 0) return [frame];
+    const [previousX, previousY] = offsets[i - 1];
+    return [{ transform: `translate(${(previousX + x) / 2}px, ${(previousY + y) / 2 - height}px)` }, frame];
+  });
+  element.animate(frames, { duration: (offsets.length - 1) * stepMs, delay, fill: 'backwards' });
+}
+
+function angle([column, row], [nextColumn, nextRow]) {
+  return Math.round((Math.atan2(nextRow - row, nextColumn - column) * 180) / Math.PI);
 }
 
 function playerRow(view, player) {

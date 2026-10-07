@@ -1,6 +1,17 @@
 // Neueste Version zuerst. Die aktuelle Versionsnummer ist immer der oberste Eintrag.
 export const CHANGELOG = [
   {
+    version: '2.5.0',
+    date: '2026-10-07',
+    changes: [
+      'Ludo: Figuren laufen sichtbar Feld für Feld, geschlagene Figuren fliegen zurück ins Haus',
+      'Echte Spielfiguren mit Kopf und Körper statt flacher Scheiben',
+      'Das Brett dreht sich: Deine Farbe liegt immer links unten',
+      'Holzbrett mit Pfeilen an den Startfeldern, Zielwege werden zur Mitte hin kräftiger',
+      'Würfel in der Brettmitte (antippen zum Würfeln), die Ecke des Spielers am Zug leuchtet',
+    ],
+  },
+  {
     version: '2.4.0',
     date: '2026-10-07',
     changes: [

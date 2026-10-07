@@ -108,7 +108,8 @@ Nach 13 Runden gewinnt, wer die meisten Punkte hat. Sonderregeln für einen zwei
 ## Ludo
 
 Für 2–4 Spieler, zu zweit sitzt man sich gegenüber. Jeder hat vier Figuren im Haus und bringt sie einmal um das
-Brett ins eigene Ziel. Die Leertaste würfelt, eine Figur zieht man per Klick oder mit 1–4. Gibt es nur eine
+Brett ins eigene Ziel. Das Brett ist für jeden so gedreht, dass die eigene Farbe links unten liegt. Gewürfelt wird
+mit dem Würfel in der Brettmitte oder der Leertaste, eine Figur zieht man per Klick oder mit 1–4. Gibt es nur eine
 mögliche Figur, zieht auch die Leertaste.
 
 - **Raus nur mit einer 6.** Wer eine 6 würfelt, muss eine Figur herausstellen, solange noch eine im Haus ist und
