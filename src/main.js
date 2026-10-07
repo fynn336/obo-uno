@@ -5,6 +5,7 @@ import { unlockAudio } from './ui/audio.js';
 import { renderCorner } from './ui/corner.js';
 import { renderLobby, renderStart, renderWaiting } from './ui/lobby.js';
 import { handleTableKey, renderTable } from './ui/table.js';
+import { updateIfOutdated } from './update.js';
 
 const TOAST_MS = 3000;
 const app = document.getElementById('app');
@@ -72,9 +73,11 @@ document.addEventListener('keydown', (event) => {
   if (view && isRunning(view) && !dialogOpen && !inControl) handleTableKey(event);
 });
 
-renderCorner(document.getElementById('corner'));
-document.addEventListener('pointerdown', unlockAudio, { once: true });
-document.addEventListener('keydown', unlockAudio, { once: true });
-const saved = savedSession();
-if (saved) join(saved.code, saved.name);
-else showStart();
+if (!(await updateIfOutdated())) {
+  renderCorner(document.getElementById('corner'));
+  document.addEventListener('pointerdown', unlockAudio, { once: true });
+  document.addEventListener('keydown', unlockAudio, { once: true });
+  const saved = savedSession();
+  if (saved) join(saved.code, saved.name);
+  else showStart();
+}

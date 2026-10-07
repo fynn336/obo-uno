@@ -1,6 +1,11 @@
 // Neueste Version zuerst. Die aktuelle Versionsnummer ist immer der oberste Eintrag.
 export const CHANGELOG = [
   {
+    version: '1.10.1',
+    date: '2026-10-07',
+    changes: ['Automatisches Update: Nach einer neuen Version reicht normales Neuladen (F5), kein Strg+F5 mehr nötig'],
+  },
+  {
     version: '1.10.0',
     date: '2026-10-07',
     changes: ['Lautstärkeregler unten rechts für Musik und Effekte'],
