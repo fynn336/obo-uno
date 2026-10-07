@@ -904,6 +904,11 @@ select {
   box-shadow: none;
 }
 
+#corner button.off {
+  opacity: 0.4;
+  text-decoration: line-through;
+}
+
 .changelog {
   width: min(560px, 92vw);
   max-height: 80vh;

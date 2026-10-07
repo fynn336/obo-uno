@@ -1,3 +1,4 @@
+import { playCardSound, playTurnGong } from './audio.js';
 import { avatarBadge } from './avatar.js';
 import { COLOR_NAMES, cardBack, cardFace } from './cards.js';
 import { h } from './dom.js';
@@ -9,12 +10,17 @@ const VALUE_ORDER = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'skip', '
 const RULE_NAMES = { stacking: 'Stapeln', challenge: 'Anfechtung', drawUntilPlayable: 'Ziehen bis spielbar' };
 const MAX_MINI_CARDS = 10;
 const PULSE_MS = 2000;
+const TITLE_BLINK_MS = 1000;
+const SOUND_GAP_MS = 140;
+// Abspielgeschwindigkeit des Kartensounds: Legen etwas heller als Ziehen
+const CARD_SOUND_RATES = { play: 1.3, draw: 1, penalty: 1, caught: 1, start: 0.9 };
 const DIRECTION_SPIN_MS = 30000;
 
 let latest = null;
 let previous = null;
 let selectedId = null;
 let lastEventId = null;
+let titleBlinking = false;
 
 export function renderTable(root, view, send) {
   const last = root.querySelector('.table') ? previous : null;
@@ -45,6 +51,7 @@ export function renderTable(root, view, send) {
   if (!isNewView) return;
   animateChanges(root, last, view, flySource);
   announceNewEvents(view);
+  if (isMyTurn(view) && !(last && isMyTurn(last))) alertTurn();
 }
 
 export function handleTableKey(event) {
@@ -213,6 +220,24 @@ function announceNewEvents(view) {
   lastEventId = newestId;
   const banner = fresh.map(bannerFor).filter(Boolean).at(-1);
   if (banner) showBanner(banner);
+  fresh.filter((event) => Object.hasOwn(CARD_SOUND_RATES, event.type)).forEach((event, i) => {
+    setTimeout(() => playCardSound(CARD_SOUND_RATES[event.type]), i * SOUND_GAP_MS);
+  });
+}
+
+function alertTurn() {
+  playTurnGong();
+  if (!document.hidden || titleBlinking) return;
+  titleBlinking = true;
+  const title = document.title;
+  const blink = setInterval(() => {
+    document.title = document.title === title ? '🔔 Du bist dran!' : title;
+  }, TITLE_BLINK_MS);
+  document.addEventListener('visibilitychange', () => {
+    clearInterval(blink);
+    document.title = title;
+    titleBlinking = false;
+  }, { once: true });
 }
 
 function showBanner([title, subtitle]) {

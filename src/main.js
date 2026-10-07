@@ -1,6 +1,7 @@
 import { isRunning } from './game/game.js';
 import { joinGame, savedSession } from './net/client.js';
 import { hostGame } from './net/host.js';
+import { unlockAudio } from './ui/audio.js';
 import { renderCorner } from './ui/corner.js';
 import { renderLobby, renderStart, renderWaiting } from './ui/lobby.js';
 import { handleTableKey, renderTable } from './ui/table.js';
@@ -71,6 +72,8 @@ document.addEventListener('keydown', (event) => {
 });
 
 renderCorner(document.getElementById('corner'));
+document.addEventListener('pointerdown', unlockAudio, { once: true });
+document.addEventListener('keydown', unlockAudio, { once: true });
 const saved = savedSession();
 if (saved) join(saved.code, saved.name);
 else showStart();

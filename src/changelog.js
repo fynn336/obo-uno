@@ -1,6 +1,15 @@
 // Neueste Version zuerst. Die aktuelle Versionsnummer ist immer der oberste Eintrag.
 export const CHANGELOG = [
   {
+    version: '1.4.0',
+    date: '2026-10-07',
+    changes: [
+      'Hintergrundmusik (Jazz), an- und ausschaltbar mit 🎵',
+      'Kartensound beim Legen und Ziehen, an- und ausschaltbar mit 🔊',
+      '„Du bist dran“: kurzer Gong, blinkender Tab-Titel im Hintergrund',
+    ],
+  },
+  {
     version: '1.3.0',
     date: '2026-10-07',
     changes: [

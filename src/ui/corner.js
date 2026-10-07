@@ -1,8 +1,28 @@
 import { CHANGELOG, VERSION } from '../changelog.js';
+import { audioSettings, toggleEffects, toggleMusic } from './audio.js';
 import { h } from './dom.js';
 
 export function renderCorner(root) {
+  const { music, effects } = audioSettings();
+  const toggle = (action) => () => {
+    action();
+    renderCorner(root);
+  };
   root.replaceChildren(
+    h('button', {
+      type: 'button',
+      class: music ? '' : 'off',
+      title: music ? 'Musik ausschalten' : 'Musik einschalten',
+      'aria-pressed': String(music),
+      onClick: toggle(toggleMusic),
+    }, '🎵'),
+    h('button', {
+      type: 'button',
+      class: effects ? '' : 'off',
+      title: effects ? 'Soundeffekte ausschalten' : 'Soundeffekte einschalten',
+      'aria-pressed': String(effects),
+      onClick: toggle(toggleEffects),
+    }, '🔊'),
     h('button', { type: 'button', class: 'version', title: 'Was ist neu?', onClick: openChangelog }, `v${VERSION}`),
   );
 }
