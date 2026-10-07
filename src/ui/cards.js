@@ -10,11 +10,11 @@ function cardLabel(card) {
   return card.color ? `${COLOR_NAMES[card.color]} ${value}` : value;
 }
 
-export function cardFace(card, { classes = '', onClick, title } = {}) {
+export function cardFace(card, { classes = '', ...props } = {}) {
   const symbol = SYMBOLS[card.value] ?? card.value;
   return h(
     'button',
-    { class: `card ${card.color ?? 'wild'} ${classes}`, 'aria-label': cardLabel(card), title, onClick, type: 'button' },
+    { class: `card ${card.color ?? 'wild'} ${classes}`, 'aria-label': cardLabel(card), 'data-card': card.id, type: 'button', ...props },
     h('span', { class: 'corner top' }, symbol),
     h('span', { class: 'oval' }, h('span', { class: 'symbol' }, symbol)),
     h('span', { class: 'corner bottom' }, symbol),

@@ -19,7 +19,7 @@ export function renderStart(root, { message, onCreate, onJoin }) {
   };
   root.replaceChildren(
     h('div', { class: 'page' },
-      h('h1', { class: 'logo' }, 'UNO'),
+      h('h1', { class: 'logo' }, h('span', {}, 'UNO')),
       message && h('p', { class: 'message' }, message),
       h('div', { class: 'panels' },
         h('form', { class: 'panel', onSubmit: submit(() => onCreate(createName.value)) },
