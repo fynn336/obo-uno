@@ -23,7 +23,9 @@ test('Protokoll: unbekannte Aktionen und falsche Feldtypen werden abgelehnt', ()
 });
 
 test('Protokoll: Join- und Ping-Nachrichten werden geprüft', () => {
-  assertEqual(readClientMessage({ type: MSG.JOIN, name: 'Anna', token: null }), { type: MSG.JOIN, name: 'Anna', token: null }, 'join');
+  assertEqual(readClientMessage({ type: MSG.JOIN, name: 'Anna', token: null, version: '1.3.0' }),
+    { type: MSG.JOIN, name: 'Anna', token: null, version: '1.3.0' }, 'join');
+  assertEqual(readClientMessage({ type: MSG.JOIN, name: 'Anna', token: null }).version, null, 'alte Version ohne Angabe');
   assertEqual(readClientMessage({ type: MSG.JOIN, name: 42, token: null }), null, 'Name keine Zeichenkette');
   assertEqual(readClientMessage({ type: MSG.JOIN, name: 'Anna', token: {} }), null, 'Token kein String');
   assertEqual(readClientMessage({ type: MSG.PING, junk: true }), { type: MSG.PING }, 'ping');

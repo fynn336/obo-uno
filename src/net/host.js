@@ -1,3 +1,4 @@
+import { VERSION } from '../changelog.js';
 import { createGame, isRunning, reduce } from '../game/game.js';
 import { viewFor } from '../game/view.js';
 import {
@@ -64,7 +65,11 @@ export function hostGame(name, events) {
     }
   }
 
-  function join(link, { name, token }) {
+  function join(link, { name, token, version }) {
+    if (version !== VERSION) {
+      reject(link, `Deine Version (${version ?? 'alt'}) passt nicht zum Host (${VERSION}). Bitte die Seite mit Strg+F5 neu laden.`);
+      return;
+    }
     const known = [...seats.values()].find((seat) => seat.token === token);
     if (known) {
       attach(link, known);

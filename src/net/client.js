@@ -1,3 +1,4 @@
+import { VERSION } from '../changelog.js';
 import {
   CONNECT_TIMEOUT_MS,
   HOST_LEFT,
@@ -37,7 +38,7 @@ export function joinGame(code, name, events) {
     attempt.on('open', () => {
       const current = attempt.connect(PEER_PREFIX + code, { serialization: 'json', reliable: true });
       conn = current;
-      current.on('open', () => current.send({ type: MSG.JOIN, name, token }));
+      current.on('open', () => current.send({ type: MSG.JOIN, name, token, version: VERSION }));
       current.on('data', (message) => {
         if (current === conn) receive(message);
       });

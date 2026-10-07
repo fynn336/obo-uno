@@ -7,7 +7,7 @@ export const HOST_LEFT = 'Der Host hat das Spiel verlassen';
 
 export const MSG = {
   // Client → Host
-  JOIN: 'join', // { name, token }
+  JOIN: 'join', // { name, token, version }
   ACTION: 'action', // { action }
   // Host → Client
   WELCOME: 'welcome', // { playerId, token }
@@ -36,7 +36,9 @@ export function readClientMessage(data) {
   if (!isObject(data)) return null;
   if (data.type === MSG.PING) return { type: MSG.PING };
   if (data.type === MSG.JOIN && typeof data.name === 'string' && (data.token === null || typeof data.token === 'string')) {
-    return { type: MSG.JOIN, name: data.name, token: data.token };
+    // Ältere Clients schicken keine Version; sie werden vom Host als veraltet abgelehnt.
+    const version = typeof data.version === 'string' ? data.version : null;
+    return { type: MSG.JOIN, name: data.name, token: data.token, version };
   }
   if (data.type === MSG.ACTION) {
     const action = readAction(data.action);

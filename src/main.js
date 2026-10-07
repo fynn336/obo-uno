@@ -1,6 +1,7 @@
 import { isRunning } from './game/game.js';
 import { joinGame, savedSession } from './net/client.js';
 import { hostGame } from './net/host.js';
+import { renderCorner } from './ui/corner.js';
 import { renderLobby, renderStart, renderWaiting } from './ui/lobby.js';
 import { handleTableKey, renderTable } from './ui/table.js';
 
@@ -65,9 +66,11 @@ function confirmLeave(event) {
 }
 
 document.addEventListener('keydown', (event) => {
-  if (view && isRunning(view)) handleTableKey(event);
+  const dialogOpen = document.querySelector('dialog[open]') !== null;
+  if (view && isRunning(view) && !dialogOpen) handleTableKey(event);
 });
 
+renderCorner(document.getElementById('corner'));
 const saved = savedSession();
 if (saved) join(saved.code, saved.name);
 else showStart();

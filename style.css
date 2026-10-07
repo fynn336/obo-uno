@@ -886,6 +886,59 @@ select {
   }
 }
 
+#corner {
+  position: fixed;
+  right: 0.8rem;
+  bottom: 0.6rem;
+  z-index: 120;
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+#corner button {
+  padding: 0.25rem 0.7rem;
+  background: rgba(0, 0, 0, 0.45);
+  color: var(--muted);
+  font-size: 0.8rem;
+  box-shadow: none;
+}
+
+.changelog {
+  width: min(560px, 92vw);
+  max-height: 80vh;
+  padding: 1.5rem 1.75rem;
+  border: 6px solid var(--wood);
+  border-radius: 18px;
+  background: radial-gradient(ellipse at center, var(--felt), var(--felt-dark));
+  color: var(--text);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+}
+
+.changelog::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.changelog h2 {
+  color: var(--accent);
+  font-size: 1.4rem;
+}
+
+.changelog h3 {
+  margin: 1rem 0 0.3rem;
+  font-size: 1rem;
+}
+
+.changelog ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.changelog form {
+  margin-top: 1.25rem;
+  text-align: right;
+}
+
 #banner {
   position: fixed;
   left: 50%;
