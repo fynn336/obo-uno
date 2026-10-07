@@ -1,13 +1,12 @@
 import { alertTurn, showBanner } from '../../../ui/attention.js';
 import { playCardSound } from '../../../ui/audio.js';
 import { avatarBadge } from '../../../ui/avatar.js';
+import { diePips } from '../../../ui/dice.js';
 import { h } from '../../../ui/dom.js';
 import { CATEGORIES, scoreFor } from '../scoring.js';
 
 const ROLLS_PER_TURN = 3;
 const ROUNDS = CATEGORIES.length;
-// Positionen der Augen im 3×3-Raster
-const PIPS = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
 const LABELS = Object.fromEntries(CATEGORIES.map((category) => [category.key, category.label]));
 const ROLL_SOUND_RATE = 0.75;
 const BANNERS = {
@@ -79,7 +78,7 @@ function die(view, face, index, isRolling) {
     'aria-label': `Würfel ${index + 1}: ${face}${kept[index] ? ' (gehalten)' : ''}`,
     title: canHold(view) ? `Halten an/aus (${index + 1})` : null,
     onClick: () => toggle(index),
-  }, Array.from({ length: 9 }, (_, cell) => h('span', { class: PIPS[face].includes(cell) ? 'pip' : '' })));
+  }, diePips(face));
 }
 
 function scoreSheet(view) {

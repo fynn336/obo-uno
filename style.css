@@ -909,6 +909,218 @@ select {
   color: var(--muted);
 }
 
+/* Ludo */
+.team-0 {
+  --c: var(--red);
+}
+
+.team-1 {
+  --c: var(--blue);
+}
+
+.team-2 {
+  --c: var(--green);
+}
+
+.team-3 {
+  --c: var(--yellow);
+}
+
+.ludo {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: 100vh;
+}
+
+.ludo-main {
+  display: grid;
+  grid-template-columns: auto minmax(260px, 320px);
+  gap: 1.5rem;
+  justify-content: center;
+  align-items: start;
+  padding: 1rem 1.5rem 3rem;
+}
+
+.ludo-board {
+  display: grid;
+  grid-template: repeat(11, 1fr) / repeat(11, 1fr);
+  gap: 3px;
+  width: min(calc(100vh - 6.5rem), 660px);
+  min-width: 420px;
+  aspect-ratio: 1;
+  padding: 14px;
+  border: 14px solid var(--wood);
+  border-radius: 24px;
+  background: radial-gradient(ellipse at center, #f6ecd2, #e2cfa3);
+  box-shadow: inset 0 0 30px rgba(90, 60, 20, 0.35), 0 0 0 2px var(--wood-dark), 0 20px 50px rgba(0, 0, 0, 0.6);
+}
+
+.yard {
+  display: flex;
+  align-items: flex-start;
+  margin: 2px;
+  padding: 0.4rem;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--c) 22%, transparent);
+}
+
+.yard.unused {
+  opacity: 0.35;
+}
+
+/* Namensschild in der inneren Ecke, das Haus liegt außen */
+.yard.team-0 {
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
+.yard.team-1 {
+  align-items: flex-end;
+}
+
+.yard.team-3 {
+  justify-content: flex-end;
+}
+
+.yard-name {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+  max-width: 100%;
+  padding: 0.15rem 0.55rem 0.15rem 0.15rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.6);
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.yard-name .avatar {
+  width: 26px;
+  height: 26px;
+  font-size: 0.8rem;
+  border-width: 2px;
+}
+
+.field {
+  margin: 8%;
+  border: 2px solid #5b4630;
+  border-radius: 50%;
+  background: #fffaf0;
+}
+
+.field.start,
+.field.house {
+  background: var(--c);
+}
+
+.field.goal {
+  background: color-mix(in srgb, var(--c) 55%, #fff);
+}
+
+.field.house {
+  opacity: 0.55;
+}
+
+.center {
+  margin: 4%;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 18%, var(--c) 20% 60%, transparent 62%);
+  transition: background 0.3s;
+}
+
+.piece {
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  margin: 14%;
+  padding: 0;
+  border: 2px solid rgba(0, 0, 0, 0.55);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--c) 45%, #fff), var(--c) 55%,
+    color-mix(in srgb, var(--c) 70%, #000));
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.75rem;
+  box-shadow: 0 3px 4px rgba(0, 0, 0, 0.45);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+.piece:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+.piece.movable {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+  animation: piece-ready 0.9s ease-in-out infinite alternate;
+}
+
+@keyframes piece-ready {
+  to {
+    translate: 0 -5px;
+  }
+}
+
+.piece.moved {
+  animation: piece-land 0.35s ease-out;
+}
+
+@keyframes piece-land {
+  from {
+    scale: 1.5;
+    translate: 0 -12px;
+  }
+}
+
+.ludo-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.ludo-players {
+  align-self: stretch;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ludo-players li {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.3rem 0.5rem;
+  border-radius: 10px;
+}
+
+.ludo-players li.current {
+  background: rgba(255, 255, 255, 0.12);
+  font-weight: 800;
+}
+
+.ludo-players .avatar {
+  width: 30px;
+  height: 30px;
+  font-size: 0.9rem;
+  border-width: 2px;
+}
+
+.ludo-players .name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ludo-side .event-log {
+  display: block;
+  align-self: stretch;
+  margin: 0;
+}
+
 /* Plätze am Tisch */
 .seat {
   position: absolute;

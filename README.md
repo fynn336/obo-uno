@@ -4,7 +4,7 @@ Spieleabend mit Freunden im Browser, für 2–8 Spieler. Man trifft sich in der 
 nach jeder Partie geht es zurück in die Lounge. Es gibt keinen eigenen Server, die Spieler verbinden sich direkt
 per WebRTC ([PeerJS](https://peerjs.com/)). Alles läuft als statische Seite, z. B. kostenlos auf GitHub Pages.
 
-**Spiele:** Farbenchaos (Uno-Regeln) und Würfelglück (Kniffel-Regeln). Weitere folgen.
+**Spiele:** Farbenchaos (Uno-Regeln), Würfelglück (Kniffel-Regeln) und Ludo (Mensch-ärgere-dich-nicht-Regeln).
 
 ## Spielen
 
@@ -104,6 +104,25 @@ gestrichen (0 Punkte). Mögliche Punkte stehen direkt im Block.
 
 Nach 13 Runden gewinnt, wer die meisten Punkte hat. Sonderregeln für einen zweiten Kniffel gibt es nicht.
 
+## Ludo
+
+Für 2–4 Spieler, zu zweit sitzt man sich gegenüber. Jeder hat vier Figuren im Haus und bringt sie einmal um das
+Brett ins eigene Ziel. Die Leertaste würfelt, eine Figur zieht man per Klick oder mit 1–4. Gibt es nur eine
+mögliche Figur, zieht auch die Leertaste.
+
+- **Raus nur mit einer 6.** Wer eine 6 würfelt, muss eine Figur herausstellen, solange noch eine im Haus ist und
+  das Startfeld frei ist. Nach einer 6 wird noch einmal gewürfelt.
+- **Startfeld räumen:** Steht eine eigene Figur auf dem Startfeld und sind noch Figuren im Haus, muss sie zuerst
+  weiter.
+- **Drei Versuche:** Wer keine Figur auf der Laufbahn hat, darf bis zu dreimal würfeln, um eine 6 zu bekommen.
+- **Rauswerfen:** Wer auf einem Feld mit einer fremden Figur landet, schickt sie zurück ins Haus. Eigene Figuren
+  blockieren das Feld.
+- **Ziel:** Ins Ziel geht es nur mit passender Augenzahl, im Ziel darf man eigene Figuren überspringen.
+
+Der Host wählt, ob die Partie endet, wenn der Erste alle Figuren im Ziel hat, oder erst, wenn alle bis auf einen
+fertig sind. Wer nicht fertig ist, wird nach Figuren im Ziel und zurückgelegten Feldern platziert. Auszeichnungen:
+Rausschmeißer (die meisten geschlagen) und Pechvogel (am häufigsten rausgeflogen).
+
 ## Verbindungsabbrüche
 
 - **Reload eines Spielers:** Wer seinen Tab neu lädt, kommt automatisch auf seinen Platz zurück.
@@ -157,6 +176,7 @@ src/games/                 Spiele; jedes beschreibt Name, Spielerzahl, Einstellu
   index.js, ui.js          Liste aller Spiele und ihrer Oberflächen
   uno/                     Farbenchaos: Regeln (game.js), Sicht, Bot, Auszeichnungen, Oberfläche (ui/)
   kniffel/                 Würfelglück: Wertung (scoring.js), Regeln, Bot, Oberfläche (ui/)
+  ludo/                    Ludo: Regeln, Bot, Brett (ui/board.js) und Oberfläche
 src/shared/                Zufall per Seed (mulberry32), Prüfung von Aktionsfeldern
 src/net/                   Netzwerk
   protocol.js              alle Nachrichtentypen und die Prüfung jeder Client-Nachricht

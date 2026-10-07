@@ -1,6 +1,16 @@
 // Neueste Version zuerst. Die aktuelle Versionsnummer ist immer der oberste Eintrag.
 export const CHANGELOG = [
   {
+    version: '2.3.0',
+    date: '2026-10-07',
+    changes: [
+      'Neues Spiel: Ludo für 2–4 Spieler, auch gegen Computer-Gegner',
+      'Original-Regeln: mit 6 raus, Startfeld räumen, drei Versuche ohne Figur draußen, Rauswerfen',
+      'Host wählt, ob die Partie beim Ersten im Ziel endet oder bis alle im Ziel sind',
+      'Auszeichnungen: Rausschmeißer und Pechvogel',
+    ],
+  },
+  {
     version: '2.2.0',
     date: '2026-10-07',
     changes: [

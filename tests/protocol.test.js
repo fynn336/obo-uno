@@ -7,6 +7,8 @@ test('Protokoll: gültige Lounge-Aktionen werden übernommen', () => {
     { type: 'setSetting', gameId: 'uno', key: 'stacking', value: true }, 'Schalter');
   assertEqual(readAction({ type: 'setSetting', gameId: 'uno', key: 'target', value: 300 }),
     { type: 'setSetting', gameId: 'uno', key: 'target', value: 300 }, 'Auswahl');
+  assertEqual(readAction({ type: 'setSetting', gameId: 'ludo', key: 'finish', value: 'all' }),
+    { type: 'setSetting', gameId: 'ludo', key: 'finish', value: 'all' }, 'Auswahl als Text');
   assertEqual(readAction({ type: 'move', move: { type: 'play', cardId: 7 } }), { type: 'move', move: { type: 'play', cardId: 7 } }, 'Spielzug');
 });
 
@@ -18,7 +20,7 @@ test('Protokoll: unbekannte Aktionen und falsche Feldtypen werden abgelehnt', ()
   for (const raw of [
     null, 'startGame', { type: 'join', name: 'x' }, { type: 'leave' }, { type: 'setConnected' }, { type: 'timeout' },
     { type: 'toString' }, { type: '__proto__' }, { type: 'play', cardId: 7 }, { type: 'move', move: null },
-    { type: 'move', move: 'play' }, { type: 'setSetting', gameId: 'uno', key: 'stacking', value: 'yes' },
+    { type: 'move', move: 'play' }, { type: 'setSetting', gameId: 'uno', key: 'stacking', value: ['yes'] },
     { type: 'removeBot' },
   ]) {
     assertEqual(readAction(raw), null, JSON.stringify(raw));

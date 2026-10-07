@@ -26,7 +26,7 @@ const ACTION_FIELDS = {
   addBot: {},
   removeBot: { targetId: 'string' },
   selectGame: { gameId: 'string' },
-  setSetting: { gameId: 'string', key: 'string', value: ['boolean', 'number'] },
+  setSetting: { gameId: 'string', key: 'string', value: ['boolean', 'number', 'string'] },
   startGame: {},
   abortGame: {},
   newEvening: {},
