@@ -1,6 +1,15 @@
 // Neueste Version zuerst. Die aktuelle Versionsnummer ist immer der oberste Eintrag.
 export const CHANGELOG = [
   {
+    version: '2.12.0',
+    date: '2026-10-07',
+    changes: [
+      'Neues Spiel: Schiffe versenken für 2–4 Spieler, jeder gegen jeden, auch gegen Computer-Gegner',
+      'Flotte zufällig verteilen und neu würfeln, bis sie gefällt; bei einem Treffer darf man nochmal',
+      'Platsch und Explosion als Ton, Auszeichnungen Scharfschütze und Versenker',
+    ],
+  },
+  {
     version: '2.11.0',
     date: '2026-10-07',
     changes: [

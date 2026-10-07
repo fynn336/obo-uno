@@ -87,6 +87,26 @@ export function playTurnGong() {
   });
 }
 
+// Schiffe versenken: gefiltertes Rauschen, dumpf für einen Treffer, hell und kurz für Wasser
+const SHOT_SOUNDS = {
+  hit: { type: 'lowpass', frequency: 450, duration: 0.9, volume: 1 },
+  miss: { type: 'bandpass', frequency: 1400, duration: 0.45, volume: 0.6 },
+};
+
+export function playShot(hit) {
+  if (!unlocked || !settings.effects || settings.volume === 0) return;
+  context ??= new AudioContext();
+  const { type, frequency, duration, volume } = SHOT_SOUNDS[hit ? 'hit' : 'miss'];
+  const buffer = new AudioBuffer({ length: Math.ceil(context.sampleRate * duration), sampleRate: context.sampleRate });
+  const samples = buffer.getChannelData(0);
+  for (let i = 0; i < samples.length; i++) samples[i] = Math.random() * 2 - 1;
+  const source = new AudioBufferSourceNode(context, { buffer });
+  const gain = new GainNode(context, { gain: volume * settings.volume });
+  gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + duration);
+  source.connect(new BiquadFilterNode(context, { type, frequency })).connect(gain).connect(context.destination);
+  source.start();
+}
+
 function playNextTrack() {
   if (playlist.length === 0) {
     const style = MUSIC_STYLES.find((s) => s.id === settings.style) ?? MUSIC_STYLES[0];

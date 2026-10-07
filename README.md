@@ -4,8 +4,8 @@ Spieleabend mit Freunden im Browser, für 2–8 Spieler. Man trifft sich in der 
 nach jeder Partie geht es zurück in die Lounge. Es gibt keinen eigenen Server, die Spieler verbinden sich direkt
 per WebRTC ([PeerJS](https://peerjs.com/)). Alles läuft als statische Seite, z. B. kostenlos auf GitHub Pages.
 
-**Spiele:** Farbenchaos (Uno-Regeln), Würfelglück (Kniffel-Regeln), Ludo (Mensch-ärgere-dich-nicht-Regeln) und
-Mäxchen (Würfeln und Bluffen).
+**Spiele:** Farbenchaos (Uno-Regeln), Würfelglück (Kniffel-Regeln), Ludo (Mensch-ärgere-dich-nicht-Regeln),
+Mäxchen (Würfeln und Bluffen) und Schiffe versenken.
 
 ## Spielen
 
@@ -153,6 +153,17 @@ kann man nicht überbieten: Wer es glaubt, verliert ein Leben; wer ein echtes M�
 Wer keine Leben mehr hat, ist raus. Der Letzte gewinnt. Auszeichnungen: Lügenbaron (am häufigsten beim Lügen
 erwischt) und Spürnase (die meisten Lügen aufgedeckt).
 
+## Schiffe versenken
+
+Für 2–4 Spieler, jeder gegen jeden. Jeder bekommt ein Meer mit 10 × 10 Feldern und eine Flotte aus fünf Schiffen
+(5, 4, 3, 3 und 2 Felder lang), die sich nicht berühren. Vor dem Start kann man sie mit „Neu verteilen“ so oft
+neu würfeln, bis sie gefällt, dann „Bereit!“.
+
+Reihum schießt man auf ein Feld im Meer eines beliebigen Gegners. Bei einem Treffer darf man nochmal, bei Wasser
+ist der Nächste dran. Fremde Schiffe sieht man erst, wenn sie versenkt sind. Wessen Flotte komplett versenkt ist,
+scheidet aus; die letzte Flotte gewinnt. Auszeichnungen: Scharfschütze (die meisten Treffer) und Versenker (die
+meisten versenkten Schiffe).
+
 ## Verbindungsabbrüche
 
 - **Reload eines Spielers:** Wer seinen Tab neu lädt, kommt automatisch auf seinen Platz zurück.
@@ -208,6 +219,7 @@ src/games/                 Spiele; jedes beschreibt Name, Spielerzahl, Einstellu
   kniffel/                 Würfelglück: Wertung (scoring.js), Regeln, Bot, Oberfläche (ui/)
   ludo/                    Ludo: Regeln, Bot, Brett (ui/board.js) und Oberfläche
   maexchen/                Mäxchen: Wertung (values.js), Regeln, Bot, Oberfläche
+  ships/                   Schiffe versenken: Regeln, Bot, Oberfläche
 src/shared/                Zufall per Seed (mulberry32), Prüfung von Aktionsfeldern
 src/net/                   Netzwerk
   protocol.js              alle Nachrichtentypen und die Prüfung jeder Client-Nachricht
