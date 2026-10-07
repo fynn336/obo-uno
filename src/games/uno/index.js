@@ -17,6 +17,10 @@ export const uno = {
     { key: 'challenge', label: 'Wild-+4-Anfechtung', type: 'toggle', default: false },
     { key: 'drawUntilPlayable', label: 'Ziehen bis spielbar', type: 'toggle', default: false },
     {
+      key: 'deck', label: 'Kartendesign', type: 'choice', values: ['classic', 'bloom'], default: 'classic',
+      describe: (deck) => (deck === 'bloom' ? 'Blütenzauber' : 'Klassisch'),
+    },
+    {
       key: 'target', label: 'Partie gewonnen bei', type: 'choice', values: [200, 300, 500], default: 500,
       describe: (points) => `${points} Punkten`,
     },

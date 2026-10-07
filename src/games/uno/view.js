@@ -23,6 +23,7 @@ export function viewFor(state, playerId) {
     })),
     target: state.target,
     turnTime: state.turnTime,
+    deck: state.deck,
     hand: me ? me.hand : [],
     playableIds: playableCardIds(state, playerId),
     drawnCardId: currentId === playerId ? state.drawnCardId : null,

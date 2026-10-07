@@ -1,4 +1,4 @@
-import { COLOR_NAMES, cardLabel } from './cards.js';
+import { cardLabel, colorName } from './cards.js';
 
 const TEXTS = {
   start: () => 'Neue Runde',
@@ -6,7 +6,7 @@ const TEXTS = {
   draw: (e) => `${e.player} zieht ${cards(e.count)}`,
   pass: (e) => `${e.player} behält die gezogene Karte`,
   penalty: (e) => `${e.player} muss ${cards(e.count)} ziehen`,
-  color: (e) => `${e.player} wählt ${COLOR_NAMES[e.color]}`,
+  color: (e) => `${e.player} wählt ${colorName(e.color)}`,
   skipped: (e) => `${e.player} setzt aus`,
   reverse: () => 'Richtungswechsel',
   uno: (e) => `${e.player} ruft UNO!`,

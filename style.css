@@ -1678,6 +1678,75 @@ select {
   font-style: italic;
 }
 
+/* Kartendesign „Blütenzauber“: Bilder aus assets/images/cards, Zahlen und Symbole kommen ins schwarze Oval.
+   Die Ausschnitte (Breite, Höhe, Position) sind im Bild ausgemessen; die Karten sind dafür etwas höher. */
+.deck-bloom {
+  --red: #9b4fd6;
+  --yellow: #f2702a;
+  --green: #6fc23a;
+  --blue: #1fc6e2;
+  --bloom-front: url('assets/images/cards/bloom.webp');
+  --bloom-back: url('assets/images/cards/bloom-back.webp') 50.05% 47.12% / 280.08% 123.69%;
+}
+
+.deck-bloom .card {
+  height: calc(var(--card-w, 84px) * 1.62);
+  background: var(--bloom-front) var(--sprite-x) 47.17% / 605.8% 202.8%;
+}
+
+.deck-bloom .card.blue {
+  --sprite-x: 3.3%;
+}
+
+.deck-bloom .card.red {
+  --sprite-x: 26.5%;
+}
+
+.deck-bloom .card.yellow {
+  --sprite-x: 49.86%;
+}
+
+.deck-bloom .card.green {
+  --sprite-x: 73.42%;
+}
+
+.deck-bloom .card.wild {
+  --sprite-x: 96.99%;
+}
+
+.deck-bloom .card .oval {
+  background: none;
+}
+
+.deck-bloom .card .symbol {
+  color: #fff;
+  text-shadow: 0 0 10px var(--c, #fff), 0 0 3px var(--c, #fff), 2px 3px 0 rgba(0, 0, 0, 0.6);
+}
+
+.deck-bloom .card .corner {
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.9), 1px 1px 0 #000;
+}
+
+/* Farbwahl-Karten: kleiner Farbkreis im schwarzen Oval */
+.deck-bloom .card.wild .oval {
+  inset: 36% 26%;
+  background: conic-gradient(var(--red) 0 25%, var(--blue) 0 50%, var(--yellow) 0 75%, var(--green) 0);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.35);
+}
+
+.deck-bloom .card.back {
+  background: var(--bloom-back);
+}
+
+.deck-bloom .card.back .oval {
+  display: none;
+}
+
+.deck-bloom .mini-card,
+.deck-bloom .flying-card {
+  background: var(--bloom-back);
+}
+
 /* Animationen */
 .fly-in {
   animation: fly-in 0.4s cubic-bezier(0.2, 0.8, 0.3, 1);

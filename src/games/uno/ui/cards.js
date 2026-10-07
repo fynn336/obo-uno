@@ -1,13 +1,38 @@
 import { h } from '../../../ui/dom.js';
 
-export const COLOR_NAMES = { red: 'Rot', yellow: 'Gelb', green: 'Grün', blue: 'Blau' };
+// Jedes Kartendesign benennt die vier Farben selbst und hat eigene Tasten für die Farbwahl.
+const DECKS = {
+  classic: {
+    names: { red: 'Rot', yellow: 'Gelb', green: 'Grün', blue: 'Blau' },
+    keys: { r: 'red', y: 'yellow', g: 'green', b: 'blue' },
+  },
+  bloom: {
+    names: { red: 'Lila', yellow: 'Orange', green: 'Grün', blue: 'Türkis' },
+    keys: { l: 'red', o: 'yellow', g: 'green', t: 'blue' },
+  },
+};
+
+let deck = DECKS.classic;
+
+// Der Tisch setzt das Design der laufenden Partie, bevor er Karten und Texte baut.
+export function useDeck(id) {
+  deck = DECKS[id] ?? DECKS.classic;
+}
+
+export function colorName(color) {
+  return deck.names[color];
+}
+
+export function colorKeys() {
+  return deck.keys;
+}
 
 const SYMBOLS = { skip: '⊘', reverse: '⇄', draw2: '+2', wild: '', wild4: '+4' };
 const VALUE_NAMES = { skip: 'Aussetzen', reverse: 'Richtungswechsel', draw2: '+2', wild: 'Farbwahl', wild4: 'Farbwahl +4' };
 
 export function cardLabel(card) {
   const value = VALUE_NAMES[card.value] ?? card.value;
-  return card.color ? `${COLOR_NAMES[card.color]} ${value}` : value;
+  return card.color ? `${colorName(card.color)} ${value}` : value;
 }
 
 export function cardFace(card, { classes = '', ...props } = {}) {

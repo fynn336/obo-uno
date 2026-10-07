@@ -57,7 +57,7 @@ test('Lounge: Bots nur durch den Host und nur in der Lounge', () => {
 
 test('Lounge: Spiel wählen und Einstellungen – nur Host, nur gültige Werte', () => {
   let s = lounge(2);
-  assertEqual(s.settings.uno, { stacking: false, challenge: false, drawUntilPlayable: false, target: 500, turnTime: 0 }, 'Standard');
+  assertEqual(s.settings.uno, { stacking: false, challenge: false, drawUntilPlayable: false, deck: 'classic', target: 500, turnTime: 0 }, 'Standard');
   loungeRejected(s, { type: 'selectGame', playerId: 'p0', gameId: 'schach' });
   loungeRejected(s, { type: 'setSetting', playerId: 'p1', gameId: 'uno', key: 'stacking', value: true });
   loungeRejected(s, { type: 'setSetting', playerId: 'p0', gameId: 'uno', key: 'stacking', value: 1 });
@@ -160,4 +160,11 @@ test('Lounge: ganze Partie mit Bots bis zur Wertung', () => {
   assertEqual(s.phase, 'lounge', 'Partie beendet');
   assertEqual(s.lastResult.standings.length, 4, 'alle platziert');
   assertEqual(s.players.reduce((sum, p) => sum + p.points, 0) >= 6, true, 'Lounge-Punkte verteilt');
+});
+
+test('Farbenchaos: Kartendesign aus der Lounge gilt für die ganze Partie', () => {
+  const setDeck = (value) => ({ type: 'setSetting', playerId: 'p0', gameId: 'uno', key: 'deck', value });
+  loungeRejected(lounge(2), setDeck('regenbogen'));
+  const s = loungeAct(loungeAct(lounge(2), setDeck('bloom')), start);
+  assertEqual([viewFor(s, 'p0').game.deck, viewFor(s, 'p1').game.deck], ['bloom', 'bloom'], 'für alle');
 });

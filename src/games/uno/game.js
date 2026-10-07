@@ -21,6 +21,7 @@ export function createGame({ players, hostId, settings, seed }) {
     target: settings.target,
     // Sekunden pro Zug, 0 = aus; die Uhr selbst läuft beim Host
     turnTime: settings.turnTime,
+    deck: settings.deck,
     // zählt jeden Spielerwechsel, damit der Host-Timer einen neuen Zug erkennt
     turnNumber: 0,
     players: players.map(({ id, name }) => ({ id, name, hand: [], saidUno: false, score: 0, stats: emptyStats() })),

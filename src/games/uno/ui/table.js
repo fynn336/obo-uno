@@ -3,10 +3,9 @@ import { playEffect } from '../../../ui/audio.js';
 import { avatarBadge } from '../../../ui/avatar.js';
 import { h } from '../../../ui/dom.js';
 import { timerBar } from '../../../ui/timer.js';
-import { COLOR_NAMES, cardBack, cardFace } from './cards.js';
+import { cardBack, cardFace, colorKeys, colorName, useDeck } from './cards.js';
 import { bannerFor, describeEvent } from './events.js';
 
-const COLOR_KEYS = { r: 'red', y: 'yellow', g: 'green', b: 'blue' };
 const COLOR_ORDER = ['red', 'yellow', 'green', 'blue', null];
 const VALUE_ORDER = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'skip', 'reverse', 'draw2', 'wild', 'wild4'];
 const RULE_NAMES = { stacking: 'Stapeln', challenge: 'Anfechtung', drawUntilPlayable: 'Ziehen bis spielbar' };
@@ -36,8 +35,9 @@ export function renderTable(root, view, send, abort) {
   if (isNewView) turnDeadline = view.turnEndsIn === null ? null : Date.now() + view.turnEndsIn;
   const hand = sortHand(view.hand);
   if (isNewView) selectedId = pickSelection(view, hand);
+  useDeck(view.deck);
   root.replaceChildren(
-    h('div', { class: 'table' },
+    h('div', { class: `table deck-${view.deck}` },
       infoBar(view, abort),
       h('section', { class: 'room' },
         h('div', { class: 'rim' },
@@ -72,7 +72,7 @@ export function handleTableKey(event) {
   else if (key === 'enter' && selectedId !== null) send({ type: 'play', cardId: selectedId });
   else if (key === ' ') send({ type: 'draw' });
   else if (key === 'u') send({ type: 'callUno' });
-  else if (COLOR_KEYS[key] && view.phase === 'chooseColor') send({ type: 'chooseColor', color: COLOR_KEYS[key] });
+  else if (colorKeys()[key] && view.phase === 'chooseColor') send({ type: 'chooseColor', color: colorKeys()[key] });
   else return;
   event.preventDefault();
 }
@@ -83,7 +83,7 @@ function infoBar(view, abort) {
     abort && h('button', { type: 'button', class: 'leave-game', onClick: abort }, '← Lounge'),
     h('span', { class: 'turn' }, isMyTurn(view) ? 'Du bist am Zug' : `${currentPlayer(view).name} ist am Zug`),
     h('span', {}, view.direction === 1 ? '↻ Im Uhrzeigersinn' : '↺ Gegen den Uhrzeigersinn'),
-    h('span', {}, 'Farbe: ', h('span', { class: `swatch ${view.activeColor ?? ''}` }), COLOR_NAMES[view.activeColor] ?? 'wird gewählt'),
+    h('span', {}, 'Farbe: ', h('span', { class: `swatch ${view.activeColor ?? ''}` }), colorName(view.activeColor) ?? 'wird gewählt'),
     h('span', { class: 'rules' },
       h('span', { class: 'chip' }, `Ziel ${view.target} P.`),
       view.turnTime > 0 && h('span', { class: 'chip' }, `⏱ ${view.turnTime} s`),
@@ -141,16 +141,16 @@ function piles(view, send) {
       h('div', { class: `discard ${view.activeColor ?? ''}` },
         cardFace(view.topCard, { title: 'Ablagestapel', tabindex: -1 }),
         isMyTurn(view) && view.phase === 'chooseColor' && colorWheel(send)),
-      h('span', { class: 'pile-label' }, COLOR_NAMES[view.activeColor] ?? 'Farbe wird gewählt')),
+      h('span', { class: 'pile-label' }, colorName(view.activeColor) ?? 'Farbe wird gewählt')),
   );
 }
 
 function colorWheel(send) {
   return h('div', { class: 'color-wheel', role: 'group', 'aria-label': 'Farbe wählen' },
-    Object.entries(COLOR_KEYS).map(([key, color]) => h('button', {
+    Object.entries(colorKeys()).map(([key, color]) => h('button', {
       type: 'button',
       class: `wedge ${color}`,
-      'aria-label': `${COLOR_NAMES[color]} (${key.toUpperCase()})`,
+      'aria-label': `${colorName(color)} (${key.toUpperCase()})`,
       onClick: () => send({ type: 'chooseColor', color }),
     }, key.toUpperCase())));
 }
@@ -164,7 +164,7 @@ function statusText(view) {
     if (view.phase === 'challengeWindow') return `${current.name} entscheidet: anfechten oder ${pending} ziehen …`;
     return `Warte auf ${current.name} …`;
   }
-  if (view.phase === 'chooseColor') return 'Wähle eine Farbe (R, G, B, Y)';
+  if (view.phase === 'chooseColor') return `Wähle eine Farbe (${Object.keys(colorKeys()).join(', ').toUpperCase()})`;
   const stackHint = view.rules.stacking ? ', stapeln' : '';
   if (view.phase === 'challengeWindow') return `+${pending} gegen dich: anfechten${stackHint} oder ${pending} Karten ziehen`;
   if (pending > 0) return `+${pending} gegen dich: stapeln oder ${pending} Karten ziehen`;
@@ -268,7 +268,7 @@ function flyToSeats(root, last, view, pile) {
           + `--to-x:${to.left + to.width / 2 - (pile.left + pile.width / 2)}px;`
           + `--to-y:${to.top + to.height / 2 - (pile.top + pile.height / 2)}px;animation-delay:${i * FLY_GAP_MS}ms`,
       });
-      document.body.append(card);
+      root.querySelector('.table').append(card);
       setTimeout(() => card.remove(), i * FLY_GAP_MS + FLY_MS);
     }
   }

@@ -1,6 +1,14 @@
 // Neueste Version zuerst. Die aktuelle Versionsnummer ist immer der oberste Eintrag.
 export const CHANGELOG = [
   {
+    version: '2.8.0',
+    date: '2026-10-07',
+    changes: [
+      'Farbenchaos: Neues Kartendesign „Blütenzauber“, vom Host in der Lounge wählbar',
+      'Im Blütenzauber-Deck heißen die Farben Türkis, Lila, Orange und Grün (Tasten T, L, O, G)',
+    ],
+  },
+  {
     version: '2.7.0',
     date: '2026-10-07',
     changes: [

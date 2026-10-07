@@ -49,7 +49,7 @@ Eine Partie besteht aus mehreren Runden. Wer in einer Runde zuerst keine Karten 
 | Enter         | ausgewählte Karte legen                        |
 | Leertaste     | Karte ziehen bzw. offene Strafkarten ziehen    |
 | U             | „UNO!“ rufen                                   |
-| R / G / B / Y | Farbe wählen (Rot, Grün, Blau, Gelb)           |
+| R / G / B / Y | Farbe wählen (Rot, Grün, Blau, Gelb); im Blütenzauber-Deck L / O / G / T |
 
 Mit der Maus geht alles ebenso: Karte anklicken legt sie, ein Klick auf den Ziehstapel zieht, die Farbe wählt man
 im Farbrad auf dem Ablagestapel. „Weitergeben“, „Anfechten“ und „Erwischt!“ sind Buttons. Links unten zeigt der
@@ -64,6 +64,9 @@ Zahlkarten zählen ihren Wert, Aktionskarten 20, Wild-Karten 50. Wer das Punktez
 gewinnt die Partie. Bei Punktgleichstand liegt vorne, wer weniger Restpunkte auf der Hand hat. Endet eine Runde,
 weil nur noch ein Spieler übrig ist, gibt es keine Punkte. Am Partieende gibt es Auszeichnungen wie „Pechvogel“
 oder „UNO-Vergesser“.
+
+**Kartendesign** (vom Host gewählt, gilt für alle): Klassisch oder Blütenzauber. Im Blütenzauber-Deck heißen die
+Farben Türkis, Lila, Orange und Grün.
 
 **Zeit pro Zug** (optional, 30 oder 60 Sekunden): Läuft die Zeit ab, zieht der Spieler automatisch eine Karte
 bzw. die offene Strafe, eine offene Farbwahl wird zufällig getroffen.
