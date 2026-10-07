@@ -1,6 +1,14 @@
 // Neueste Version zuerst. Die aktuelle Versionsnummer ist immer der oberste Eintrag.
 export const CHANGELOG = [
   {
+    version: '1.9.0',
+    date: '2026-10-07',
+    changes: [
+      'Gemütliches Wohnzimmer als Hintergrund in Start, Lobby und Spiel',
+      'In schmalen Fenstern überdeckt die Hand nicht mehr den Verlauf',
+    ],
+  },
+  {
     version: '1.8.0',
     date: '2026-10-07',
     changes: [

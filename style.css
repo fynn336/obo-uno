@@ -31,6 +31,16 @@ body {
   font: 16px/1.45 system-ui, 'Segoe UI', Roboto, sans-serif;
 }
 
+/* Wohnzimmer als Hintergrund; der negative Rand versteckt den hellen Saum, den der Blur am Bildrand erzeugt */
+body::before {
+  content: '';
+  position: fixed;
+  inset: -24px;
+  z-index: -1;
+  background: url('assets/images/background.webp') center / cover;
+  filter: blur(5px) brightness(0.7);
+}
+
 h1,
 h2 {
   margin: 0 0 0.5rem;
@@ -787,6 +797,17 @@ select {
 .event-log li:last-child {
   color: var(--text);
   font-weight: 700;
+}
+
+/* In schmalen Fenstern braucht die Hand die ganze Breite */
+@media (max-width: 1100px) {
+  .hand {
+    grid-template-columns: 0 1fr 0;
+  }
+
+  .event-log {
+    display: none;
+  }
 }
 
 .hand-head {
