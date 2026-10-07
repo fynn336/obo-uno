@@ -1,6 +1,15 @@
 // Neueste Version zuerst. Die aktuelle Versionsnummer ist immer der oberste Eintrag.
 export const CHANGELOG = [
   {
+    version: '2.1.0',
+    date: '2026-10-07',
+    changes: [
+      'Neues Spiel: Würfelglück (Kniffel-Regeln) für 1–8 Spieler, auch gegen Computer-Gegner',
+      'Würfel antippen oder 1–5 drücken zum Halten, Leertaste würfelt; mögliche Punkte stehen direkt im Block',
+      'Auszeichnungen: Glückspilz (Kniffel gewürfelt) und Pechvogel (meiste Streichungen)',
+    ],
+  },
+  {
     version: '2.0.0',
     date: '2026-10-07',
     changes: [

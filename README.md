@@ -4,7 +4,7 @@ Spieleabend mit Freunden im Browser, für 2–8 Spieler. Man trifft sich in der 
 nach jeder Partie geht es zurück in die Lounge. Es gibt keinen eigenen Server, die Spieler verbinden sich direkt
 per WebRTC ([PeerJS](https://peerjs.com/)). Alles läuft als statische Seite, z. B. kostenlos auf GitHub Pages.
 
-**Spiele:** Farbenchaos (Uno-Regeln). Weitere folgen.
+**Spiele:** Farbenchaos (Uno-Regeln) und Würfelglück (Kniffel-Regeln). Weitere folgen.
 
 ## Spielen
 
@@ -84,6 +84,25 @@ bzw. die offene Strafe, eine offene Farbwahl wird zufällig getroffen.
 - **Ziehen bis spielbar:** Man zieht, bis eine spielbare Karte kommt, und darf sie legen. Das gilt nicht für
   Strafkarten.
 
+## Würfelglück (Kniffel-Regeln)
+
+Für 1–8 Spieler, auch allein oder gegen Computer-Gegner. Jeder hat pro Zug bis zu drei Würfe mit fünf Würfeln.
+Nach dem ersten Wurf kann man Würfel antippen (oder 1–5 drücken), um sie zu halten. Die Leertaste würfelt die
+übrigen neu. Danach trägt man im Block in eine freie Kategorie ein; passt nichts, wird eine Kategorie
+gestrichen (0 Punkte). Mögliche Punkte stehen direkt im Block.
+
+| Kategorie | Punkte |
+| --- | --- |
+| Einser bis Sechser | Summe dieser Zahl; ab 63 Punkten oben gibt es 35 Bonus |
+| Dreierpasch / Viererpasch | Summe aller Würfel, wenn 3 bzw. 4 gleich sind |
+| Full House | 25 (drei gleiche und zwei gleiche) |
+| Kleine Straße | 30 (vier aufeinanderfolgende) |
+| Große Straße | 40 (fünf aufeinanderfolgende) |
+| Kniffel | 50 (fünf gleiche) |
+| Chance | Summe aller Würfel |
+
+Nach 13 Runden gewinnt, wer die meisten Punkte hat. Sonderregeln für einen zweiten Kniffel gibt es nicht.
+
 ## Verbindungsabbrüche
 
 - **Reload eines Spielers:** Wer seinen Tab neu lädt, kommt automatisch auf seinen Platz zurück.
@@ -136,6 +155,7 @@ src/lounge/                Raum: Spieler, Avatare, Bots, Spielauswahl, Abendwert
 src/games/                 Spiele; jedes beschreibt Name, Spielerzahl, Einstellungen, Züge, Ergebnis, Bot
   index.js, ui.js          Liste aller Spiele und ihrer Oberflächen
   uno/                     Farbenchaos: Regeln (game.js), Sicht, Bot, Auszeichnungen, Oberfläche (ui/)
+  kniffel/                 Würfelglück: Wertung (scoring.js), Regeln, Bot, Oberfläche (ui/)
 src/shared/                Zufall per Seed (mulberry32), Prüfung von Aktionsfeldern
 src/net/                   Netzwerk
   protocol.js              alle Nachrichtentypen und die Prüfung jeder Client-Nachricht

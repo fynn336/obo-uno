@@ -1,4 +1,5 @@
-import { playCardSound, playTurnGong } from '../../../ui/audio.js';
+import { alertTurn, showBanner } from '../../../ui/attention.js';
+import { playCardSound } from '../../../ui/audio.js';
 import { avatarBadge } from '../../../ui/avatar.js';
 import { h } from '../../../ui/dom.js';
 import { COLOR_NAMES, cardBack, cardFace } from './cards.js';
@@ -10,7 +11,6 @@ const VALUE_ORDER = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'skip', '
 const RULE_NAMES = { stacking: 'Stapeln', challenge: 'Anfechtung', drawUntilPlayable: 'Ziehen bis spielbar' };
 const MAX_MINI_CARDS = 10;
 const PULSE_MS = 2000;
-const TITLE_BLINK_MS = 1000;
 const MAX_FLYING_CARDS = 6;
 const FLY_GAP_MS = 90;
 const FLY_MS = 550;
@@ -23,7 +23,6 @@ let latest = null;
 let previous = null;
 let selectedId = null;
 let lastEventId = null;
-let titleBlinking = false;
 let turnDeadline = null;
 
 // abort ist nur für den Host gesetzt: Partie beenden und zurück in die Lounge.
@@ -58,7 +57,9 @@ export function renderTable(root, view, send, abort) {
   if (!isNewView) return;
   animateChanges(root, last, view, flySource);
   announceNewEvents(view);
-  if (isMyTurn(view) && !(last && isMyTurn(last))) alertTurn();
+  if (isMyTurn(view) && !(last && isMyTurn(last))) {
+    alertTurn(() => latest.root.querySelector('.table') && isMyTurn(latest.view));
+  }
 }
 
 export function handleTableKey(event) {
@@ -242,33 +243,6 @@ function announceNewEvents(view) {
   fresh.filter((event) => Object.hasOwn(CARD_SOUND_RATES, event.type)).forEach((event, i) => {
     setTimeout(() => playCardSound(CARD_SOUND_RATES[event.type]), i * SOUND_GAP_MS);
   });
-}
-
-function alertTurn() {
-  playTurnGong();
-  if (!document.hidden || titleBlinking) return;
-  titleBlinking = true;
-  const title = document.title;
-  const stop = () => {
-    clearInterval(blink);
-    document.removeEventListener('visibilitychange', stop);
-    document.title = title;
-    titleBlinking = false;
-  };
-  const blink = setInterval(() => {
-    const stillMyTurn = latest.root.querySelector('.table') && isMyTurn(latest.view);
-    if (!stillMyTurn) stop();
-    else document.title = document.title === title ? '🔔 Du bist dran!' : title;
-  }, TITLE_BLINK_MS);
-  document.addEventListener('visibilitychange', stop);
-}
-
-function showBanner([title, subtitle]) {
-  const banner = document.getElementById('banner');
-  banner.replaceChildren(h('strong', {}, title), h('span', {}, subtitle));
-  banner.classList.remove('show');
-  void banner.offsetWidth; // Layout erzwingen, damit die Animation neu startet
-  banner.classList.add('show');
 }
 
 function playedCardSource(root, last, view) {
