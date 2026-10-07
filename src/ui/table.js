@@ -1,3 +1,4 @@
+import { avatarBadge } from './avatar.js';
 import { COLOR_NAMES, cardBack, cardFace } from './cards.js';
 import { h } from './dom.js';
 import { bannerFor, describeEvent } from './events.js';
@@ -6,7 +7,6 @@ const COLOR_KEYS = { r: 'red', y: 'yellow', g: 'green', b: 'blue' };
 const COLOR_ORDER = ['red', 'yellow', 'green', 'blue', null];
 const VALUE_ORDER = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'skip', 'reverse', 'draw2', 'wild', 'wild4'];
 const RULE_NAMES = { stacking: 'Stapeln', challenge: 'Anfechtung', drawUntilPlayable: 'Ziehen bis spielbar' };
-const SEAT_COLORS = ['#e0322b', '#1c6fd1', '#2f9e44', '#f2c40f', '#9c4dcc', '#e8792b', '#1aa6a6', '#d6488f'];
 const MAX_MINI_CARDS = 10;
 const PULSE_MS = 2000;
 const DIRECTION_SPIN_MS = 30000;
@@ -103,12 +103,7 @@ function seats(view, send) {
 }
 
 function avatar(view, player) {
-  const index = view.players.findIndex((p) => p.id === player.id);
-  const isCurrent = player.id === view.currentId;
-  return h('div', {
-    class: 'avatar',
-    style: `--seat-color:${SEAT_COLORS[index % SEAT_COLORS.length]};${isCurrent ? pulseDelay() : ''}`,
-  }, player.name.charAt(0).toUpperCase());
+  return avatarBadge(player, player.id === view.currentId ? pulseDelay() : '');
 }
 
 function miniCards(count) {

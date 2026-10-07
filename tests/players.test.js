@@ -45,6 +45,17 @@ test('Lobby: nur der Host ändert Hausregeln, nur außerhalb einer Runde', () =>
   rejected(s, { type: 'setRule', playerId: 'p0', rule: 'challenge', value: true });
 });
 
+test('Avatar: Standardfarben verschieden, Auswahl nur aus der Liste', () => {
+  let s = lobby(3);
+  assertEqual(s.players.map((p) => p.avatar), [0, 1, 2].map((color) => ({ emoji: '', color })), 'Standard');
+  s = act(s, { type: 'setAvatar', playerId: 'p1', emoji: '🦊', color: 5 });
+  assertEqual(s.players[1].avatar, { emoji: '🦊', color: 5 }, 'gewählt');
+  rejected(s, { type: 'setAvatar', playerId: 'p1', emoji: '💩', color: 0 });
+  rejected(s, { type: 'setAvatar', playerId: 'p1', emoji: '🦊', color: 8 });
+  rejected(s, { type: 'setAvatar', playerId: 'p1', emoji: '🦊', color: 1.5 });
+  rejected(s, { type: 'setAvatar', playerId: 'nobody', emoji: '🦊', color: 0 });
+});
+
 test('Lobby: Verlassen entfernt den Spieler sofort', () => {
   const s = act(lobby(3), leave('p1'));
   assertEqual(s.players.map((p) => p.id), ['p0', 'p2'], 'Spieler');

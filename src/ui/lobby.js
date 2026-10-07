@@ -1,4 +1,6 @@
+import { AVATAR_COLORS, AVATAR_EMOJIS } from '../game/avatars.js';
 import { TARGET_SCORES } from '../game/game.js';
+import { avatarBadge } from './avatar.js';
 import { h } from './dom.js';
 
 const CONFETTI_PIECES = 80;
@@ -61,6 +63,7 @@ export function renderLobby(root, view, code, send) {
         h('section', { class: 'panel' },
           h('h2', {}, isOver ? 'Ergebnis der Runde' : `Spieler (${view.players.length})`),
           h('ol', { class: 'lobby-players' }, players.map((p) => h('li', {},
+            avatarBadge(p),
             p.name,
             p.id === view.hostId && h('span', { class: 'badge' }, 'Host'),
             p.id === view.you && h('span', { class: 'badge' }, 'du'),
@@ -85,6 +88,7 @@ export function renderLobby(root, view, code, send) {
               onChange: (event) => send({ type: 'setTarget', value: Number(event.target.value) }),
             }, TARGET_SCORES.map((score) => h('option', { value: score, selected: score === view.target }, `${score} Punkten`)))),
           h('p', { class: 'hint' }, isHost ? 'Alle aus = offizielle Regeln.' : 'Nur der Host kann die Regeln ändern.')),
+        avatarPicker(view, send),
       ),
       isHost
         ? h('button', { class: 'primary big', disabled: view.players.length < 2, onClick: () => send({ type: 'start' }) },
@@ -96,6 +100,27 @@ export function renderLobby(root, view, code, send) {
     celebratedEventId = win.id;
     throwConfetti();
   }
+}
+
+function avatarPicker(view, send) {
+  const me = view.players.find((p) => p.id === view.you);
+  const choose = (change) => send({ type: 'setAvatar', ...me.avatar, ...change });
+  const selected = (isSelected) => (isSelected ? ' selected' : '');
+  return h('section', { class: 'panel wide' },
+    h('h2', {}, 'Dein Avatar'),
+    h('div', { class: 'choices' }, AVATAR_EMOJIS.map((emoji) => h('button', {
+      type: 'button',
+      class: `choice${selected(emoji === me.avatar.emoji)}`,
+      title: emoji ? '' : 'Anfangsbuchstabe',
+      onClick: () => choose({ emoji }),
+    }, emoji || me.name.charAt(0).toUpperCase()))),
+    h('div', { class: 'choices' }, AVATAR_COLORS.map((color, index) => h('button', {
+      type: 'button',
+      class: `choice color${selected(index === me.avatar.color)}`,
+      style: `--seat-color:${color}`,
+      'aria-label': `Farbe ${index + 1}`,
+      onClick: () => choose({ color: index }),
+    }))));
 }
 
 function resultBanner(win, view, isNew) {

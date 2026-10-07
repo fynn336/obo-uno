@@ -1,3 +1,4 @@
+import { AVATAR_COLORS, AVATAR_EMOJIS } from './avatars.js';
 import { COLORS, cardPoints, createDeck, isPlayable } from './deck.js';
 import { nextRandom } from './rng.js';
 
@@ -100,7 +101,15 @@ function join(state, { playerId, name }) {
   if (state.players.some((p) => p.name.toLowerCase() === trimmed.toLowerCase())) {
     return 'Dieser Name ist schon vergeben';
   }
-  state.players.push({ id: playerId, name: trimmed, connected: true, hand: [], saidUno: false, score: 0 });
+  const avatar = { emoji: '', color: state.players.length % AVATAR_COLORS.length };
+  state.players.push({ id: playerId, name: trimmed, connected: true, hand: [], saidUno: false, score: 0, avatar });
+}
+
+function setAvatar(state, { playerId, emoji, color }) {
+  const player = findPlayer(state, playerId);
+  if (!player) return 'Unbekannter Spieler';
+  if (!AVATAR_EMOJIS.includes(emoji) || !Number.isInteger(color) || !AVATAR_COLORS[color]) return 'Ungültiger Avatar';
+  player.avatar = { emoji, color };
 }
 
 function leave(state, { playerId }) {
@@ -262,7 +271,7 @@ function catchUno(state, { playerId, targetId }) {
 }
 
 const handlers = {
-  join, leave, setConnected, setRule, setTarget, start, play, chooseColor, draw, pass, challenge, callUno, catchUno,
+  join, leave, setConnected, setRule, setTarget, setAvatar, start, play, chooseColor, draw, pass, challenge, callUno, catchUno,
 };
 
 export function handPoints(hand) {

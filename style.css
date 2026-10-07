@@ -280,6 +280,49 @@ select {
   padding: 0.25rem 0;
 }
 
+.lobby-players .avatar {
+  width: 30px;
+  height: 30px;
+  border-width: 2px;
+  font-size: 0.9rem;
+}
+
+.panel.wide {
+  grid-column: 1 / -1;
+}
+
+.choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+
+.choice {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--text);
+  font-size: 1.3rem;
+  box-shadow: none;
+}
+
+.choice.color {
+  width: 32px;
+  height: 32px;
+  background: var(--seat-color);
+}
+
+.choice.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
 .lobby-players .score {
   margin-left: auto;
   color: var(--accent);
@@ -489,6 +532,16 @@ select {
   font-weight: 900;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.avatar.emoji {
+  font-size: 1.7rem;
+  text-shadow: none;
+}
+
+.lobby-players .avatar.emoji,
+.hand-head .avatar.emoji {
+  font-size: 1.1rem;
 }
 
 .seat.current .avatar,

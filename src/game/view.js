@@ -18,6 +18,7 @@ export function viewFor(state, playerId) {
       saidUno: p.saidUno,
       catchable: state.unoWindow === p.id,
       score: p.score,
+      avatar: p.avatar,
       // Nach Rundenende liegen die Karten offen: ihr Punktwert ist öffentlich
       handPoints: state.phase === 'roundOver' ? handPoints(p.hand) : null,
     })),
