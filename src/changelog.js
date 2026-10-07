@@ -1,6 +1,16 @@
 // Neueste Version zuerst. Die aktuelle Versionsnummer ist immer der oberste Eintrag.
 export const CHANGELOG = [
   {
+    version: '2.4.0',
+    date: '2026-10-07',
+    changes: [
+      'Würfelglück: Würfelbecher wird geschüttelt, die Würfel kullern verstreut in eine Samtschale',
+      'Gehaltene Würfel liegen in einer Leiste und sind für alle sichtbar, auch bei Mitspielern und Bots',
+      'Spielblock auf Papier mit Handschrift, Bleistiftstrich beim Streichen',
+      'Tipp: Die beste Kategorie für deinen Wurf ist im Block markiert ★',
+    ],
+  },
+  {
     version: '2.3.0',
     date: '2026-10-07',
     changes: [

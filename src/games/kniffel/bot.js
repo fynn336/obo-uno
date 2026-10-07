@@ -10,15 +10,19 @@ export function botMove(state, botId) {
   if (state.phase !== 'playing' || state.players[state.current].id !== botId) return null;
   const sheet = state.players[state.current].sheet;
   const open = CATEGORIES.filter((category) => sheet[category.key] === null);
-  if (state.rollsLeft === 3) return { type: 'roll', keep: Array(5).fill(false) };
+  if (state.rollsLeft === 3) return { type: 'roll' };
   const best = bestCategory(open, state.dice);
   const goodEnough = FIXED.includes(best.key) && best.points > 0;
   if (state.rollsLeft === 0 || goodEnough) return { type: 'score', category: best.key };
-  return { type: 'roll', keep: diceToKeep(state.dice, open) };
+  // Erst sichtbar halten, dann würfeln
+  const keep = diceToKeep(state.dice, open);
+  if (keep.some((kept, i) => kept !== state.kept[i])) return { type: 'hold', keep };
+  return { type: 'roll' };
 }
 
 // Höchste Punkte, Chance nur gedämpft; obere Kategorien mit mindestens drei Gleichen zählen extra (Bonus).
-function bestCategory(open, dice) {
+// Die Oberfläche nutzt das als Tipp für den Spieler.
+export function bestCategory(open, dice) {
   const scored = open.map((category) => {
     const points = scoreFor(category.key, dice);
     const weight = category.key === 'chance' ? 0.6 : 1;

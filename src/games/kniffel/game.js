@@ -13,6 +13,7 @@ export function createGame({ players, hostId, seed }) {
     players: players.map(({ id, name }) => ({ id, name, sheet: emptySheet() })),
     current: 0,
     dice: Array(DICE).fill(1),
+    kept: Array(DICE).fill(false),
     rollsLeft: ROLLS_PER_TURN,
     turnNumber: 0,
     events: [],
@@ -37,24 +38,33 @@ export function viewFor(state, playerId) {
     players: state.players.map(({ id, name, sheet }) => ({ id, name, sheet, ...totals(sheet) })),
     currentId: state.phase === 'playing' ? state.players[state.current].id : null,
     dice: state.dice,
+    kept: state.kept,
     rollsLeft: state.rollsLeft,
     turnNumber: state.turnNumber,
     events: state.events.slice(-VISIBLE_EVENTS),
   };
 }
 
-// keep gibt an, welche Würfel liegen bleiben; beim ersten Wurf eines Zugs wird immer alles gewürfelt.
-function roll(state, { playerId, keep }) {
+// Gehaltene Würfel bleiben liegen; beim ersten Wurf eines Zugs wird immer alles gewürfelt.
+function roll(state, { playerId }) {
   const error = checkTurn(state, playerId);
   if (error) return error;
   if (state.rollsLeft === 0) return 'Du hast schon dreimal gewürfelt – trag jetzt etwas ein';
+  state.dice = state.dice.map((face, i) => (state.kept[i] ? face : 1 + Math.floor(random(state) * 6)));
+  state.rollsLeft--;
+  log(state, 'roll', { player: currentPlayer(state).name, dice: state.dice });
+}
+
+// keep gibt an, welche Würfel beim nächsten Wurf liegen bleiben; alle Mitspieler sehen es.
+function hold(state, { playerId, keep }) {
+  const error = checkTurn(state, playerId);
+  if (error) return error;
+  if (state.rollsLeft === ROLLS_PER_TURN) return 'Erst würfeln, dann halten';
+  if (state.rollsLeft === 0) return 'Keine Würfe mehr – trag jetzt etwas ein';
   if (!Array.isArray(keep) || keep.length !== DICE || !keep.every((kept) => typeof kept === 'boolean')) {
     return 'Ungültige Würfelauswahl';
   }
-  const isFirstRoll = state.rollsLeft === ROLLS_PER_TURN;
-  state.dice = state.dice.map((face, i) => (!isFirstRoll && keep[i] ? face : 1 + Math.floor(random(state) * 6)));
-  state.rollsLeft--;
-  log(state, 'roll', { player: currentPlayer(state).name, dice: state.dice });
+  state.kept = keep;
 }
 
 function score(state, { playerId, category }) {
@@ -83,7 +93,7 @@ function leave(state, { playerId }) {
 }
 
 // leave löst nur der Host aus.
-const handlers = { roll, score, leave };
+const handlers = { roll, hold, score, leave };
 
 function nextTurn(state) {
   if (state.players.every((p) => isSheetFull(p.sheet))) {
@@ -96,6 +106,7 @@ function nextTurn(state) {
 function startTurn(state, index) {
   state.current = index;
   state.rollsLeft = ROLLS_PER_TURN;
+  state.kept = Array(DICE).fill(false);
   state.turnNumber++;
 }
 

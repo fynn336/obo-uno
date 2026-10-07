@@ -16,6 +16,7 @@
   --blue: #1c6fd1;
   --black: #1b1b1b;
   --accent: #f2c40f;
+  --hand: 'Segoe Print', 'Ink Free', 'Bradley Hand', 'Comic Sans MS', cursive;
   color-scheme: dark;
 }
 
@@ -756,7 +757,7 @@ select {
 
 .dice-board {
   display: grid;
-  grid-template-columns: minmax(320px, 1fr) minmax(360px, auto);
+  grid-template-columns: minmax(440px, 1fr) minmax(360px, auto);
   gap: 1.5rem;
   align-items: start;
   padding: 1.5rem 1.5rem 3rem;
@@ -767,17 +768,11 @@ select {
   flex-direction: column;
   align-items: center;
   gap: 1rem;
-  padding: 2rem 1.5rem;
+  padding: 1.5rem;
   border: 14px solid var(--wood);
   border-radius: 40px;
   background: radial-gradient(ellipse at 50% 40%, #2b8a5f, var(--felt) 50%, var(--felt-dark));
   box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.55), 0 0 0 2px var(--wood-dark), 0 20px 50px rgba(0, 0, 0, 0.6);
-}
-
-.dice {
-  display: flex;
-  gap: 1rem;
-  padding-top: 1rem;
 }
 
 .die {
@@ -789,7 +784,6 @@ select {
   border-radius: 14px;
   background: linear-gradient(145deg, #fff, #e6e1d6);
   box-shadow: 0 6px 0 #b9b2a3, 0 10px 18px rgba(0, 0, 0, 0.45);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .die:disabled {
@@ -809,11 +803,6 @@ select {
   box-shadow: inset 0 2px 2px rgba(255, 255, 255, 0.3);
 }
 
-.die.kept {
-  transform: translateY(-12px);
-  box-shadow: 0 0 0 4px var(--accent), 0 6px 0 #b9b2a3, 0 16px 22px rgba(0, 0, 0, 0.5);
-}
-
 .die.idle {
   opacity: 0.4;
 }
@@ -830,15 +819,201 @@ select {
   }
 }
 
-.dice-zone .event-log {
-  width: 100%;
-  max-width: 360px;
-  margin: 0.5rem 0 0;
+.dice-zone .die {
+  width: 58px;
+  height: 58px;
+  padding: 8px;
+  border-radius: 12px;
 }
 
+.dice-zone .die span {
+  width: 10px;
+  height: 10px;
+}
+
+/* Halteleiste: für alle sichtbar, welche Würfel liegen bleiben */
+.held {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.held-caption {
+  min-height: 1.3em;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.held-slots {
+  display: flex;
+  gap: 0.6rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.28);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.45);
+}
+
+.held-slots .slot {
+  width: 58px;
+  height: 58px;
+  border: 2px dashed rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+}
+
+.held-slots .die {
+  box-shadow: 0 0 0 3px var(--accent), 0 5px 0 #b9b2a3;
+}
+
+.tray-row {
+  display: flex;
+  gap: 1.2rem;
+  align-items: center;
+  width: 100%;
+  max-width: 640px;
+}
+
+/* Würfelschale mit rotem Samt; die losen Würfel liegen verstreut (Lage aus src/games/kniffel/ui) */
+.tray {
+  position: relative;
+  flex: 1;
+  height: 220px;
+  border: 10px solid var(--wood-dark);
+  border-radius: 30px;
+  background: radial-gradient(ellipse at 50% 40%, #8e2433, #5c1420 70%, #3f0d16);
+  box-shadow: inset 0 6px 22px rgba(0, 0, 0, 0.6), 0 0 0 2px var(--wood);
+}
+
+.tray .die {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  rotate: var(--r);
+}
+
+.tray .die.rolling {
+  animation: tumble 0.6s cubic-bezier(0.2, 0.8, 0.3, 1) 0.35s backwards;
+}
+
+@keyframes tumble {
+  from {
+    translate: calc(-90px - var(--slot) * 70px) -30px;
+    rotate: calc(var(--r) - 720deg);
+    scale: 0.4;
+    opacity: 0;
+  }
+
+  25% {
+    opacity: 1;
+  }
+}
+
+.cup {
+  position: relative;
+  flex: none;
+  width: 84px;
+  height: 108px;
+  padding: 0;
+  border-radius: 0;
+  background: linear-gradient(90deg, #2e1a0e, #7a4a2a 30%, #9a6338 45%, #5a341c 75%, #2e1a0e);
+  box-shadow: none;
+  clip-path: polygon(0 0, 100% 0, 88% 100%, 12% 100%);
+  filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.5));
+  transform-origin: 50% 85%;
+}
+
+/* Öffnung des Bechers */
+.cup::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, #120904 40%, #3e2414);
+}
+
+.cup:disabled {
+  opacity: 1;
+  cursor: default;
+  filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.5)) brightness(0.75);
+}
+
+.cup.full:not(:disabled) {
+  animation: cup-ready 1.4s ease-in-out infinite;
+}
+
+@keyframes cup-ready {
+  50% {
+    rotate: -6deg;
+  }
+}
+
+.cup.shaking {
+  animation: cup-shake 0.6s ease-in-out;
+}
+
+@keyframes cup-shake {
+  15% {
+    rotate: -14deg;
+    translate: 0 -8px;
+  }
+
+  30% {
+    rotate: 12deg;
+  }
+
+  45% {
+    rotate: -10deg;
+    translate: 0 -6px;
+  }
+
+  75% {
+    rotate: 75deg;
+    translate: 18px -10px;
+  }
+}
+
+.cup-label {
+  position: absolute;
+  inset: auto 0 16px;
+  color: #f0d39c;
+  font-size: 1.1rem;
+  font-weight: 900;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+.dice-zone .event-log {
+  width: 100%;
+  max-width: 420px;
+  margin: 0;
+}
+
+/* Spielblock auf Papier, Einträge in Handschrift */
 .sheet {
-  padding: 0.75rem 1rem;
+  position: relative;
+  padding: 1.4rem 1.1rem 1.1rem 2.2rem;
   overflow-x: auto;
+  border-radius: 4px 4px 8px 8px;
+  background: linear-gradient(90deg, transparent 1.5rem, rgba(214, 60, 60, 0.55) 1.5rem 1.6rem, transparent 1.6rem), #fbf7e9;
+  color: #2a2f45;
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.55);
+  rotate: -0.6deg;
+}
+
+/* Leimbindung oben */
+.sheet::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 10px;
+  border-radius: 4px 4px 0 0;
+  background: linear-gradient(#a3283a, #7a1626);
+}
+
+.sheet h2 {
+  margin: 0 0 0.3rem;
+  color: #8b1e2b;
+  font: 700 1.35rem var(--hand);
 }
 
 .sheet table {
@@ -848,10 +1023,16 @@ select {
 
 .sheet th,
 .sheet td {
-  padding: 0.25rem 0.6rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.2rem 0.6rem;
+  border-bottom: 1px solid rgba(70, 110, 200, 0.35);
   text-align: center;
   white-space: nowrap;
+}
+
+.sheet td {
+  min-width: 3.5rem;
+  color: #1e3a8a;
+  font: 700 1.05rem var(--hand);
 }
 
 .sheet tbody th {
@@ -878,35 +1059,63 @@ select {
   text-overflow: ellipsis;
 }
 
-.sheet th.current {
-  color: var(--accent);
+.sheet th.current .name {
+  color: #b45309;
+  text-decoration: underline wavy;
 }
 
+/* Bleistiftstrich */
 .sheet td.struck {
-  color: var(--muted);
+  background: linear-gradient(-8deg, transparent 46%, #5b5b6b 47% 53%, transparent 54%) center / 60% 100% no-repeat;
 }
 
-.sheet .subtotal {
-  color: var(--muted);
+.sheet td.written {
+  animation: write 0.6s ease-out;
+}
+
+@keyframes write {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+}
+
+.sheet .subtotal th,
+.sheet .subtotal td {
+  color: #6b7280;
   font-size: 0.8rem;
 }
 
-.sheet .total {
-  font-size: 1.05rem;
+.sheet .total th,
+.sheet .total td {
+  border-top: 3px double #2a2f45;
+  border-bottom: 0;
+  color: #8b1e2b;
+  font-size: 1.15rem;
   font-weight: 900;
-  color: var(--accent);
 }
 
 .preview {
-  padding: 0.05rem 0.55rem;
-  background: rgba(242, 196, 15, 0.9);
-  font-size: 0.8rem;
+  padding: 0 0.5rem;
+  border: 1.5px dashed rgba(30, 58, 138, 0.45);
+  background: transparent;
+  color: #1e3a8a;
+  font: 700 0.95rem var(--hand);
   box-shadow: none;
 }
 
 .preview.zero {
-  background: rgba(255, 255, 255, 0.15);
-  color: var(--muted);
+  border-color: rgba(0, 0, 0, 0.15);
+  color: #9ca3af;
+}
+
+/* Tipp wie mit Textmarker */
+.preview.best {
+  border-color: transparent;
+  background: linear-gradient(-2deg, transparent 8%, rgba(253, 224, 71, 0.9) 10% 90%, transparent 92%);
+}
+
+.preview.best::before {
+  content: '★ ';
 }
 
 /* Ludo */

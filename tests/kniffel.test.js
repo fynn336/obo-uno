@@ -26,7 +26,7 @@ function rejected(state, action) {
 
 // Spieler am Zug hat genau diese Würfel nach dem ersten Wurf
 function rolled(state, dice) {
-  return { ...act(state, { type: 'roll', playerId: state.players[state.current].id, keep: KEEP_NONE }), dice };
+  return { ...act(state, { type: 'roll', playerId: state.players[state.current].id }), dice };
 }
 
 test('Würfelglück: Wertung aller Kategorien', () => {
@@ -52,20 +52,27 @@ test('Würfelglück: Bonus ab 63 Punkten oben', () => {
 
 test('Würfelglück: höchstens drei Würfe, gehaltene Würfel bleiben liegen', () => {
   let s = rolled(newKniffel(2), [6, 6, 1, 2, 3]);
-  s = act(s, { type: 'roll', playerId: 'p0', keep: [true, true, false, false, false] });
+  s = act(s, { type: 'hold', playerId: 'p0', keep: [true, true, false, false, false] });
+  assertEqual(s.kept, [true, true, false, false, false], 'für alle sichtbar');
+  s = act(s, { type: 'roll', playerId: 'p0' });
   assertEqual(s.dice.slice(0, 2), [6, 6], 'gehalten');
-  s = act(s, { type: 'roll', playerId: 'p0', keep: [true, true, false, false, false] });
-  assertEqual(s.rollsLeft, 0, 'keine Würfe mehr');
-  rejected(s, { type: 'roll', playerId: 'p0', keep: KEEP_NONE });
+  s = act(s, { type: 'roll', playerId: 'p0' });
+  assertEqual([s.rollsLeft, s.dice.slice(0, 2)], [0, [6, 6]], 'keine Würfe mehr');
+  rejected(s, { type: 'roll', playerId: 'p0' });
+  rejected(s, { type: 'hold', playerId: 'p0', keep: KEEP_NONE });
+  s = act(s, { type: 'score', playerId: 'p0', category: 'chance' });
+  assertEqual(s.kept, KEEP_NONE, 'neuer Zug, nichts gehalten');
 });
 
 test('Würfelglück: ungültige Züge werden abgelehnt', () => {
   const s = newKniffel(2);
-  rejected(s, { type: 'roll', playerId: 'p1', keep: KEEP_NONE });
-  rejected(s, { type: 'roll', playerId: 'p0', keep: [true] });
-  rejected(s, { type: 'roll', playerId: 'p0', keep: 'alle' });
+  rejected(s, { type: 'roll', playerId: 'p1' });
+  rejected(s, { type: 'hold', playerId: 'p0', keep: KEEP_NONE });
   rejected(s, { type: 'score', playerId: 'p0', category: 'chance' });
   const r = rolled(s, [1, 2, 3, 4, 5]);
+  rejected(r, { type: 'hold', playerId: 'p0', keep: [true] });
+  rejected(r, { type: 'hold', playerId: 'p0', keep: 'alle' });
+  rejected(r, { type: 'hold', playerId: 'p1', keep: KEEP_NONE });
   rejected(r, { type: 'score', playerId: 'p0', category: 'toString' });
   rejected(r, { type: 'score', playerId: 'p1', category: 'chance' });
 });
@@ -87,7 +94,7 @@ test('Würfelglück: nach 13 Runden ist die Partie vorbei, Ergebnis mit Plätzen
     s = act(rolled(s, [1, 1, 1, 1, 1]), { type: 'score', playerId: 'p1', category: category.key });
   }
   assertEqual(s.phase, 'gameOver', 'vorbei');
-  rejected(s, { type: 'roll', playerId: 'p0', keep: KEEP_NONE });
+  rejected(s, { type: 'roll', playerId: 'p0' });
   const result = kniffel.result(s);
   assertEqual(result.ranking.map((r) => [r.playerId, r.place]), [['p0', 1], ['p1', 2]], 'Plätze');
   assertEqual(result.awards.map((a) => [a.title, a.names]), [['Glückspilz', ['P0', 'P1']], ['Pechvogel', ['P0', 'P1']]], 'Auszeichnungen');
@@ -115,6 +122,6 @@ test('Würfelglück: in der Lounge ab 1 Spieler startbar', () => {
   let s = loungeAct(lounge(1), { type: 'selectGame', playerId: 'p0', gameId: 'kniffel' });
   s = loungeAct(s, { type: 'startGame', playerId: 'p0' });
   assertEqual([s.phase, s.gameId], ['game', 'kniffel'], 'läuft');
-  s = loungeAct(s, { type: 'move', playerId: 'p0', move: { type: 'roll', keep: KEEP_NONE } });
+  s = loungeAct(s, { type: 'move', playerId: 'p0', move: { type: 'roll' } });
   assertEqual(s.game.rollsLeft, 2, 'gewürfelt');
 });

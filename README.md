@@ -88,9 +88,10 @@ bzw. die offene Strafe, eine offene Farbwahl wird zufällig getroffen.
 ## Würfelglück (Kniffel-Regeln)
 
 Für 1–8 Spieler, auch allein oder gegen Computer-Gegner. Jeder hat pro Zug bis zu drei Würfe mit fünf Würfeln.
-Nach dem ersten Wurf kann man Würfel antippen (oder 1–5 drücken), um sie zu halten. Die Leertaste würfelt die
-übrigen neu. Danach trägt man im Block in eine freie Kategorie ein; passt nichts, wird eine Kategorie
-gestrichen (0 Punkte). Mögliche Punkte stehen direkt im Block.
+Gewürfelt wird mit dem Becher (antippen oder Leertaste). Nach dem ersten Wurf kann man Würfel antippen (oder 1–5
+drücken), um sie in die Halteleiste zu legen; alle sehen, was gehalten wird. Danach trägt man im Block in eine
+freie Kategorie ein; passt nichts, wird eine Kategorie gestrichen (0 Punkte). Mögliche Punkte stehen direkt im
+Block, die beste Kategorie ist mit ★ markiert.
 
 | Kategorie | Punkte |
 | --- | --- |

@@ -12,7 +12,8 @@ export const kniffel = {
   maxPlayers: 8,
   settings: [],
   moves: {
-    roll: { keep: 'object' },
+    roll: {},
+    hold: { keep: 'object' },
     score: { category: 'string' },
   },
   create: createGame,
