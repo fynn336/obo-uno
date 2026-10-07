@@ -1,10 +1,10 @@
-import { audioSettings, setVolume, toggleEffects, toggleMusic } from './audio.js';
+import { audioSettings, MUSIC_STYLES, setMusicStyle, setVolume, toggleEffects, toggleMusic } from './audio.js';
 import { h } from './dom.js';
 import { currentRoom, ROOMS, roomImage, setRoom } from './rooms.js';
 
 // onChange hält die Schnellknöpfe in der Ecke aktuell.
 export function openSettings(onChange) {
-  const { music, effects, volume } = audioSettings();
+  const { music, effects, volume, style } = audioSettings();
   const toggle = (label, checked, action) => h('label', { class: 'toggle' },
     h('input', { type: 'checkbox', checked, onChange: () => { action(); onChange(); } }), label);
   const chooseRoom = (room, button) => {
@@ -16,6 +16,9 @@ export function openSettings(onChange) {
     h('section', {},
       h('h3', {}, 'Ton'),
       toggle('Musik', music, toggleMusic),
+      h('label', { class: 'toggle' }, 'Musikstil', h('select', {
+        onChange: (event) => setMusicStyle(MUSIC_STYLES[event.target.selectedIndex].id),
+      }, MUSIC_STYLES.map((option) => h('option', { selected: option.id === style }, option.name)))),
       toggle('Soundeffekte', effects, toggleEffects),
       h('label', { class: 'toggle' }, 'Lautstärke', h('input', {
         type: 'range',

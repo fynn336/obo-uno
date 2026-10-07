@@ -1,7 +1,8 @@
 import { alertTurn, showBanner } from '../../../ui/attention.js';
-import { playCardSound } from '../../../ui/audio.js';
+import { playEffect } from '../../../ui/audio.js';
 import { avatarBadge } from '../../../ui/avatar.js';
 import { h } from '../../../ui/dom.js';
+import { timerBar } from '../../../ui/timer.js';
 import { COLOR_NAMES, cardBack, cardFace } from './cards.js';
 import { bannerFor, describeEvent } from './events.js';
 
@@ -48,7 +49,7 @@ export function renderTable(root, view, send, abort) {
             h('div', { class: 'center' },
               piles(view, send),
               h('p', { class: 'status' }, statusText(view)),
-              turnDeadline !== null && turnTimer(view),
+              turnDeadline !== null && timerBar(view.turnTime, turnDeadline - Date.now()),
               actions(view, send))),
           seats(view, send))),
       handArea(view, hand, send),
@@ -144,16 +145,6 @@ function piles(view, send) {
   );
 }
 
-// Die Leiste läuft per CSS; die negative Verzögerung setzt sie auf die verbleibende Zeit.
-function turnTimer(view) {
-  const elapsed = view.turnTime - Math.max(0, turnDeadline - Date.now()) / 1000;
-  return h('div', {
-    class: 'turn-timer',
-    role: 'timer',
-    style: `--duration:${view.turnTime}s;--delay:-${elapsed}s`,
-  }, h('span'));
-}
-
 function colorWheel(send) {
   return h('div', { class: 'color-wheel', role: 'group', 'aria-label': 'Farbe wählen' },
     Object.entries(COLOR_KEYS).map(([key, color]) => h('button', {
@@ -241,7 +232,7 @@ function announceNewEvents(view) {
   const banner = fresh.map(bannerFor).filter(Boolean).at(-1);
   if (banner) showBanner(banner);
   fresh.filter((event) => Object.hasOwn(CARD_SOUND_RATES, event.type)).forEach((event, i) => {
-    setTimeout(() => playCardSound(CARD_SOUND_RATES[event.type]), i * SOUND_GAP_MS);
+    setTimeout(() => playEffect('card', CARD_SOUND_RATES[event.type]), i * SOUND_GAP_MS);
   });
 }
 

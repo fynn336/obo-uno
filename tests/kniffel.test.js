@@ -9,7 +9,7 @@ const KEEP_NONE = [false, false, false, false, false];
 
 function newKniffel(playerCount, seed = 7) {
   const players = Array.from({ length: playerCount }, (_, i) => ({ id: `p${i}`, name: `P${i}` }));
-  return { ...createGame({ players, hostId: 'p0', seed }), current: 0 };
+  return { ...createGame({ players, hostId: 'p0', settings: { turnTime: 0 }, seed }), current: 0 };
 }
 
 function act(state, action) {
@@ -108,7 +108,7 @@ test('Würfelglück: Rauswurf des Spielers am Zug gibt den Zug weiter', () => {
 
 test('Würfelglück: Bots spielen ganze Partien ohne abgelehnten Zug', () => {
   for (let seed = 1; seed <= 5; seed++) {
-    let s = createGame({ players: [1, 2, 3].map((i) => ({ id: `b${i}`, name: `B${i}` })), hostId: 'b1', seed });
+    let s = createGame({ players: [1, 2, 3].map((i) => ({ id: `b${i}`, name: `B${i}` })), hostId: 'b1', settings: { turnTime: 0 }, seed });
     for (let step = 0; s.phase === 'playing' && step < 2000; step++) {
       const id = s.players[s.current].id;
       s = act(s, { ...botMove(s, id), playerId: id });

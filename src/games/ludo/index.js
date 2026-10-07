@@ -1,5 +1,6 @@
 import { botMove } from './bot.js';
 import { createGame, reduce, TRACK, viewFor } from './game.js';
+import { playOutTurn, TURN_TIME_SETTING } from '../turns.js';
 
 export const ludo = {
   id: 'ludo',
@@ -13,6 +14,7 @@ export const ludo = {
       key: 'finish', label: 'Partie endet', type: 'choice', values: ['first', 'all'], default: 'first',
       describe: (finish) => (finish === 'first' ? 'wenn der Erste im Ziel ist' : 'wenn alle im Ziel sind'),
     },
+    TURN_TIME_SETTING,
   ],
   moves: {
     roll: {},
@@ -23,6 +25,12 @@ export const ludo = {
   viewFor,
   removePlayer: (state, playerId) => reduce(state, { type: 'leave', playerId }).state,
   botMove,
+  timeout: (state, playerId) => playOutTurn(state, playerId, { reduce, botMove }),
+
+  timer(state) {
+    if (state.phase !== 'playing' || state.turnTime === 0) return null;
+    return { key: String(state.turnNumber), playerId: state.players[state.current].id, seconds: state.turnTime };
+  },
 
   // Wer im Ziel ist, in Reihenfolge des Einlaufs; danach nach Figuren im Ziel und zurückgelegten Feldern.
   result(state) {

@@ -1,6 +1,15 @@
 // Neueste Version zuerst. Die aktuelle Versionsnummer ist immer der oberste Eintrag.
 export const CHANGELOG = [
   {
+    version: '2.7.0',
+    date: '2026-10-07',
+    changes: [
+      'Zug-Timer jetzt auch für Würfelglück und Ludo: Läuft die Zeit ab, spielt der Computer den Zug zu Ende',
+      'Echter Würfelsound in Würfelglück und Ludo, Holzklacken bei jedem Schritt der Ludo-Figuren',
+      'Neue Musik: Funky Jazz – Musikstil in den Einstellungen wählbar (gemischt, ruhig, funky)',
+    ],
+  },
+  {
     version: '2.6.0',
     date: '2026-10-07',
     changes: [

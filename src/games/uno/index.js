@@ -2,6 +2,7 @@ import { gameAwards } from './awards.js';
 import { botAction } from './bot.js';
 import { createGame, handPoints, isRunning, reduce } from './game.js';
 import { viewFor } from './view.js';
+import { TURN_TIME_SETTING } from '../turns.js';
 
 // Uno heißt in der Lounge „Farbenchaos“; im Spiel selbst bleibt es Uno.
 export const uno = {
@@ -19,10 +20,7 @@ export const uno = {
       key: 'target', label: 'Partie gewonnen bei', type: 'choice', values: [200, 300, 500], default: 500,
       describe: (points) => `${points} Punkten`,
     },
-    {
-      key: 'turnTime', label: 'Zeit pro Zug', type: 'choice', values: [0, 30, 60], default: 0,
-      describe: (seconds) => (seconds ? `${seconds} Sekunden` : 'unbegrenzt'),
-    },
+    TURN_TIME_SETTING,
   ],
   moves: {
     play: { cardId: 'number' },

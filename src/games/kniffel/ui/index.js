@@ -1,16 +1,16 @@
 import { nextRandom } from '../../../shared/rng.js';
 import { alertTurn, showBanner } from '../../../ui/attention.js';
-import { playCardSound } from '../../../ui/audio.js';
+import { playEffect } from '../../../ui/audio.js';
 import { avatarBadge } from '../../../ui/avatar.js';
 import { diePips } from '../../../ui/dice.js';
 import { h } from '../../../ui/dom.js';
+import { timerBar } from '../../../ui/timer.js';
 import { bestCategory } from '../bot.js';
 import { CATEGORIES, scoreFor } from '../scoring.js';
 
 const ROLLS_PER_TURN = 3;
 const ROUNDS = CATEGORIES.length;
 const LABELS = Object.fromEntries(CATEGORIES.map((category) => [category.key, category.label]));
-const ROLL_SOUND_RATE = 0.75;
 const BANNERS = {
   kniffel: (e) => ['KNIFFEL!', e.player],
   largeStraight: (e) => ['Große Straße', `${e.player} +40`],
@@ -37,6 +37,7 @@ export function renderKniffel(root, view, send, abort) {
           heldStrip(view),
           h('div', { class: 'tray-row' }, cup(view, rolled), tray(view, rolled)),
           h('p', { class: 'status' }, statusText(view)),
+          view.turnEndsIn !== null && timerBar(view.turnTime, view.turnEndsIn),
           h('ol', { class: 'event-log', 'aria-label': 'Verlauf' }, view.events.map((event) => h('li', {}, describe(event))))),
         scoreSheet(view, written)),
     ),
@@ -173,7 +174,7 @@ function freshEvents(view) {
 
 function announce(fresh) {
   for (const event of fresh) {
-    if (event.type === 'roll') playCardSound(ROLL_SOUND_RATE);
+    if (event.type === 'roll') playEffect('dice');
     if (event.type === 'score' && event.points > 0 && BANNERS[event.category]) showBanner(BANNERS[event.category](event));
   }
 }

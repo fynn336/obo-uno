@@ -1,16 +1,15 @@
 import { alertTurn, showBanner } from '../../../ui/attention.js';
-import { playCardSound } from '../../../ui/audio.js';
+import { playEffect } from '../../../ui/audio.js';
 import { avatarBadge } from '../../../ui/avatar.js';
 import { diePips } from '../../../ui/dice.js';
 import { h } from '../../../ui/dom.js';
+import { timerBar } from '../../../ui/timer.js';
 import { BASE, TRACK } from '../game.js';
 import {
   area, CENTER, cellOf, COLORS, goalCells, houseCells, OWN_CORNER, pathCells, rotate, TRACK_CELLS, yardCells,
 } from './board.js';
 
 const COLOR_NAMES = ['Rot', 'Blau', 'Grün', 'Gelb'];
-const ROLL_SOUND_RATE = 0.75;
-const MOVE_SOUND_RATE = 1.3;
 const STEP_MS = 110;
 const HOP_PX = 10;
 const FLY_HOME_MS = 400;
@@ -40,6 +39,7 @@ export function renderLudo(root, view, send, abort) {
         h('aside', { class: 'ludo-side panel' },
           h('ul', { class: 'ludo-players' }, view.players.map((p) => playerRow(view, p))),
           h('p', { class: 'status' }, statusText(view)),
+          view.turnEndsIn !== null && timerBar(view.turnTime, view.turnEndsIn),
           h('button', {
             type: 'button',
             class: 'primary',
@@ -190,11 +190,17 @@ function freshEvents(view) {
 
 function announce(fresh) {
   for (const event of fresh) {
-    if (event.type === 'roll') playCardSound(ROLL_SOUND_RATE);
-    if (event.type === 'move') playCardSound(MOVE_SOUND_RATE);
+    if (event.type === 'roll') playEffect('dice');
+    if (event.type === 'move') playSteps(event);
     if (event.type === 'move' && event.victim) showBanner(['Rausgeworfen!', `${event.player} schlägt ${event.victim}`]);
     if (event.type === 'finished') showBanner([`${event.player} ist im Ziel`, `Platz ${event.place}`]);
   }
+}
+
+// Ein Klacken pro Feld, im Takt der Hüpf-Animation
+function playSteps(event) {
+  const steps = event.from === BASE ? 1 : event.to - event.from;
+  for (let i = 0; i < steps; i++) setTimeout(() => playEffect('step'), i * STEP_MS);
 }
 
 function roll() {

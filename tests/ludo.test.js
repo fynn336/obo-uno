@@ -7,7 +7,7 @@ import { lounge, loungeAct, loungeRejected } from './setup.js';
 
 function newLudo(playerCount, finish = 'first') {
   const players = Array.from({ length: playerCount }, (_, i) => ({ id: `p${i}`, name: `P${i}` }));
-  return { ...createGame({ players, hostId: 'p0', settings: { finish }, seed: 7 }), current: 0 };
+  return { ...createGame({ players, hostId: 'p0', settings: { finish, turnTime: 0 }, seed: 7 }), current: 0 };
 }
 
 // Setzt Figuren direkt: pieces[i] gehört zum i-ten Spieler.
@@ -130,7 +130,7 @@ test('Ludo: Rauswurf des Spielers am Zug gibt den Zug weiter', () => {
 test('Ludo: Bots spielen ganze Partien ohne abgelehnten Zug', () => {
   for (const [count, finish] of [[2, 'first'], [3, 'all'], [4, 'first'], [4, 'all']]) {
     const players = Array.from({ length: count }, (_, i) => ({ id: `b${i}`, name: `B${i}` }));
-    let s = createGame({ players, hostId: 'b0', settings: { finish }, seed: count * 11 });
+    let s = createGame({ players, hostId: 'b0', settings: { finish, turnTime: 0 }, seed: count * 11 });
     for (let step = 0; s.phase === 'playing' && step < 20000; step++) {
       const id = s.players[s.current].id;
       s = act(s, { ...botMove(s, id), playerId: id });

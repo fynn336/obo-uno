@@ -1,6 +1,7 @@
 import { botMove } from './bot.js';
 import { createGame, reduce, viewFor } from './game.js';
 import { totals } from './scoring.js';
+import { playOutTurn, TURN_TIME_SETTING } from '../turns.js';
 
 // Kniffel heißt in der Lounge „Würfelglück“; im Spiel selbst bleiben die bekannten Begriffe.
 export const kniffel = {
@@ -10,7 +11,7 @@ export const kniffel = {
   description: 'Fünf Würfel, drei Würfe, 13 Kategorien – wer am Ende die meisten Punkte hat, gewinnt.',
   minPlayers: 1,
   maxPlayers: 8,
-  settings: [],
+  settings: [TURN_TIME_SETTING],
   moves: {
     roll: {},
     hold: { keep: 'object' },
@@ -21,6 +22,12 @@ export const kniffel = {
   viewFor,
   removePlayer: (state, playerId) => reduce(state, { type: 'leave', playerId }).state,
   botMove,
+  timeout: (state, playerId) => playOutTurn(state, playerId, { reduce, botMove }),
+
+  timer(state) {
+    if (state.phase !== 'playing' || state.turnTime === 0) return null;
+    return { key: String(state.turnNumber), playerId: state.players[state.current].id, seconds: state.turnTime };
+  },
 
   result(state) {
     if (state.phase !== 'gameOver') return null;

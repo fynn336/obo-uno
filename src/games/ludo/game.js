@@ -17,6 +17,7 @@ export function createGame({ players, hostId, settings, seed }) {
     phase: 'playing',
     hostId,
     finish: settings.finish,
+    turnTime: settings.turnTime,
     players: players.map(({ id, name }, i) => ({
       id, name, color: SEATS[players.length][i], pieces: Array(PIECES).fill(BASE), captures: 0, captured: 0,
     })),
@@ -55,6 +56,7 @@ export function viewFor(state, playerId) {
     movable: playing && state.mustMove ? legalMoves(currentPlayer(state), state) : [],
     triesLeft: state.triesLeft,
     turnNumber: state.turnNumber,
+    turnTime: state.turnTime,
     events: state.events.slice(-VISIBLE_EVENTS),
   };
 }

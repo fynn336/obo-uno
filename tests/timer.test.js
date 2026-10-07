@@ -1,4 +1,8 @@
 import { test, assert, assertEqual } from './testing.js';
+import { createGame as createKniffel } from '../src/games/kniffel/game.js';
+import { kniffel } from '../src/games/kniffel/index.js';
+import { createGame as createLudo } from '../src/games/ludo/game.js';
+import { ludo } from '../src/games/ludo/index.js';
 import { uno } from '../src/games/uno/index.js';
 import { act, currentId, game, handOf, play, rejected } from './setup.js';
 
@@ -48,4 +52,27 @@ test('Zug-Timer: nur für den Spieler am Zug, nur während der Runde', () => {
 test('Zug-Timer: jeder Spielerwechsel erhöht den Zugzähler', () => {
   const s = game({ hands: [['r1', 'g1'], ['g2']] });
   assertEqual(play(s, 'p0', 'r1').turnNumber, s.turnNumber + 1, 'Zähler');
+});
+
+test('Zug-Timer Würfelglück: Bot spielt den Zug zu Ende, Uhr läuft pro Zug', () => {
+  const players = [{ id: 'p0', name: 'P0' }, { id: 'p1', name: 'P1' }];
+  const s = { ...createKniffel({ players, hostId: 'p0', settings: { turnTime: 30 }, seed: 3 }), current: 0 };
+  const before = kniffel.timer(s);
+  assertEqual([before.playerId, before.seconds], ['p0', 30], 'Spieler und Dauer');
+  const rolled = kniffel.reduce(s, { type: 'roll', playerId: 'p0' }).state;
+  assertEqual(kniffel.timer(rolled).key, before.key, 'Würfeln startet die Uhr nicht neu');
+  const after = kniffel.timeout(rolled, 'p0').state;
+  assertEqual(Object.values(after.players[0].sheet).filter((points) => points !== null).length, 1, 'eingetragen');
+  assertEqual(after.players[after.current].id, 'p1', 'nächster Spieler');
+  assert(kniffel.timeout(after, 'p0').error, 'nicht am Zug');
+  assertEqual(kniffel.timer({ ...s, turnTime: 0 }), null, 'aus');
+});
+
+test('Zug-Timer Ludo: Bot würfelt und zieht für den Spieler', () => {
+  const players = [{ id: 'p0', name: 'P0' }, { id: 'p1', name: 'P1' }];
+  const s = { ...createLudo({ players, hostId: 'p0', settings: { finish: 'first', turnTime: 60 }, seed: 5 }), current: 0 };
+  assertEqual(ludo.timer(s).seconds, 60, 'Dauer');
+  const after = ludo.timeout(s, 'p0').state;
+  assert(after.players[after.current].id === 'p1' && !after.mustMove, 'Zug abgegeben');
+  assert(after.events.some((e) => e.type === 'roll' && e.player === 'P0'), 'gewürfelt');
 });

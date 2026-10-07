@@ -6,10 +6,11 @@ const ROLLS_PER_TURN = 3;
 const MAX_EVENTS = 30;
 const VISIBLE_EVENTS = 8;
 
-export function createGame({ players, hostId, seed }) {
+export function createGame({ players, hostId, settings, seed }) {
   const state = {
     phase: 'playing',
     hostId,
+    turnTime: settings.turnTime,
     players: players.map(({ id, name }) => ({ id, name, sheet: emptySheet() })),
     current: 0,
     dice: Array(DICE).fill(1),
@@ -41,6 +42,7 @@ export function viewFor(state, playerId) {
     kept: state.kept,
     rollsLeft: state.rollsLeft,
     turnNumber: state.turnNumber,
+    turnTime: state.turnTime,
     events: state.events.slice(-VISIBLE_EVENTS),
   };
 }

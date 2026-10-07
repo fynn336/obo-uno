@@ -1,13 +1,23 @@
-const TRACKS = ['assets/music/jazz-1.mp3', 'assets/music/jazz-2.mp3', 'assets/music/jazz-3.mp3'];
+const JAZZ = ['assets/music/jazz-1.mp3', 'assets/music/jazz-2.mp3', 'assets/music/jazz-3.mp3'];
+const FUNKY = ['assets/music/funky-1.mp3', 'assets/music/funky-2.mp3', 'assets/music/funky-3.mp3'];
+export const MUSIC_STYLES = [
+  { id: 'mix', name: 'Gemischt', tracks: [...JAZZ, ...FUNKY] },
+  { id: 'jazz', name: 'Ruhiger Jazz', tracks: JAZZ },
+  { id: 'funky', name: 'Funky Jazz', tracks: FUNKY },
+];
+const EFFECTS = {
+  card: new Audio('assets/sounds/card.mp3'),
+  dice: new Audio('assets/sounds/dice.mp3'),
+  step: new Audio('assets/sounds/step.mp3'),
+};
 // Grundlautstärken bei Regler auf 100 %
 const MUSIC_VOLUME = 0.4;
 const EFFECT_VOLUME = 1;
 const GONG_VOLUME = 0.36;
-const DEFAULT_SETTINGS = { music: true, effects: true, volume: 0.5 };
+const DEFAULT_SETTINGS = { music: true, effects: true, volume: 0.5, style: 'mix' };
 const STORAGE_KEY = 'dfuno-audio';
 
 const settings = loadSettings();
-const cardSound = new Audio('assets/sounds/card.mp3');
 let unlocked = false;
 let track = null;
 let playlist = [];
@@ -42,9 +52,19 @@ export function setVolume(volume) {
   if (track) track.volume = MUSIC_VOLUME * volume;
 }
 
-export function playCardSound(rate = 1) {
+// Neuer Stil: sofort ein Stück daraus spielen
+export function setMusicStyle(style) {
+  settings.style = style;
+  saveSettings();
+  playlist = [];
+  track?.pause();
+  track = null;
+  if (settings.music && unlocked) playNextTrack();
+}
+
+export function playEffect(name, rate = 1) {
   if (!unlocked || !settings.effects) return;
-  const sound = cardSound.cloneNode();
+  const sound = EFFECTS[name].cloneNode();
   sound.volume = EFFECT_VOLUME * settings.volume;
   sound.preservesPitch = false;
   sound.playbackRate = rate;
@@ -68,11 +88,17 @@ export function playTurnGong() {
 }
 
 function playNextTrack() {
-  if (playlist.length === 0) playlist = [...TRACKS].sort(() => Math.random() - 0.5);
-  track = new Audio(playlist.pop());
-  track.volume = MUSIC_VOLUME * settings.volume;
-  track.addEventListener('ended', playNextTrack);
-  resume(track);
+  if (playlist.length === 0) {
+    const style = MUSIC_STYLES.find((s) => s.id === settings.style) ?? MUSIC_STYLES[0];
+    playlist = [...style.tracks].sort(() => Math.random() - 0.5);
+  }
+  const next = new Audio(playlist.pop());
+  track = next;
+  next.volume = MUSIC_VOLUME * settings.volume;
+  next.addEventListener('ended', () => {
+    if (track === next) playNextTrack();
+  });
+  resume(next);
 }
 
 // Liefert undefined, wenn es nichts abzuspielen gibt; ein abgelehntes play() (z. B. Autoplay-Sperre) bleibt still.

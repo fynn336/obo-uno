@@ -21,6 +21,9 @@ per WebRTC ([PeerJS](https://peerjs.com/)). Alles läuft als statische Seite, z.
 **Abendwertung:** Für jede Partie gibt es Sterne: Platz 1 = 3 ⭐, Platz 2 = 2 ⭐, Platz 3 = 1 ⭐. Wer vorne liegt, ist
 Spieler des Abends 🏆. Mit „Neuer Abend“ setzt der Host die Sterne zurück.
 
+**Zeit pro Zug:** In jedem Spiel kann der Host 30 oder 60 Sekunden einstellen. Läuft die Zeit ab, spielt in
+Würfelglück und Ludo der Computer den Zug zu Ende; was in Farbenchaos passiert, steht unten.
+
 > **Wichtig:** Den **Host-Tab nicht schließen.** Der Host hält den einzigen Spielstand. Neu laden ist kein
 > Problem: Der Stand liegt im Tab (`sessionStorage`), die Lounge öffnet sich unter demselben Code wieder und alle
 > verbinden sich automatisch neu. Schließt der Host den Tab, warten die anderen 30 Sekunden auf ihn, danach endet
@@ -30,8 +33,8 @@ Spieler des Abends 🏆. Mit „Neuer Abend“ setzt der Host die Sterne zurück
 > Firmen-WLAN, Hotspots oder streng gefilterte Uni-Netze) kann deshalb keine direkte Verbindung aufgebaut werden.
 > Im selben WLAN oder im Heimnetz klappt es in der Regel.
 
-Rechts unten schaltet 🎵 die Musik und 🔊 die Soundeffekte. ⚙️ öffnet die Einstellungen mit Lautstärke und der
-Wahl des Raums (Kaminzimmer, Wohnzimmer, Kneipe, Partykeller, Wintergarten); jeder wählt seinen Raum für sich.
+Rechts unten schaltet 🎵 die Musik und 🔊 die Soundeffekte. ⚙️ öffnet die Einstellungen mit Musikstil
+(ruhiger Jazz, Funky Jazz oder gemischt), Lautstärke und der Wahl des Raums (Kaminzimmer, Wohnzimmer, Kneipe, Partykeller, Wintergarten); jeder wählt seinen Raum für sich.
 Ein Klick auf die Versionsnummer zeigt, was neu ist. Nach einem Update reicht normales Neuladen.
 
 ## Farbenchaos (Uno-Regeln)
