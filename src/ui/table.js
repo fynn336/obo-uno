@@ -120,9 +120,21 @@ function piles(view, send) {
       cardBack({ title: 'Karte ziehen (Leertaste)', onClick: () => send({ type: 'draw' }) }),
       h('span', { class: 'pile-label' }, `${view.drawPileCount} im Stapel`)),
     h('div', { class: 'pile' },
-      h('div', { class: `discard ${view.activeColor ?? ''}` }, cardFace(view.topCard, { title: 'Ablagestapel', tabindex: -1 })),
+      h('div', { class: `discard ${view.activeColor ?? ''}` },
+        cardFace(view.topCard, { title: 'Ablagestapel', tabindex: -1 }),
+        isMyTurn(view) && view.phase === 'chooseColor' && colorWheel(send)),
       h('span', { class: 'pile-label' }, COLOR_NAMES[view.activeColor] ?? 'Farbe wird gewählt')),
   );
+}
+
+function colorWheel(send) {
+  return h('div', { class: 'color-wheel', role: 'group', 'aria-label': 'Farbe wählen' },
+    Object.entries(COLOR_KEYS).map(([key, color]) => h('button', {
+      type: 'button',
+      class: `wedge ${color}`,
+      'aria-label': `${COLOR_NAMES[color]} (${key.toUpperCase()})`,
+      onClick: () => send({ type: 'chooseColor', color }),
+    }, key.toUpperCase())));
 }
 
 function statusText(view) {
@@ -153,8 +165,6 @@ function actions(view, send) {
       view.pendingDraw > 0 ? `${view.pendingDraw} Karten ziehen` : 'Karte ziehen', 'Leertaste', { type: 'draw' }),
     myTurn && view.drawnCardId !== null && button('Weitergeben', null, { type: 'pass' }),
     myTurn && view.phase === 'challengeWindow' && button('Anfechten', null, { type: 'challenge' }, { class: 'primary' }),
-    myTurn && view.phase === 'chooseColor' && Object.entries(COLOR_KEYS).map(([key, color]) =>
-      button(COLOR_NAMES[color], key.toUpperCase(), { type: 'chooseColor', color }, { class: `color-choice ${color}` })),
     button('UNO!', 'U', { type: 'callUno' }, {
       class: 'uno',
       disabled: !(canAct && view.hand.length === 2 && !me.saidUno),

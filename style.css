@@ -280,6 +280,12 @@ select {
   padding: 0.25rem 0;
 }
 
+.invite {
+  margin-left: 0.4rem;
+  padding: 0.3rem 0.9rem;
+  font-size: 0.9rem;
+}
+
 .lobby-players .avatar {
   width: 30px;
   height: 30px;
@@ -469,6 +475,7 @@ select {
 }
 
 .discard {
+  position: relative;
   padding: 6px;
   border-radius: 14px;
   box-shadow: 0 0 0 4px var(--c, transparent), 0 0 30px 6px color-mix(in srgb, var(--c, transparent) 55%, transparent);
@@ -497,10 +504,53 @@ select {
   color: #fff;
 }
 
-.color-choice {
+.color-wheel {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 10;
+  display: grid;
+  grid-template: 1fr 1fr / 1fr 1fr;
+  gap: 6px;
+  width: 190px;
+  height: 190px;
+  padding: 6px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+  translate: -50% -50%;
+  animation: pop 0.25s ease-out;
+}
+
+.wedge {
+  padding: 0;
+  border-radius: 0;
   background: var(--c);
   color: #fff;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  font-size: 1.3rem;
+  font-weight: 900;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  box-shadow: none;
+}
+
+.wedge:hover:not(:disabled) {
+  transform: scale(1.06);
+}
+
+.wedge:nth-child(1) {
+  border-top-left-radius: 100%;
+}
+
+.wedge:nth-child(2) {
+  border-top-right-radius: 100%;
+}
+
+.wedge:nth-child(3) {
+  border-bottom-left-radius: 100%;
+}
+
+.wedge:nth-child(4) {
+  border-bottom-right-radius: 100%;
 }
 
 /* Plätze am Tisch */
