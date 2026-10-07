@@ -13,11 +13,11 @@ const RULE_LABELS = {
   drawUntilPlayable: 'Ziehen bis spielbar',
 };
 
-export function renderStart(root, { message, onCreate, onJoin }) {
+export function renderStart(root, { message, inviteCode, onCreate, onJoin }) {
   const createName = nameInput();
   const joinCode = h('input', {
     name: 'code', required: true, inputmode: 'numeric', pattern: '\\d{4}', maxlength: 4,
-    placeholder: '1234', autocomplete: 'off', title: '4-stelliger Code',
+    placeholder: '1234', autocomplete: 'off', title: '4-stelliger Code', value: inviteCode,
   });
   const joinName = nameInput();
   const submit = (handler) => (event) => {
@@ -41,7 +41,7 @@ export function renderStart(root, { message, onCreate, onJoin }) {
       ),
     ),
   );
-  createName.focus();
+  (inviteCode ? joinName : createName).focus();
 }
 
 export function renderWaiting(root, text) {
@@ -58,7 +58,7 @@ export function renderLobby(root, view, code, send) {
     h('div', { class: 'page' },
       isOver && win && resultBanner(win, view, isNewWin),
       h('h1', {}, 'Lobby ', h('span', { class: 'code' }, code)),
-      h('p', { class: 'hint' }, 'Teile den Code mit deinen Freunden.'),
+      h('p', { class: 'hint' }, 'Teile den Code oder schick deinen Freunden direkt den Link: ', inviteButton(code)),
       h('div', { class: 'panels' },
         h('section', { class: 'panel' },
           h('h2', {}, isOver ? 'Ergebnis der Runde' : `Spieler (${view.players.length})`),
@@ -100,6 +100,19 @@ export function renderLobby(root, view, code, send) {
     celebratedEventId = win.id;
     throwConfetti();
   }
+}
+
+function inviteButton(code) {
+  const link = `${location.origin}${location.pathname}?code=${code}`;
+  const button = h('button', {
+    type: 'button',
+    class: 'invite',
+    onClick: () => navigator.clipboard.writeText(link).then(
+      () => { button.textContent = '✓ Link kopiert'; },
+      () => { button.textContent = link; },
+    ),
+  }, '🔗 Einladungslink kopieren');
+  return button;
 }
 
 function avatarPicker(view, send) {

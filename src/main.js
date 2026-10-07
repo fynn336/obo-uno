@@ -7,6 +7,7 @@ import { handleTableKey, renderTable } from './ui/table.js';
 const TOAST_MS = 3000;
 const app = document.getElementById('app');
 const toast = document.getElementById('toast');
+const inviteCode = new URLSearchParams(location.search).get('code')?.match(/^\d{4}$/)?.[0];
 let session = null;
 let code = '';
 let view = null;
@@ -28,7 +29,7 @@ function showStart(message) {
   session = null;
   view = null;
   window.removeEventListener('beforeunload', confirmLeave);
-  renderStart(app, { message, onCreate: create, onJoin: join });
+  renderStart(app, { message, inviteCode, onCreate: create, onJoin: join });
 }
 
 function create(name) {

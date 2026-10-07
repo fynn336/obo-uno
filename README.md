@@ -7,9 +7,13 @@ per WebRTC ([PeerJS](https://peerjs.com/)). Das Spiel läuft als statische Seite
 
 1. **Lobby erstellen:** Namen eingeben, auf „Lobby erstellen“ klicken. Du bist jetzt der Host und bekommst einen
    4-stelligen Code.
-2. **Code teilen:** Deine Freunde öffnen dieselbe Seite, geben Code und Namen ein und klicken auf „Beitreten“.
-3. **Hausregeln wählen** (nur der Host, alle aus = offizielle Regeln) und **Runde starten** (ab 2 Spielern).
-4. Nach jeder Runde landen alle wieder in der Lobby. Der Host kann Regeln ändern, neue Spieler können beitreten.
+2. **Freunde einladen:** In der Lobby auf „Einladungslink kopieren“ klicken und den Link verschicken. Wer ihn
+   öffnet, gibt nur noch seinen Namen ein. Alternativ: dieselbe Seite öffnen, Code und Namen eingeben, „Beitreten“.
+3. **Avatar wählen:** Jeder sucht sich in der Lobby ein Emoji und eine Farbe aus.
+4. **Hausregeln und Punkteziel wählen** (nur der Host, alle aus = offizielle Regeln) und **Runde starten**
+   (ab 2 Spielern).
+5. Nach jeder Runde landen alle wieder in der Lobby, mit Ergebnis und Punktestand. Der Host kann Regeln ändern,
+   neue Spieler können beitreten.
 
 > **Wichtig:** Den **Host-Tab nicht schließen oder neu laden.** Der Host hält den einzigen Spielstand. Verlässt er
 > das Spiel, endet es für alle („Der Host hat das Spiel verlassen“). Der Browser fragt deshalb vor dem Schließen nach.
@@ -28,13 +32,18 @@ per WebRTC ([PeerJS](https://peerjs.com/)). Das Spiel läuft als statische Seite
 | U             | „UNO!“ rufen                                   |
 | R / G / B / Y | Farbe wählen (Rot, Grün, Blau, Gelb)           |
 
-Mit der Maus geht alles ebenso: Karte anklicken legt sie, ein Klick auf den Ziehstapel zieht.
-„Weitergeben“, „Anfechten“ und „Erwischt!“ sind Buttons.
+Mit der Maus geht alles ebenso: Karte anklicken legt sie, ein Klick auf den Ziehstapel zieht, die Farbe wählt man
+im Farbrad auf dem Ablagestapel. „Weitergeben“, „Anfechten“ und „Erwischt!“ sind Buttons. Links unten zeigt der
+Verlauf die letzten Züge, wichtige Momente wie UNO, +4 oder Aussetzen werden groß eingeblendet.
 
 ### Regeln
 
-Offizielle Regeln mit 108 Karten und 7 Startkarten. Eine Partie besteht aus einer Runde: Wer zuerst keine
-Karten mehr hat, gewinnt.
+Offizielle Regeln mit 108 Karten und 7 Startkarten. Wer zuerst keine Karten mehr hat, gewinnt die Runde.
+
+**Punkte:** Der Rundensieger bekommt die Punkte aller Karten, die die anderen noch auf der Hand haben.
+Zahlkarten zählen ihren Wert, Aktionskarten 20, Wild-Karten 50. Wer das Punkteziel erreicht (200, 300 oder 500,
+wählt der Host), gewinnt den Abend. Danach beginnen alle wieder bei 0. Endet eine Runde, weil nur noch ein
+Spieler übrig ist, gibt es keine Punkte.
 
 - **Ziehen** ist immer erlaubt. Ist die gezogene Karte spielbar, darf *nur diese* sofort gelegt werden,
   sonst ist der Zug vorbei.
@@ -105,13 +114,14 @@ test.html, tests/         Tests ohne Framework, mit festen Seeds und Kartenstape
 src/main.js               Ablauf: Start → Lobby → Tisch, Fehlermeldungen
 src/game/                 reine Spiellogik, kein DOM, kein Netzwerk
   game.js                 Reducer (state, action) → { state, error }
-  deck.js, rng.js         Kartensatz, isPlayable, Zufall per Seed (mulberry32)
+  deck.js, rng.js         Kartensatz, isPlayable, Punktwerte, Zufall per Seed (mulberry32)
+  avatars.js              erlaubte Avatar-Emojis und -Farben
   view.js                 Sicht pro Spieler: eigene Hand, von anderen nur die Anzahl
 src/net/                  Netzwerk
   protocol.js             alle Nachrichtentypen und die Prüfung jeder Client-Nachricht
   host.js                 hält den Spielstand, prüft Aktionen, Reconnect und Rauswurf
   client.js               Beitritt, Token, automatischer Reconnect
-src/ui/                   Oberfläche: lobby.js, table.js, cards.js, dom.js
+src/ui/                   Oberfläche: lobby.js, table.js, cards.js, avatar.js, events.js, dom.js
 ```
 
 **Host-autoritativ:** Nur der Host führt den Reducer aus. Clients schicken ausschließlich Aktionen. Der Host
