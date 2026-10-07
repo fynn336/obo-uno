@@ -1,6 +1,14 @@
 // Neueste Version zuerst. Die aktuelle Versionsnummer ist immer der oberste Eintrag.
 export const CHANGELOG = [
   {
+    version: '2.10.0',
+    date: '2026-10-07',
+    changes: [
+      'Abendrückblick bei „Neuer Abend“: Siegerpodest mit Konfetti, Sieger je Spiel und die Auszeichnungen des Abends',
+      '„Nochmal!“-Knopf nach jeder Partie: Der Host startet dasselbe Spiel mit einem Klick neu',
+    ],
+  },
+  {
     version: '2.9.0',
     date: '2026-10-07',
     changes: [

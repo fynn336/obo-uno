@@ -19,7 +19,9 @@ per WebRTC ([PeerJS](https://peerjs.com/)). Alles läuft als statische Seite, z.
    kommt, wartet in der Lounge und spielt ab der nächsten mit. Der Host kann eine Partie jederzeit beenden.
 
 **Abendwertung:** Für jede Partie gibt es Sterne: Platz 1 = 3 ⭐, Platz 2 = 2 ⭐, Platz 3 = 1 ⭐. Wer vorne liegt, ist
-Spieler des Abends 🏆. Mit „Neuer Abend“ setzt der Host die Sterne zurück.
+Spieler des Abends 🏆. Mit „Neuer Abend“ setzt der Host die Sterne zurück; vorher gibt es einen Rückblick mit
+Siegerpodest, den Siegern je Spiel und den Auszeichnungen des Abends. Nach jeder Partie startet der Host dasselbe
+Spiel mit „Nochmal!“ direkt neu.
 
 **Zeit pro Zug:** In jedem Spiel kann der Host 30 oder 60 Sekunden einstellen. Läuft die Zeit ab, spielt in
 Würfelglück und Ludo der Computer den Zug zu Ende; was in Farbenchaos passiert, steht unten.

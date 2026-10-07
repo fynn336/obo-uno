@@ -46,12 +46,21 @@ export function renderWaiting(root, text) {
 export function renderLounge(root, view, code, send) {
   const isHost = view.you === view.hostId;
   const result = view.lastResult;
-  const isNewResult = result && result.id !== celebratedResultId;
+  const { recap } = view;
+  const celebration = result ?? recap;
+  const isNewResult = celebration && celebration.id !== celebratedResultId;
+  const game = GAMES[view.selectedGameId];
+  const fits = view.players.length >= game.minPlayers && view.players.length <= game.maxPlayers;
+  // Nochmal: dasselbe Spiel mit denselben Einstellungen, solange der Host nichts anderes gewählt hat
+  const replay = isHost && view.phase === 'lounge' && result?.gameId === game.id && fits
+    ? () => send({ type: 'startGame' })
+    : null;
   root.replaceChildren(
     h('div', { class: 'page lounge' },
       h('h1', {}, 'OBO Lounge ', h('span', { class: 'code' }, code)),
       h('p', { class: 'hint' }, 'Teile den Code oder schick deinen Freunden direkt den Link: ', inviteButton(code)),
-      result && resultPanel(result, isNewResult),
+      recap && recapPanel(recap, isNewResult),
+      result && resultPanel(result, isNewResult, replay),
       view.phase === 'game' && h('p', { class: 'message' },
         `Gerade läuft ${GAMES[view.gameId].name} – du spielst ab der nächsten Partie mit.`),
       h('div', { class: 'panels' },
@@ -61,8 +70,8 @@ export function renderLounge(root, view, code, send) {
     ),
   );
   if (isNewResult) {
-    celebratedResultId = result.id;
-    if (!result.aborted) throwConfetti();
+    celebratedResultId = celebration.id;
+    if (!celebration.aborted) throwConfetti();
   }
 }
 
@@ -132,12 +141,15 @@ function settingControl(game, setting, value, editable, send) {
       setting.values.map((option) => h('option', { selected: option === value }, setting.describe(option)))));
 }
 
-function resultPanel(result, isNew) {
+function resultPanel(result, isNew, replay) {
   const game = GAMES[result.gameId];
+  const replayButton = replay && h('div', { class: 'buttons' },
+    h('button', { type: 'button', class: 'primary big', onClick: replay }, `🔁 Nochmal ${game.name}!`));
   if (result.aborted) {
     return h('div', { class: 'winner' },
       h('strong', {}, `${game.name} wurde beendet`),
-      h('span', {}, 'Ohne Wertung – zu wenige Spieler oder vom Host beendet'));
+      h('span', {}, 'Ohne Wertung – zu wenige Spieler oder vom Host beendet'),
+      replayButton);
   }
   const winners = result.standings.filter((s) => s.place === 1).map((s) => s.name).join(' & ');
   return h('section', { class: 'result' },
@@ -148,7 +160,31 @@ function resultPanel(result, isNew) {
       h('span', { class: 'name' }, s.name),
       h('span', { class: 'hint' }, s.detail),
       s.points > 0 && h('span', { class: 'score' }, `+${s.points} ⭐`)))),
-    awardList(result.awards));
+    awardList(result.awards),
+    replayButton);
+}
+
+// Rückblick nach „Neuer Abend“: Podest (2., 1., 3. Platz), Sieger je Spiel, häufigste Auszeichnungen
+function recapPanel(recap, isNew) {
+  const step = (place) => {
+    const entries = recap.podium.filter((p) => p.place === place);
+    if (entries.length === 0) return null;
+    return h('div', { class: `step place-${place}` },
+      h('div', { class: 'step-people' }, entries.map((p) => h('div', { class: 'step-person' },
+        avatarBadge(p), h('strong', {}, p.name), h('span', { class: 'hint' }, `${p.points} ⭐`)))),
+      h('div', { class: 'step-block' }, String(place)));
+  };
+  const plural = (n) => (n === 1 ? '1 Partie' : `${n} Partien`);
+  return h('section', { class: 'result recap' },
+    h('div', { class: isNew ? 'winner fresh' : 'winner' },
+      h('strong', {}, '🌙 Rückblick auf den Abend'),
+      h('span', {}, `${plural(recap.games)} gespielt – das waren die Besten`)),
+    h('div', { class: 'podium' }, [2, 1, 3].map(step)),
+    h('ul', { class: 'recap-games' }, recap.perGame.map((g) => h('li', {},
+      h('span', { class: 'game-icon' }, GAMES[g.gameId].icon),
+      h('strong', {}, GAMES[g.gameId].name),
+      h('span', { class: 'hint' }, `${g.played}× gespielt · meiste Siege: ${g.winners.join(' & ')} (${g.wins})`)))),
+    awardList(recap.awards.map((award) => ({ ...award, detail: award.count > 1 ? `${award.count}× ausgezeichnet` : '' }))));
 }
 
 function awardList(awards) {

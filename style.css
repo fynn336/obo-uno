@@ -366,6 +366,95 @@ kbd {
   font-size: 2rem;
 }
 
+/* Abendrückblick: Siegerpodest, der 1. Platz steht in der Mitte am höchsten */
+.podium {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 0.6rem;
+  margin: 0 0 1.25rem;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 150px;
+  animation: rise 0.7s cubic-bezier(0.2, 0.8, 0.3, 1) backwards;
+}
+
+.step-people {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-bottom: 0.4rem;
+}
+
+.step-person {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.step-block {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  border: 4px solid var(--wood-dark);
+  border-bottom: 0;
+  border-radius: 12px 12px 0 0;
+  background: linear-gradient(var(--wood-light), var(--wood));
+  color: var(--accent);
+  font-size: 2rem;
+  font-weight: 900;
+  text-shadow: 0 2px 3px rgba(0, 0, 0, 0.6);
+}
+
+.place-1 .step-block {
+  height: 120px;
+}
+
+.place-2 .step-block {
+  height: 85px;
+}
+
+.place-3 .step-block {
+  height: 60px;
+}
+
+.place-1 {
+  animation-delay: 0.4s;
+}
+
+.place-2 {
+  animation-delay: 0.2s;
+}
+
+@keyframes rise {
+  from {
+    translate: 0 40px;
+    opacity: 0;
+  }
+}
+
+.recap-games {
+  max-width: 560px;
+  margin: 0 auto 1.25rem;
+  padding: 0.6rem 1rem;
+  border-radius: 14px;
+  background: var(--panel);
+  list-style: none;
+  text-align: left;
+}
+
+.recap-games li {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  padding: 0.2rem 0;
+}
+
 .confetti {
   position: fixed;
   inset: 0;

@@ -168,3 +168,25 @@ test('Farbenchaos: Kartendesign aus der Lounge gilt für die ganze Partie', () =
   const s = loungeAct(loungeAct(lounge(2), setDeck('bloom')), start);
   assertEqual([viewFor(s, 'p0').game.deck, viewFor(s, 'p1').game.deck], ['bloom', 'bloom'], 'für alle');
 });
+
+test('Lounge: Neuer Abend zeigt einen Rückblick mit Podest, Siegern und Auszeichnungen', () => {
+  // Zwei gewonnene Farbenchaos-Partien: erst p0, dann p1 legt die letzte Karte.
+  const win = (state, winner) => {
+    const lastCard = { id: 999, color: null, value: 'wild' };
+    const game = { ...state.game, target: 1, current: winner, phase: 'playing', pendingDraw: 0, drawnCardId: null };
+    game.players = game.players.map((p, i) => ({ ...p, hand: i === winner ? [lastCard] : p.hand }));
+    return loungeAct({ ...state, game }, { type: 'move', playerId: `p${winner}`, move: { type: 'play', cardId: lastCard.id } });
+  };
+  let s = win(started(3), 0);
+  s = win(loungeAct(s, start), 1);
+  s = win(loungeAct(s, start), 0);
+  loungeRejected(s, { type: 'newEvening', playerId: 'p1' });
+  s = loungeAct(s, { type: 'newEvening', playerId: 'p0' });
+  const { recap } = viewFor(s, 'p2');
+  assertEqual(recap.games, 3, 'drei Partien');
+  assertEqual(recap.podium.map((p) => [p.name, p.place]).slice(0, 2), [['P0', 1], ['P1', 2]], 'Podest');
+  assertEqual(recap.perGame, [{ gameId: 'uno', played: 3, winners: ['P0'], wins: 2 }], 'meiste Siege');
+  assertEqual([s.players.map((p) => p.points), s.lastResult], [[0, 0, 0], null], 'Sterne zurückgesetzt');
+  s = loungeAct(s, start);
+  assertEqual([s.recap, s.history], [null, []], 'nächste Partie räumt den Rückblick weg');
+});

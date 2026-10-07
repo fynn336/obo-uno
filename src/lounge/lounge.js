@@ -9,6 +9,7 @@ const BOT_NAMES = ['Bot Anton', 'Bot Berta', 'Bot Carla', 'Bot Dieter', 'Bot Emi
 const BOT_EMOJI = '🤖';
 // Lounge-Punkte für Platz 1, 2 und 3 einer Partie
 const PLACE_POINTS = [3, 2, 1];
+const PODIUM_PLACES = 3;
 
 export function createLounge({ hostId, hostName, seed }) {
   const firstGame = Object.values(GAMES)[0];
@@ -23,6 +24,9 @@ export function createLounge({ hostId, hostName, seed }) {
     participants: [],
     lastResult: null,
     resultCount: 0,
+    // gewertete Partien des Abends für den Rückblick
+    history: [],
+    recap: null,
     seed,
   };
   return reduce(state, { type: 'join', playerId: hostId, name: hostName });
@@ -67,6 +71,7 @@ export function viewFor(state, playerId) {
     gameId: state.gameId,
     participants: state.participants,
     lastResult: state.lastResult,
+    recap: state.recap,
     game: isPlaying(state, playerId) ? withPeople(state, GAMES[state.gameId].viewFor(state.game, playerId)) : null,
   };
 }
@@ -160,6 +165,7 @@ function startGame(state, { playerId }) {
   state.gameId = game.id;
   state.participants = state.players.map((p) => p.id);
   state.lastResult = null;
+  state.recap = null;
 }
 
 function abortGame(state, { playerId }) {
@@ -168,10 +174,14 @@ function abortGame(state, { playerId }) {
   endGame(state, null);
 }
 
+// Schließt den Abend mit einem Rückblick ab und setzt die Sterne zurück.
 function newEvening(state, { playerId }) {
   const error = checkHostInLounge(state, playerId);
   if (error) return error;
+  state.resultCount++;
+  state.recap = state.history.length > 0 ? recapOf(state) : null;
   for (const player of state.players) player.points = 0;
+  state.history = [];
   state.lastResult = null;
 }
 
@@ -212,6 +222,7 @@ function endGame(state, result) {
   if (result) {
     state.lastResult.standings = standingsFor(state, result.ranking);
     state.lastResult.awards = result.awards ?? [];
+    state.history.push({ gameId: state.gameId, standings: state.lastResult.standings, awards: state.lastResult.awards });
   }
   state.phase = 'lounge';
   state.gameId = null;
@@ -227,6 +238,39 @@ function standingsFor(state, ranking) {
     if (player) player.points += points;
     return { playerId, name: player?.name ?? '?', place, detail, points };
   });
+}
+
+// Rückblick: Siegerpodest nach Sternen, Sieger je Spiel und die häufigsten Auszeichnungen des Abends
+function recapOf(state) {
+  const ranked = [...state.players].filter((p) => p.points > 0).sort((a, b) => b.points - a.points);
+  const podium = ranked
+    .map((p) => ({ playerId: p.id, name: p.name, avatar: p.avatar, points: p.points,
+      place: ranked.findIndex((other) => other.points === p.points) + 1 }))
+    .filter((entry) => entry.place <= PODIUM_PLACES);
+  const games = [...new Set(state.history.map((entry) => entry.gameId))].map((gameId) => {
+    const played = state.history.filter((entry) => entry.gameId === gameId);
+    const wins = countNames(played.flatMap((entry) => entry.standings.filter((s) => s.place === 1).map((s) => s.name)));
+    const { names, count } = mostOften(wins);
+    return { gameId, played: played.length, winners: names, wins: count };
+  });
+  const titles = [...new Set(state.history.flatMap((entry) => entry.awards.map((award) => award.title)))];
+  const awards = titles.map((title) => {
+    const given = state.history.flatMap((entry) => entry.awards.filter((award) => award.title === title));
+    return { icon: given[0].icon, title, ...mostOften(countNames(given.flatMap((award) => award.names))) };
+  });
+  return { id: state.resultCount, games: state.history.length, podium, perGame: games, awards };
+}
+
+function countNames(names) {
+  const counts = new Map();
+  for (const name of names) counts.set(name, (counts.get(name) ?? 0) + 1);
+  return counts;
+}
+
+// { names, count } der Namen, die am häufigsten vorkommen
+function mostOften(counts) {
+  const count = Math.max(0, ...counts.values());
+  return { names: [...counts].filter(([, n]) => n === count).map(([name]) => name), count };
 }
 
 // Ergänzt die Spielersicht eines Spiels um Avatar, Verbindung und Bot-Kennung aus der Lounge.
