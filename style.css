@@ -1043,6 +1043,15 @@ select {
   box-shadow: none;
 }
 
+#corner .volume {
+  width: 90px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  accent-color: var(--accent);
+}
+
 #corner button.off {
   opacity: 0.4;
   text-decoration: line-through;

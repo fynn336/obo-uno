@@ -68,7 +68,8 @@ function confirmLeave(event) {
 
 document.addEventListener('keydown', (event) => {
   const dialogOpen = document.querySelector('dialog[open]') !== null;
-  if (view && isRunning(view) && !dialogOpen) handleTableKey(event);
+  const inControl = event.target.closest('input, select');
+  if (view && isRunning(view) && !dialogOpen && !inControl) handleTableKey(event);
 });
 
 renderCorner(document.getElementById('corner'));

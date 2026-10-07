@@ -1,6 +1,9 @@
 const TRACKS = ['assets/music/jazz-1.mp3', 'assets/music/jazz-2.mp3', 'assets/music/jazz-3.mp3'];
-const MUSIC_VOLUME = 0.2;
-const EFFECT_VOLUME = 0.6;
+// Grundlautstärken bei Regler auf 100 %
+const MUSIC_VOLUME = 0.4;
+const EFFECT_VOLUME = 1;
+const GONG_VOLUME = 0.36;
+const DEFAULT_SETTINGS = { music: true, effects: true, volume: 0.5 };
 const STORAGE_KEY = 'dfuno-audio';
 
 const settings = loadSettings();
@@ -33,24 +36,30 @@ export function toggleEffects() {
   saveSettings();
 }
 
+export function setVolume(volume) {
+  settings.volume = volume;
+  saveSettings();
+  if (track) track.volume = MUSIC_VOLUME * volume;
+}
+
 export function playCardSound(rate = 1) {
   if (!unlocked || !settings.effects) return;
   const sound = cardSound.cloneNode();
-  sound.volume = EFFECT_VOLUME;
+  sound.volume = EFFECT_VOLUME * settings.volume;
   sound.preservesPitch = false;
   sound.playbackRate = rate;
   resume(sound);
 }
 
 export function playTurnGong() {
-  if (!unlocked || !settings.effects) return;
+  if (!unlocked || !settings.effects || settings.volume === 0) return;
   context ??= new AudioContext();
   const start = context.currentTime;
   [660, 880].forEach((frequency, i) => {
     const at = start + i * 0.13;
     const oscillator = new OscillatorNode(context, { frequency });
     const gain = new GainNode(context, { gain: 0 });
-    gain.gain.linearRampToValueAtTime(0.18, at + 0.02);
+    gain.gain.linearRampToValueAtTime(GONG_VOLUME * settings.volume, at + 0.02);
     gain.gain.exponentialRampToValueAtTime(0.001, at + 0.7);
     oscillator.connect(gain).connect(context.destination);
     oscillator.start(at);
@@ -61,7 +70,7 @@ export function playTurnGong() {
 function playNextTrack() {
   if (playlist.length === 0) playlist = [...TRACKS].sort(() => Math.random() - 0.5);
   track = new Audio(playlist.pop());
-  track.volume = MUSIC_VOLUME;
+  track.volume = MUSIC_VOLUME * settings.volume;
   track.addEventListener('ended', playNextTrack);
   resume(track);
 }
@@ -75,9 +84,9 @@ function resume(audio) {
 
 function loadSettings() {
   try {
-    return { music: true, effects: true, ...JSON.parse(localStorage.getItem(STORAGE_KEY)) };
+    return { ...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem(STORAGE_KEY)) };
   } catch {
-    return { music: true, effects: true };
+    return { ...DEFAULT_SETTINGS };
   }
 }
 

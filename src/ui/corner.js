@@ -1,9 +1,9 @@
 import { CHANGELOG, VERSION } from '../changelog.js';
-import { audioSettings, toggleEffects, toggleMusic } from './audio.js';
+import { audioSettings, setVolume, toggleEffects, toggleMusic } from './audio.js';
 import { h } from './dom.js';
 
 export function renderCorner(root) {
-  const { music, effects } = audioSettings();
+  const { music, effects, volume } = audioSettings();
   const toggle = (action) => () => {
     action();
     renderCorner(root);
@@ -23,6 +23,16 @@ export function renderCorner(root) {
       'aria-pressed': String(effects),
       onClick: toggle(toggleEffects),
     }, '🔊'),
+    h('input', {
+      type: 'range',
+      class: 'volume',
+      min: 0,
+      max: 100,
+      value: Math.round(volume * 100),
+      'aria-label': 'Lautstärke',
+      title: 'Lautstärke',
+      onInput: (event) => setVolume(event.target.value / 100),
+    }),
     h('button', { type: 'button', class: 'version', title: 'Was ist neu?', onClick: openChangelog }, `v${VERSION}`),
   );
 }
