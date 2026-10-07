@@ -23,6 +23,7 @@ export function viewFor(state, playerId) {
       handPoints: state.phase === 'roundOver' ? handPoints(p.hand) : null,
     })),
     target: state.target,
+    turnTime: state.turnTime,
     championId: state.championId,
     hand: me ? me.hand : [],
     playableIds: playableCardIds(state, playerId),

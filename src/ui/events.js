@@ -14,6 +14,7 @@ const TEXTS = {
   challenge: (e) => `${e.player} ficht an: ${e.success ? 'erfolgreich' : 'gescheitert'}`,
   left: (e) => `${e.player} wurde entfernt (Verbindung verloren)`,
   win: (e) => `${e.player} gewinnt die Runde`,
+  timeout: (e) => `Zeit abgelaufen für ${e.player}`,
 };
 
 const BANNERS = {
@@ -24,6 +25,7 @@ const BANNERS = {
   reverse: () => ['⇄', 'Richtungswechsel'],
   challenge: (e) => [e.success ? 'Anfechtung erfolgreich' : 'Anfechtung gescheitert', e.success ? `${e.target} zieht 4` : e.player],
   left: (e) => ['Raus', `${e.player} ist nicht zurückgekommen`],
+  timeout: (e) => ['⏱ Zeit um', e.player],
 };
 
 export function describeEvent(event) {

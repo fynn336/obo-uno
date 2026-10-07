@@ -24,6 +24,9 @@ export function hostGame(name, events) {
   let state = created.state;
   const seats = new Map(); // playerId → { playerId, token, link, kickTimer }
   const links = new Set(); // { conn, playerId, lastSeen }
+  let turnTimer = null;
+  let turnKey = null;
+  let turnDeadline = null;
 
   openLobby();
   setInterval(checkLinks, PING_INTERVAL_MS);
@@ -143,14 +146,29 @@ export function hostGame(name, events) {
     const result = reduce(state, action);
     if (result.error) return result.error;
     state = result.state;
+    scheduleTurnTimer();
     publish();
   }
 
+  // Neue Entscheidung (Zug, Phase, gezogene Karte) startet die Uhr neu; bei getrennten Spielern läuft sie nicht.
+  function scheduleTurnTimer() {
+    const current = isRunning(state) ? state.players[state.current] : null;
+    const key = current?.connected && state.turnTime > 0
+      ? `${state.turnNumber}|${state.phase}|${state.drawnCardId}|${current.id}`
+      : null;
+    if (key === turnKey) return;
+    turnKey = key;
+    clearTimeout(turnTimer);
+    turnDeadline = key ? Date.now() + state.turnTime * 1000 : null;
+    if (key) turnTimer = setTimeout(() => apply({ type: 'timeout', playerId: current.id }), state.turnTime * 1000);
+  }
+
   function publish() {
+    const turnEndsIn = turnDeadline ? turnDeadline - Date.now() : null;
     for (const seat of seats.values()) {
-      if (seat.link) send(seat.link, { type: MSG.VIEW, view: viewFor(state, seat.playerId) });
+      if (seat.link) send(seat.link, { type: MSG.VIEW, view: { ...viewFor(state, seat.playerId), turnEndsIn } });
     }
-    events.onView(viewFor(state, hostId));
+    events.onView({ ...viewFor(state, hostId), turnEndsIn });
   }
 
   function send(link, message) {

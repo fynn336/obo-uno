@@ -1,6 +1,14 @@
 // Neueste Version zuerst. Die aktuelle Versionsnummer ist immer der oberste Eintrag.
 export const CHANGELOG = [
   {
+    version: '1.6.0',
+    date: '2026-10-07',
+    changes: [
+      'Zug-Timer als Einstellung in der Lobby: unbegrenzt, 30 oder 60 Sekunden',
+      'Läuft die Zeit ab, wird automatisch gezogen bzw. die offene Strafe genommen',
+    ],
+  },
+  {
     version: '1.5.0',
     date: '2026-10-07',
     changes: ['Gezogene Karten fliegen sichtbar vom Stapel zum Platz des Mitspielers'],

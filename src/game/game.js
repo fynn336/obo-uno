@@ -7,9 +7,10 @@ const MAX_PLAYERS = 8;
 const MAX_NAME_LENGTH = 16;
 const MAX_EVENTS = 30;
 export const TARGET_SCORES = [200, 300, 500];
+export const TURN_TIMES = [0, 30, 60];
 const PENALTIES = { draw2: 2, wild4: 4 };
 const RUNNING_PHASES = ['playing', 'chooseColor', 'challengeWindow'];
-const UNO_WINDOW_CLOSERS = ['play', 'draw', 'pass', 'chooseColor', 'challenge', 'callUno'];
+const UNO_WINDOW_CLOSERS = ['play', 'draw', 'pass', 'chooseColor', 'challenge', 'callUno', 'timeout'];
 const PHASE_HINTS = {
   playing: 'Das geht gerade nicht',
   chooseColor: 'Wähle zuerst eine Farbe',
@@ -22,6 +23,10 @@ export function createGame({ hostId, hostName, seed }) {
     hostId,
     rules: { stacking: false, challenge: false, drawUntilPlayable: false },
     target: 500,
+    // Sekunden pro Zug, 0 = aus; die Uhr selbst läuft beim Host
+    turnTime: 0,
+    // zählt jeden Spielerwechsel, damit der Host-Timer einen neuen Zug erkennt
+    turnNumber: 0,
     // Wer das Punkteziel erreicht hat; beim nächsten Rundenstart beginnt ein neuer Abend
     championId: null,
     players: [],
@@ -103,6 +108,30 @@ function join(state, { playerId, name }) {
   }
   const avatar = { emoji: '', color: state.players.length % AVATAR_COLORS.length };
   state.players.push({ id: playerId, name: trimmed, connected: true, hand: [], saidUno: false, score: 0, avatar });
+}
+
+function setTurnTime(state, { playerId, value }) {
+  if (playerId !== state.hostId) return 'Nur der Host kann die Zugzeit ändern';
+  if (isRunning(state)) return 'Die Zugzeit kann nur in der Lobby geändert werden';
+  if (!TURN_TIMES.includes(value)) return 'Ungültige Zugzeit';
+  state.turnTime = value;
+}
+
+// Zeit abgelaufen: Farbwahl zufällig, offene Strafe ziehen, gezogene Karte behalten, sonst 1 Karte ziehen.
+function timeout(state, { playerId }) {
+  if (!isRunning(state) || currentPlayer(state).id !== playerId) return 'Kein laufender Zug dieses Spielers';
+  const player = currentPlayer(state);
+  log(state, 'timeout', { player: player.name });
+  if (state.phase === 'chooseColor') {
+    applyColor(state, randomColor(state));
+  } else if (state.pendingDraw > 0) {
+    takePenalty(state);
+  } else {
+    if (state.drawnCardId === null) {
+      log(state, 'draw', { player: player.name, count: drawCards(state, player, 1).length });
+    }
+    advance(state, 1);
+  }
 }
 
 function setAvatar(state, { playerId, emoji, color }) {
@@ -271,7 +300,7 @@ function catchUno(state, { playerId, targetId }) {
 }
 
 const handlers = {
-  join, leave, setConnected, setRule, setTarget, setAvatar, start, play, chooseColor, draw, pass, challenge, callUno, catchUno,
+  join, leave, setConnected, setRule, setTarget, setTurnTime, setAvatar, timeout, start, play, chooseColor, draw, pass, challenge, callUno, catchUno,
 };
 
 export function handPoints(hand) {
@@ -372,7 +401,7 @@ function reshuffleDiscardPile(state) {
 // Der Ausscheidende ist am Zug: offene Farbwahl zufällig abschließen, offene Strafe verfällt.
 function abandonTurn(state) {
   const leaving = currentPlayer(state);
-  if (state.phase === 'chooseColor') applyColor(state, COLORS[Math.floor(random(state) * COLORS.length)]);
+  if (state.phase === 'chooseColor') applyColor(state, randomColor(state));
   if (currentPlayer(state) !== leaving) return;
   clearPenalty(state);
   advance(state, 1);
@@ -404,6 +433,11 @@ function endRound(state, winnerId, scored) {
 function advance(state, steps) {
   state.current = nextIndex(state, steps);
   state.drawnCardId = null;
+  state.turnNumber++;
+}
+
+function randomColor(state) {
+  return COLORS[Math.floor(random(state) * COLORS.length)];
 }
 
 function nextIndex(state, steps) {

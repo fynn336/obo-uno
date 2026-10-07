@@ -21,6 +21,7 @@ export const MSG = {
 const ACTION_FIELDS = {
   setRule: { rule: 'string', value: 'boolean' },
   setTarget: { value: 'number' },
+  setTurnTime: { value: 'number' },
   setAvatar: { emoji: 'string', color: 'number' },
   start: {},
   play: { cardId: 'number' },

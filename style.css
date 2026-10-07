@@ -492,6 +492,33 @@ select {
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 }
 
+.turn-timer {
+  width: 220px;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.turn-timer span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transform-origin: left;
+  animation: countdown var(--duration) linear var(--delay) forwards;
+}
+
+@keyframes countdown {
+  70% {
+    background: var(--accent);
+  }
+
+  to {
+    scale: 0 1;
+    background: var(--red);
+  }
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;

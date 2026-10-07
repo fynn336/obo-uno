@@ -1,5 +1,5 @@
 import { AVATAR_COLORS, AVATAR_EMOJIS } from '../game/avatars.js';
-import { TARGET_SCORES } from '../game/game.js';
+import { TARGET_SCORES, TURN_TIMES } from '../game/game.js';
 import { avatarBadge } from './avatar.js';
 import { h } from './dom.js';
 
@@ -82,11 +82,14 @@ export function renderLobby(root, view, code, send) {
             }),
             label,
           )),
-          h('label', { class: 'toggle' }, 'Abend gewonnen bei',
-            h('select', {
-              disabled: !isHost,
-              onChange: (event) => send({ type: 'setTarget', value: Number(event.target.value) }),
-            }, TARGET_SCORES.map((score) => h('option', { value: score, selected: score === view.target }, `${score} Punkten`)))),
+          hostSelect({
+            label: 'Abend gewonnen bei', action: 'setTarget', values: TARGET_SCORES, current: view.target,
+            describe: (score) => `${score} Punkten`,
+          }, isHost, send),
+          hostSelect({
+            label: 'Zeit pro Zug', action: 'setTurnTime', values: TURN_TIMES, current: view.turnTime,
+            describe: (seconds) => (seconds ? `${seconds} Sekunden` : 'unbegrenzt'),
+          }, isHost, send),
           h('p', { class: 'hint' }, isHost ? 'Alle aus = offizielle Regeln.' : 'Nur der Host kann die Regeln ändern.')),
         avatarPicker(view, send),
       ),
@@ -100,6 +103,14 @@ export function renderLobby(root, view, code, send) {
     celebratedEventId = win.id;
     throwConfetti();
   }
+}
+
+function hostSelect({ label, action, values, current, describe }, isHost, send) {
+  return h('label', { class: 'toggle' }, label,
+    h('select', {
+      disabled: !isHost,
+      onChange: (event) => send({ type: action, value: Number(event.target.value) }),
+    }, values.map((value) => h('option', { value, selected: value === current }, describe(value)))));
 }
 
 function inviteButton(code) {

@@ -24,6 +24,7 @@ let previous = null;
 let selectedId = null;
 let lastEventId = null;
 let titleBlinking = false;
+let turnDeadline = null;
 
 export function renderTable(root, view, send) {
   const last = root.querySelector('.table') ? previous : null;
@@ -31,6 +32,7 @@ export function renderTable(root, view, send) {
   const flySource = isNewView ? playedCardSource(root, last, view) : null;
   latest = { root, view, send };
   previous = view;
+  if (isNewView) turnDeadline = view.turnEndsIn === null ? null : Date.now() + view.turnEndsIn;
   const hand = sortHand(view.hand);
   if (isNewView) selectedId = pickSelection(view, hand);
   root.replaceChildren(
@@ -46,6 +48,7 @@ export function renderTable(root, view, send) {
             h('div', { class: 'center' },
               piles(view, send),
               h('p', { class: 'status' }, statusText(view)),
+              turnDeadline !== null && turnTimer(view),
               actions(view, send))),
           seats(view, send))),
       handArea(view, hand, send),
@@ -79,6 +82,7 @@ function infoBar(view) {
     h('span', {}, 'Farbe: ', h('span', { class: `swatch ${view.activeColor ?? ''}` }), COLOR_NAMES[view.activeColor] ?? 'wird gewählt'),
     h('span', { class: 'rules' },
       h('span', { class: 'chip' }, `Ziel ${view.target} P.`),
+      view.turnTime > 0 && h('span', { class: 'chip' }, `⏱ ${view.turnTime} s`),
       activeRules.length > 0
         ? activeRules.map((rule) => h('span', { class: 'chip' }, RULE_NAMES[rule]))
         : h('span', { class: 'chip' }, 'Offizielle Regeln')),
@@ -135,6 +139,16 @@ function piles(view, send) {
         isMyTurn(view) && view.phase === 'chooseColor' && colorWheel(send)),
       h('span', { class: 'pile-label' }, COLOR_NAMES[view.activeColor] ?? 'Farbe wird gewählt')),
   );
+}
+
+// Die Leiste läuft per CSS; die negative Verzögerung setzt sie auf die verbleibende Zeit.
+function turnTimer(view) {
+  const elapsed = view.turnTime - Math.max(0, turnDeadline - Date.now()) / 1000;
+  return h('div', {
+    class: 'turn-timer',
+    role: 'timer',
+    style: `--duration:${view.turnTime}s;--delay:-${elapsed}s`,
+  }, h('span'));
 }
 
 function colorWheel(send) {
