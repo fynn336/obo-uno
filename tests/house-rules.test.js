@@ -1,5 +1,7 @@
-import { test, assertEqual } from './testing.js';
-import { act, currentId, game, handOf, play, rejected } from './setup.js';
+import { test, assert, assertEqual } from './testing.js';
+import { act, currentId, game, handOf, play, player, rejected } from './setup.js';
+import { botAction } from '../src/games/uno/bot.js';
+import { playableCardIds } from '../src/games/uno/game.js';
 
 const DRAW_PILE = ['y1', 'y2', 'y3', 'y4', 'y5', 'y6', 'y7', 'y8', 'y9', 'y0', 'b8', 'b9'];
 
@@ -140,4 +142,48 @@ test('Ziehen bis spielbar: gilt nicht für Strafkarten', () => {
   stacked = act(play(stacked, 'p0', 'r+2'), { type: 'draw', playerId: 'p1' });
   assertEqual(handOf(stacked, 'p1'), ['g2', 'b1', 'b2'], 'Strafe beim Stapeln');
   assertEqual(currentId(stacked), 'p2', 'p1 setzt aus');
+});
+
+test('Reinwerfen: gleiche Karte außer der Reihe, danach geht es beim Werfer weiter', () => {
+  const s = game({ hands: [['g1', 'b4'], ['b7', 'b2'], ['r5', 'b9'], ['g3']], top: 'r5', rules: { jumpIn: true } });
+  assertEqual(playableCardIds(s, 'p2').length, 1, 'nur die gleiche Karte');
+  rejected(s, { type: 'play', playerId: 'p1', cardId: player(s, 'p1').hand[0].id });
+  const after = play(s, 'p2', 'r5');
+  assertEqual([currentId(after), handOf(after, 'p2')], ['p3', ['b9']], 'weiter nach dem Werfer');
+  assertEqual(after.events.map((e) => e.type).slice(-2), ['jumpIn', 'play'], 'Ereignisse');
+});
+
+test('Reinwerfen: nur mit Regel, nicht bei offener Strafe oder Farbwahl', () => {
+  rejected(game({ hands: [['g1'], ['r5', 'b1']], top: 'r5' }), { type: 'play', playerId: 'p1', cardId: 0 });
+  const off = game({ hands: [['g1'], ['r5', 'b1']], top: 'r5' });
+  rejected(off, { type: 'play', playerId: 'p1', cardId: player(off, 'p1').hand[0].id });
+  const pending = { ...game({ hands: [['g1'], ['r+2', 'b1'], ['g2']], top: 'r+2', rules: { jumpIn: true, stacking: true } }), pendingDraw: 2 };
+  rejected(pending, { type: 'play', playerId: 'p1', cardId: player(pending, 'p1').hand[0].id });
+  assertEqual(playableCardIds(pending, 'p1'), [], 'nicht während einer Strafe');
+});
+
+test('7-0: mit einer 7 Karten tauschen, zu zweit automatisch', () => {
+  let s = play(game({ hands: [['r7', 'g1', 'g2'], ['b1'], ['y1', 'y2', 'y3', 'y4']], rules: { sevenZero: true } }), 'p0', 'r7');
+  assertEqual([s.phase, currentId(s)], ['chooseSwap', 'p0'], 'Wahl offen');
+  rejected(s, { type: 'swapHands', playerId: 'p0', targetId: 'p0' });
+  rejected(s, { type: 'draw', playerId: 'p0' });
+  s = act(s, { type: 'swapHands', playerId: 'p0', targetId: 'p2' });
+  assertEqual([handOf(s, 'p0'), handOf(s, 'p2'), currentId(s), s.phase], [['y1', 'y2', 'y3', 'y4'], ['g1', 'g2'], 'p1', 'playing'], 'getauscht');
+  const duo = play(game({ hands: [['r7', 'g1'], ['b1', 'b2', 'b3']], rules: { sevenZero: true } }), 'p0', 'r7');
+  assertEqual([handOf(duo, 'p0'), handOf(duo, 'p1')], [['b1', 'b2', 'b3'], ['g1']], 'zu zweit');
+});
+
+test('7-0: mit einer 0 wandern alle Hände in Spielrichtung weiter', () => {
+  const s = play(game({ hands: [['r0', 'g1'], ['b1', 'b2'], ['y1']], rules: { sevenZero: true } }), 'p0', 'r0');
+  assertEqual([handOf(s, 'p0'), handOf(s, 'p1'), handOf(s, 'p2')], [['y1'], ['g1'], ['b1', 'b2']], 'im Uhrzeigersinn');
+  const back = play(game({ hands: [['r0', 'g1'], ['b1', 'b2'], ['y1']], direction: -1, rules: { sevenZero: true } }), 'p0', 'r0');
+  assertEqual(handOf(back, 'p0'), ['b1', 'b2'], 'gegen den Uhrzeigersinn');
+});
+
+test('7-0: Zeitablauf und Bot wählen einen Tauschpartner', () => {
+  const s = play(game({ hands: [['r7', 'g1', 'g2'], ['b1'], ['y1', 'y2']], rules: { sevenZero: true } }), 'p0', 'r7');
+  const timedOut = act(s, { type: 'timeout', playerId: 'p0' });
+  assertEqual(timedOut.phase, 'playing', 'getauscht');
+  assertEqual(botAction(s, 'p0'), { type: 'swapHands', playerId: 'p0', targetId: 'p1' }, 'Bot nimmt die kleinste Hand');
+  assert(!playableCardIds(game({ hands: [['r7'], ['r5']], rules: { sevenZero: true } }), 'p1').length, 'ohne Reinwerfen nichts');
 });

@@ -1,6 +1,14 @@
 // Neueste Version zuerst. Die aktuelle Versionsnummer ist immer der oberste Eintrag.
 export const CHANGELOG = [
   {
+    version: '2.9.0',
+    date: '2026-10-07',
+    changes: [
+      'Farbenchaos-Hausregel Reinwerfen: Genau die gleiche Karte darf jederzeit gelegt werden, auch außer der Reihe',
+      'Farbenchaos-Hausregel 7-0: Bei einer 7 tauscht man die Karten mit jemandem, bei einer 0 wandern alle Hände weiter',
+    ],
+  },
+  {
     version: '2.8.0',
     date: '2026-10-07',
     changes: [

@@ -91,6 +91,11 @@ bzw. die offene Strafe, eine offene Farbwahl wird zufällig getroffen.
     - Gescheitert: Der Anfechter zieht die Summe + 2.
 - **Ziehen bis spielbar:** Man zieht, bis eine spielbare Karte kommt, und darf sie legen. Das gilt nicht für
   Strafkarten.
+- **Reinwerfen:** Wer genau die gleiche Karte wie die oberste hat (gleiche Farbe und gleicher Wert), darf sie
+  jederzeit legen, auch wenn er nicht dran ist. Danach geht es vom Werfer aus weiter. Nicht während einer offenen
+  Strafe oder Farbwahl. Computer-Gegner werfen nicht rein.
+- **7-0:** Wer eine 7 legt, tauscht seine Karten mit einem Mitspieler seiner Wahl (zu zweit automatisch). Bei
+  einer 0 geben alle ihre Karten an den nächsten Spieler in Spielrichtung weiter. Danach gilt kein UNO-Ruf mehr.
 
 ## Würfelglück (Kniffel-Regeln)
 

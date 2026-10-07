@@ -23,7 +23,7 @@ test('Bots: rufen UNO, wählen ihre häufigste Farbe, ziehen ohne passende Karte
 
 test('Bots: spielen ganze Partien mit allen Hausregel-Kombinationen ohne abgelehnte Aktion', () => {
   const ruleSets = [{}, { stacking: true }, { challenge: true }, { drawUntilPlayable: true },
-    { stacking: true, challenge: true, drawUntilPlayable: true }];
+    { stacking: true, challenge: true, drawUntilPlayable: true }, { sevenZero: true }, { jumpIn: true, sevenZero: true, stacking: true }];
   for (const [i, rules] of ruleSets.entries()) {
     for (let seed = 1; seed <= 6; seed++) {
       let s = newGame(4, rules, seed * 97 + i);

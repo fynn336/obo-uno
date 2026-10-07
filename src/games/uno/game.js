@@ -4,12 +4,13 @@ import { COLORS, cardPoints, createDeck, isPlayable } from './deck.js';
 const HAND_SIZE = 7;
 const MAX_EVENTS = 30;
 const PENALTIES = { draw2: 2, wild4: 4 };
-const RUNNING_PHASES = ['playing', 'chooseColor', 'challengeWindow'];
-const UNO_WINDOW_CLOSERS = ['play', 'draw', 'pass', 'chooseColor', 'challenge', 'callUno', 'timeout'];
+const RUNNING_PHASES = ['playing', 'chooseColor', 'challengeWindow', 'chooseSwap'];
+const UNO_WINDOW_CLOSERS = ['play', 'draw', 'pass', 'chooseColor', 'challenge', 'callUno', 'timeout', 'swapHands'];
 const PHASE_HINTS = {
   playing: 'Das geht gerade nicht',
   chooseColor: 'Wähle zuerst eine Farbe',
   challengeWindow: 'Fechte an oder ziehe',
+  chooseSwap: 'Wähle zuerst, mit wem du die Karten tauschst',
 };
 
 // Neue Partie mit den Spielern aus der Lounge; die erste Runde wird sofort ausgeteilt.
@@ -17,7 +18,13 @@ export function createGame({ players, hostId, settings, seed }) {
   const state = {
     phase: 'playing',
     hostId,
-    rules: { stacking: settings.stacking, challenge: settings.challenge, drawUntilPlayable: settings.drawUntilPlayable },
+    rules: {
+      stacking: settings.stacking,
+      challenge: settings.challenge,
+      drawUntilPlayable: settings.drawUntilPlayable,
+      jumpIn: settings.jumpIn,
+      sevenZero: settings.sevenZero,
+    },
     target: settings.target,
     // Sekunden pro Zug, 0 = aus; die Uhr selbst läuft beim Host
     turnTime: settings.turnTime,
@@ -61,6 +68,9 @@ export function isRunning(state) {
 }
 
 export function playableCardIds(state, playerId) {
+  if (canJumpIn(state, playerId)) {
+    return findPlayer(state, playerId).hand.filter((card) => isIdentical(card, topCard(state))).map((card) => card.id);
+  }
   if (checkTurn(state, playerId, ['playing', 'challengeWindow'])) return [];
   return currentPlayer(state).hand
     .filter((card) => state.drawnCardId === null || card.id === state.drawnCardId)
@@ -99,6 +109,9 @@ function timeout(state, { playerId }) {
   log(state, 'timeout', { player: player.name });
   if (state.phase === 'chooseColor') {
     applyColor(state, randomColor(state));
+  } else if (state.phase === 'chooseSwap') {
+    const others = state.players.filter((p) => p !== player);
+    finishSwap(state, others[Math.floor(random(state) * others.length)]);
   } else if (state.pendingDraw > 0) {
     takePenalty(state);
   } else {
@@ -151,6 +164,14 @@ function startRound(state) {
 }
 
 function play(state, { playerId, cardId }) {
+  if (canJumpIn(state, playerId)) {
+    const jumper = findPlayer(state, playerId);
+    const card = jumper.hand.find((c) => c.id === cardId);
+    if (!card || !isIdentical(card, topCard(state))) return 'Reinwerfen geht nur mit genau der gleichen Karte';
+    state.current = state.players.indexOf(jumper);
+    state.drawnCardId = null;
+    log(state, 'jumpIn', { player: jumper.name });
+  }
   const error = checkTurn(state, playerId, ['playing', 'challengeWindow']);
   if (error) return error;
   const player = currentPlayer(state);
@@ -174,10 +195,24 @@ function play(state, { playerId, cardId }) {
   if (player.hand.length === 1 && !player.saidUno) state.unoWindow = playerId;
   if (card.color === null) {
     state.phase = 'chooseColor';
+  } else if (state.rules.sevenZero && card.value === '7') {
+    state.activeColor = card.color;
+    // Zu zweit gibt es nur einen möglichen Tauschpartner.
+    if (state.players.length === 2) finishSwap(state, state.players.find((p) => p !== player));
+    else state.phase = 'chooseSwap';
   } else {
     state.activeColor = card.color;
+    if (state.rules.sevenZero && card.value === '0') rotateHands(state);
     applyEffect(state, card);
   }
+}
+
+function swapHands(state, { playerId, targetId }) {
+  const error = checkTurn(state, playerId, ['chooseSwap']);
+  if (error) return error;
+  const target = findPlayer(state, targetId);
+  if (!target || target.id === playerId) return 'Wähle einen Mitspieler';
+  finishSwap(state, target);
 }
 
 function chooseColor(state, { playerId, color }) {
@@ -253,7 +288,7 @@ function catchUno(state, { playerId, targetId }) {
 }
 
 // leave und timeout löst nur der Host aus, alle anderen sind Spielzüge.
-const handlers = { leave, timeout, nextRound, play, chooseColor, draw, pass, challenge, callUno, catchUno };
+const handlers = { leave, timeout, nextRound, play, chooseColor, swapHands, draw, pass, challenge, callUno, catchUno };
 
 export function handPoints(hand) {
   return hand.reduce((sum, card) => sum + cardPoints(card), 0);
@@ -263,6 +298,44 @@ function checkTurn(state, playerId, phases) {
   if (!isRunning(state)) return 'Die Runde läuft gerade nicht';
   if (currentPlayer(state).id !== playerId) return 'Du bist nicht am Zug';
   if (!phases.includes(state.phase)) return PHASE_HINTS[state.phase];
+}
+
+// Reinwerfen: Wer nicht am Zug ist, darf genau die gleiche Karte wie die oberste legen.
+function canJumpIn(state, playerId) {
+  const jumper = findPlayer(state, playerId);
+  return Boolean(state.rules.jumpIn && jumper && jumper !== currentPlayer(state)
+    && state.phase === 'playing' && state.pendingDraw === 0);
+}
+
+function isIdentical(card, top) {
+  return card.color !== null && card.color === top.color && card.value === top.value;
+}
+
+// 7: Karten mit einem Mitspieler tauschen, danach geht es normal weiter.
+function finishSwap(state, target) {
+  const player = currentPlayer(state);
+  [player.hand, target.hand] = [target.hand, player.hand];
+  log(state, 'swap', { player: player.name, target: target.name });
+  resetUnoCalls(state);
+  state.phase = 'playing';
+  advance(state, 1);
+}
+
+// 0: Alle Hände wandern einen Platz in Spielrichtung weiter.
+function rotateHands(state) {
+  const hands = state.players.map((p) => p.hand);
+  const count = hands.length;
+  state.players.forEach((p, i) => {
+    p.hand = hands[(((i - state.direction) % count) + count) % count];
+  });
+  log(state, 'rotate', { player: currentPlayer(state).name });
+  resetUnoCalls(state);
+}
+
+// Nach einem Tausch hat niemand mehr die Hand, für die er UNO gerufen hat.
+function resetUnoCalls(state) {
+  for (const p of state.players) p.saidUno = false;
+  state.unoWindow = null;
 }
 
 function canPlay(state, card) {

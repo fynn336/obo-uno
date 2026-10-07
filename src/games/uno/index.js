@@ -16,6 +16,8 @@ export const uno = {
     { key: 'stacking', label: 'Stapeln von +2/+4', type: 'toggle', default: false },
     { key: 'challenge', label: 'Wild-+4-Anfechtung', type: 'toggle', default: false },
     { key: 'drawUntilPlayable', label: 'Ziehen bis spielbar', type: 'toggle', default: false },
+    { key: 'jumpIn', label: 'Reinwerfen', type: 'toggle', default: false },
+    { key: 'sevenZero', label: '7-0: tauschen und weitergeben', type: 'toggle', default: false },
     {
       key: 'deck', label: 'Kartendesign', type: 'choice', values: ['classic', 'bloom'], default: 'classic',
       describe: (deck) => (deck === 'bloom' ? 'Blütenzauber' : 'Klassisch'),
@@ -29,6 +31,7 @@ export const uno = {
   moves: {
     play: { cardId: 'number' },
     chooseColor: { color: 'string' },
+    swapHands: { targetId: 'string' },
     draw: {},
     pass: {},
     challenge: {},

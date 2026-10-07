@@ -8,7 +8,9 @@ import { bannerFor, describeEvent } from './events.js';
 
 const COLOR_ORDER = ['red', 'yellow', 'green', 'blue', null];
 const VALUE_ORDER = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'skip', 'reverse', 'draw2', 'wild', 'wild4'];
-const RULE_NAMES = { stacking: 'Stapeln', challenge: 'Anfechtung', drawUntilPlayable: 'Ziehen bis spielbar' };
+const RULE_NAMES = {
+  stacking: 'Stapeln', challenge: 'Anfechtung', drawUntilPlayable: 'Ziehen bis spielbar', jumpIn: 'Reinwerfen', sevenZero: '7-0',
+};
 const MAX_MINI_CARDS = 10;
 const PULSE_MS = 2000;
 const MAX_FLYING_CARDS = 6;
@@ -160,11 +162,14 @@ function statusText(view) {
   const pending = view.pendingDraw;
   if (!current.connected) return `${current.name} ist getrennt – der Platz bleibt 60 Sekunden reserviert`;
   if (!isMyTurn(view)) {
+    if (view.playableIds.length > 0) return 'Du hast genau die gleiche Karte – wirf rein!';
     if (view.phase === 'chooseColor') return `${current.name} wählt eine Farbe …`;
+    if (view.phase === 'chooseSwap') return `${current.name} sucht sich einen Tauschpartner …`;
     if (view.phase === 'challengeWindow') return `${current.name} entscheidet: anfechten oder ${pending} ziehen …`;
     return `Warte auf ${current.name} …`;
   }
   if (view.phase === 'chooseColor') return `Wähle eine Farbe (${Object.keys(colorKeys()).join(', ').toUpperCase()})`;
+  if (view.phase === 'chooseSwap') return 'Mit wem tauschst du deine Karten?';
   const stackHint = view.rules.stacking ? ', stapeln' : '';
   if (view.phase === 'challengeWindow') return `+${pending} gegen dich: anfechten${stackHint} oder ${pending} Karten ziehen`;
   if (pending > 0) return `+${pending} gegen dich: stapeln oder ${pending} Karten ziehen`;
@@ -183,6 +188,8 @@ function actions(view, send) {
       view.pendingDraw > 0 ? `${view.pendingDraw} Karten ziehen` : 'Karte ziehen', 'Leertaste', { type: 'draw' }),
     myTurn && view.drawnCardId !== null && button('Weitergeben', null, { type: 'pass' }),
     myTurn && view.phase === 'challengeWindow' && button('Anfechten', null, { type: 'challenge' }, { class: 'primary' }),
+    myTurn && view.phase === 'chooseSwap' && view.players.filter((p) => p.id !== view.you).map((p) => button(
+      `⇄ ${p.name} (${cardCount(p.cardCount)})`, null, { type: 'swapHands', targetId: p.id }, { class: 'primary' })),
     button('UNO!', 'U', { type: 'callUno' }, {
       class: 'uno',
       disabled: !(canAct && view.hand.length === 2 && !me.saidUno),

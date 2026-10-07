@@ -15,6 +15,9 @@ const TEXTS = {
   left: (e) => `${e.player} wurde entfernt (Verbindung verloren)`,
   win: (e) => `${e.player} gewinnt die Runde`,
   timeout: (e) => `Zeit abgelaufen für ${e.player}`,
+  jumpIn: (e) => `${e.player} wirft rein!`,
+  swap: (e) => `${e.player} tauscht die Karten mit ${e.target}`,
+  rotate: () => 'Alle Hände wandern weiter',
 };
 
 const BANNERS = {
@@ -26,6 +29,9 @@ const BANNERS = {
   challenge: (e) => [e.success ? 'Anfechtung erfolgreich' : 'Anfechtung gescheitert', e.success ? `${e.target} zieht 4` : e.player],
   left: (e) => ['Raus', `${e.player} ist nicht zurückgekommen`],
   timeout: (e) => ['⏱ Zeit um', e.player],
+  jumpIn: (e) => ['Reingeworfen!', e.player],
+  swap: (e) => ['Kartentausch', `${e.player} ⇄ ${e.target}`],
+  rotate: () => ['Weitergeben!', 'Alle Hände wandern weiter'],
 };
 
 export function describeEvent(event) {

@@ -57,7 +57,7 @@ test('Lounge: Bots nur durch den Host und nur in der Lounge', () => {
 
 test('Lounge: Spiel wählen und Einstellungen – nur Host, nur gültige Werte', () => {
   let s = lounge(2);
-  assertEqual(s.settings.uno, { stacking: false, challenge: false, drawUntilPlayable: false, deck: 'classic', target: 500, turnTime: 0 }, 'Standard');
+  assertEqual(s.settings.uno, { stacking: false, challenge: false, drawUntilPlayable: false, jumpIn: false, sevenZero: false, deck: 'classic', target: 500, turnTime: 0 }, 'Standard');
   loungeRejected(s, { type: 'selectGame', playerId: 'p0', gameId: 'schach' });
   loungeRejected(s, { type: 'setSetting', playerId: 'p1', gameId: 'uno', key: 'stacking', value: true });
   loungeRejected(s, { type: 'setSetting', playerId: 'p0', gameId: 'uno', key: 'stacking', value: 1 });
