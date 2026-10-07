@@ -1,6 +1,0 @@
-{
-  "version": "0.0.1",
-  "configurations": [
-    { "name": "uno", "runtimeExecutable": "node", "runtimeArgs": ["C:/Users/Fynn/AppData/Local/Temp/claude/C--Users-Fynn-Desktop-Uno/4b84b001-a30e-48f4-ac43-5db13ffffeb6/scratchpad/serve.mjs"], "port": 8137 }
-  ]
-}
