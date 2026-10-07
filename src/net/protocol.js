@@ -20,6 +20,7 @@ export const MSG = {
 
 const ACTION_FIELDS = {
   setRule: { rule: 'string', value: 'boolean' },
+  setTarget: { value: 'number' },
   start: {},
   play: { cardId: 'number' },
   chooseColor: { color: 'string' },

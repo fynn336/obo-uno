@@ -5,7 +5,7 @@ export const COLOR_NAMES = { red: 'Rot', yellow: 'Gelb', green: 'Grün', blue: '
 const SYMBOLS = { skip: '⊘', reverse: '⇄', draw2: '+2', wild: '', wild4: '+4' };
 const VALUE_NAMES = { skip: 'Aussetzen', reverse: 'Richtungswechsel', draw2: '+2', wild: 'Farbwahl', wild4: 'Farbwahl +4' };
 
-function cardLabel(card) {
+export function cardLabel(card) {
   const value = VALUE_NAMES[card.value] ?? card.value;
   return card.color ? `${COLOR_NAMES[card.color]} ${value}` : value;
 }

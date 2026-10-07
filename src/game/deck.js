@@ -12,6 +12,12 @@ export function createDeck() {
   return cards.map((card, id) => ({ id, ...card }));
 }
 
+// Offizielle Wertung: Zahl = Augenwert, Aktionskarte = 20, Wild = 50
+export function cardPoints(card) {
+  if (card.color === null) return 50;
+  return /^\d$/.test(card.value) ? Number(card.value) : 20;
+}
+
 export function isPlayable(card, topCard, activeColor) {
   return card.color === null || card.color === activeColor || card.value === topCard.value;
 }

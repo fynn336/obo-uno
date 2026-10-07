@@ -1,5 +1,6 @@
 import { COLOR_NAMES, cardBack, cardFace } from './cards.js';
 import { h } from './dom.js';
+import { bannerFor, describeEvent } from './events.js';
 
 const COLOR_KEYS = { r: 'red', y: 'yellow', g: 'green', b: 'blue' };
 const COLOR_ORDER = ['red', 'yellow', 'green', 'blue', null];
@@ -13,6 +14,7 @@ const DIRECTION_SPIN_MS = 30000;
 let latest = null;
 let previous = null;
 let selectedId = null;
+let lastEventId = null;
 
 export function renderTable(root, view, send) {
   const last = root.querySelector('.table') ? previous : null;
@@ -34,14 +36,15 @@ export function renderTable(root, view, send) {
             }),
             h('div', { class: 'center' },
               piles(view, send),
-              view.notice && h('p', { class: 'notice' }, view.notice),
               h('p', { class: 'status' }, statusText(view)),
               actions(view, send))),
           seats(view, send))),
       handArea(view, hand, send),
     ),
   );
-  if (isNewView) animateChanges(root, last, view, flySource);
+  if (!isNewView) return;
+  animateChanges(root, last, view, flySource);
+  announceNewEvents(view);
 }
 
 export function handleTableKey(event) {
@@ -65,6 +68,7 @@ function infoBar(view) {
     h('span', {}, view.direction === 1 ? '↻ Im Uhrzeigersinn' : '↺ Gegen den Uhrzeigersinn'),
     h('span', {}, 'Farbe: ', h('span', { class: `swatch ${view.activeColor ?? ''}` }), COLOR_NAMES[view.activeColor] ?? 'wird gewählt'),
     h('span', { class: 'rules' },
+      h('span', { class: 'chip' }, `Ziel ${view.target} P.`),
       activeRules.length > 0
         ? activeRules.map((rule) => h('span', { class: 'chip' }, RULE_NAMES[rule]))
         : h('span', { class: 'chip' }, 'Offizielle Regeln')),
@@ -86,7 +90,7 @@ function seats(view, send) {
     avatar(view, player),
     h('div', { class: 'seat-name' }, player.name),
     h('div', { class: 'mini-fan' }, miniCards(player.cardCount)),
-    h('div', { class: 'seat-count' }, cardCount(player.cardCount)),
+    h('div', { class: 'seat-count' }, `${cardCount(player.cardCount)} · ${player.score} P.`),
     h('div', { class: 'badges' },
       player.saidUno && h('span', { class: 'badge uno' }, 'UNO!'),
       !player.connected && h('span', { class: 'badge offline' }, 'getrennt'),
@@ -178,21 +182,40 @@ function handArea(view, hand, send) {
     'data-player': view.you,
     style: myTurn ? pulseDelay() : null,
   },
-  h('div', { class: 'hand-head' },
-    avatar(view, me),
-    h('span', { class: 'hand-name' }, `${me.name} (du)`),
-    h('span', { class: 'seat-count' }, cardCount(hand.length)),
-    me.saidUno && h('span', { class: 'badge uno' }, 'UNO!')),
-  h('div', { class: 'fan', style: `--advance:${Math.max(28, Math.min(70, 960 / Math.max(hand.length, 1)))}px` },
-    hand.map((card, i) => cardFace(card, {
-      classes: classesFor(card),
-      style: `--rot:${(i - mid) * spread}deg;--drop:${Math.min(24, (i - mid) ** 2 * (spread / 4))}px;--z:${i}`,
-      onClick: () => {
-        selectedId = card.id;
-        send({ type: 'play', cardId: card.id });
-      },
-    }))),
+  h('ol', { class: 'event-log', 'aria-label': 'Verlauf' }, view.events.map((event) => h('li', {}, describeEvent(event)))),
+  h('div', { class: 'hand-main' },
+    h('div', { class: 'hand-head' },
+      avatar(view, me),
+      h('span', { class: 'hand-name' }, `${me.name} (du)`),
+      h('span', { class: 'seat-count' }, `${cardCount(hand.length)} · ${me.score} P.`),
+      me.saidUno && h('span', { class: 'badge uno' }, 'UNO!')),
+    h('div', { class: 'fan', style: `--advance:${Math.max(26, Math.min(70, 740 / Math.max(hand.length, 1)))}px` },
+      hand.map((card, i) => cardFace(card, {
+        classes: classesFor(card),
+        style: `--rot:${(i - mid) * spread}deg;--drop:${Math.min(24, (i - mid) ** 2 * (spread / 4))}px;--z:${i}`,
+        onClick: () => {
+          selectedId = card.id;
+          send({ type: 'play', cardId: card.id });
+        },
+      })))),
   );
+}
+
+function announceNewEvents(view) {
+  const newestId = view.events.at(-1)?.id ?? 0;
+  const isFirstLook = lastEventId === null || newestId < lastEventId;
+  const fresh = isFirstLook ? [] : view.events.filter((event) => event.id > lastEventId);
+  lastEventId = newestId;
+  const banner = fresh.map(bannerFor).filter(Boolean).at(-1);
+  if (banner) showBanner(banner);
+}
+
+function showBanner([title, subtitle]) {
+  const banner = document.getElementById('banner');
+  banner.replaceChildren(h('strong', {}, title), h('span', {}, subtitle));
+  banner.classList.remove('show');
+  void banner.offsetWidth; // Layout erzwingen, damit die Animation neu startet
+  banner.classList.add('show');
 }
 
 function playedCardSource(root, last, view) {

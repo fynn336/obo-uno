@@ -1,4 +1,6 @@
-import { isRunning, playableCardIds } from './game.js';
+import { handPoints, isRunning, playableCardIds } from './game.js';
+
+const VISIBLE_EVENTS = 8;
 
 export function viewFor(state, playerId) {
   const me = state.players.find((p) => p.id === playerId);
@@ -15,7 +17,12 @@ export function viewFor(state, playerId) {
       cardCount: p.hand.length,
       saidUno: p.saidUno,
       catchable: state.unoWindow === p.id,
+      score: p.score,
+      // Nach Rundenende liegen die Karten offen: ihr Punktwert ist öffentlich
+      handPoints: state.phase === 'roundOver' ? handPoints(p.hand) : null,
     })),
+    target: state.target,
+    championId: state.championId,
     hand: me ? me.hand : [],
     playableIds: playableCardIds(state, playerId),
     drawnCardId: currentId === playerId ? state.drawnCardId : null,
@@ -26,6 +33,6 @@ export function viewFor(state, playerId) {
     drawPileCount: state.drawPile.length,
     pendingDraw: state.pendingDraw,
     winnerId: state.winnerId,
-    notice: state.notice,
+    events: state.events.slice(-VISIBLE_EVENTS),
   };
 }

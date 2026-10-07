@@ -1,4 +1,9 @@
+import { TARGET_SCORES } from '../game/game.js';
 import { h } from './dom.js';
+
+const CONFETTI_PIECES = 80;
+const CONFETTI_MS = 4500;
+let celebratedEventId = null;
 
 const RULE_LABELS = {
   stacking: 'Stapeln von +2/+4',
@@ -43,21 +48,25 @@ export function renderWaiting(root, text) {
 
 export function renderLobby(root, view, code, send) {
   const isHost = view.you === view.hostId;
-  const winner = view.players.find((p) => p.id === view.winnerId);
+  const isOver = view.phase === 'roundOver';
+  const win = view.events.findLast((event) => event.type === 'win');
+  const players = isOver ? [...view.players].sort((a, b) => a.cardCount - b.cardCount) : view.players;
+  const isNewWin = isOver && win && win.id !== celebratedEventId;
   root.replaceChildren(
     h('div', { class: 'page' },
-      view.phase === 'roundOver' && h('p', { class: 'winner' }, winner ? `🏆 ${winner.name} hat gewonnen!` : 'Die Runde ist vorbei.'),
-      view.notice && h('p', { class: 'message' }, view.notice),
+      isOver && win && resultBanner(win, view, isNewWin),
       h('h1', {}, 'Lobby ', h('span', { class: 'code' }, code)),
       h('p', { class: 'hint' }, 'Teile den Code mit deinen Freunden.'),
       h('div', { class: 'panels' },
         h('section', { class: 'panel' },
-          h('h2', {}, `Spieler (${view.players.length})`),
-          h('ul', { class: 'lobby-players' }, view.players.map((p) => h('li', {},
+          h('h2', {}, isOver ? 'Ergebnis der Runde' : `Spieler (${view.players.length})`),
+          h('ol', { class: 'lobby-players' }, players.map((p) => h('li', {},
             p.name,
             p.id === view.hostId && h('span', { class: 'badge' }, 'Host'),
             p.id === view.you && h('span', { class: 'badge' }, 'du'),
             !p.connected && h('span', { class: 'badge offline' }, 'getrennt'),
+            isOver && h('span', { class: 'hint' }, p.cardCount === 0 ? 'fertig' : `${p.cardCount} Karten · ${p.handPoints} P.`),
+            h('span', { class: 'score' }, `${p.score} P.`),
           )))),
         h('section', { class: 'panel' },
           h('h2', {}, 'Hausregeln'),
@@ -70,14 +79,47 @@ export function renderLobby(root, view, code, send) {
             }),
             label,
           )),
+          h('label', { class: 'toggle' }, 'Abend gewonnen bei',
+            h('select', {
+              disabled: !isHost,
+              onChange: (event) => send({ type: 'setTarget', value: Number(event.target.value) }),
+            }, TARGET_SCORES.map((score) => h('option', { value: score, selected: score === view.target }, `${score} Punkten`)))),
           h('p', { class: 'hint' }, isHost ? 'Alle aus = offizielle Regeln.' : 'Nur der Host kann die Regeln ändern.')),
       ),
       isHost
         ? h('button', { class: 'primary big', disabled: view.players.length < 2, onClick: () => send({ type: 'start' }) },
-          view.phase === 'roundOver' ? 'Neue Runde starten' : 'Runde starten')
+          isOver ? 'Neue Runde starten' : 'Runde starten')
         : h('p', { class: 'hint' }, 'Warte, bis der Host die Runde startet …'),
     ),
   );
+  if (isNewWin) {
+    celebratedEventId = win.id;
+    throwConfetti();
+  }
+}
+
+function resultBanner(win, view, isNew) {
+  const classes = isNew ? 'winner fresh' : 'winner';
+  if (win.champion) {
+    const champion = view.players.find((p) => p.id === view.championId);
+    return h('div', { class: classes },
+      h('strong', {}, `🎉 ${win.player} gewinnt den Abend!`),
+      h('span', {}, `${champion?.score ?? view.target} Punkte – die nächste Runde startet einen neuen Abend`));
+  }
+  return h('div', { class: classes },
+    h('strong', {}, `🏆 ${win.player} gewinnt die Runde`),
+    h('span', {}, win.points > 0 ? `+${win.points} Punkte` : 'Keine Punkte – die Runde endete durch einen Rauswurf'));
+}
+
+function throwConfetti() {
+  const colors = ['var(--red)', 'var(--yellow)', 'var(--green)', 'var(--blue)', '#fff'];
+  const pieces = Array.from({ length: CONFETTI_PIECES }, (_, i) => h('span', {
+    style: `left:${Math.random() * 100}%;background:${colors[i % colors.length]};`
+      + `animation-delay:${Math.random() * 0.6}s;animation-duration:${2 + Math.random() * 1.5}s;--spin:${Math.random() * 720 - 360}deg`,
+  }));
+  const confetti = h('div', { class: 'confetti', 'aria-hidden': 'true' }, pieces);
+  document.body.append(confetti);
+  setTimeout(() => confetti.remove(), CONFETTI_MS);
 }
 
 function nameInput() {
