@@ -1,6 +1,6 @@
 import { GAME_UIS } from './games/ui.js';
 import { joinGame, savedSession } from './net/client.js';
-import { hostLounge } from './net/host.js';
+import { hostLounge, savedLounge } from './net/host.js';
 import { unlockAudio } from './ui/audio.js';
 import { renderCorner } from './ui/corner.js';
 import { renderLounge, renderStart, renderWaiting } from './ui/lounge.js';
@@ -35,9 +35,9 @@ function showStart(message) {
   renderStart(app, { message, inviteCode, onCreate: create, onJoin: join });
 }
 
-function create(name) {
-  renderWaiting(app, 'Lounge wird eröffnet …');
-  session = hostLounge(name, events);
+function create(name, saved = null) {
+  renderWaiting(app, saved ? 'Lounge wird wieder geöffnet …' : 'Lounge wird eröffnet …');
+  session = hostLounge(name, events, saved);
   if (session) window.addEventListener('beforeunload', confirmLeave);
 }
 
@@ -90,7 +90,9 @@ if (!(await updateIfOutdated())) {
   renderCorner(document.getElementById('corner'));
   document.addEventListener('pointerdown', unlockAudio, { once: true });
   document.addEventListener('keydown', unlockAudio, { once: true });
+  const hosted = savedLounge();
   const saved = savedSession();
-  if (saved) join(saved.code, saved.name);
+  if (hosted) create(null, hosted);
+  else if (saved) join(saved.code, saved.name);
   else showStart();
 }

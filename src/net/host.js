@@ -2,26 +2,43 @@ import { VERSION } from '../changelog.js';
 import { createLounge, isPlaying, nextBotMove, reduce, turnTimer, viewFor } from '../lounge/lounge.js';
 import {
   CONNECT_TIMEOUT_MS,
+  HOST_RETURN_MS,
   MSG,
   PEER_PREFIX,
   PING_INTERVAL_MS,
   RECONNECT_GRACE_MS,
+  RETRY_MS,
   SILENCE_TIMEOUT_MS,
   readAction,
   readClientMessage,
 } from './protocol.js';
 
-const SERVER_RETRY_MS = 3000;
 const BOT_DELAY_MS = 1100;
+const STORAGE_KEY = 'dfuno-host';
 
-export function hostLounge(name, events) {
-  const hostId = crypto.randomUUID();
-  const created = createLounge({ hostId, hostName: name, seed: crypto.getRandomValues(new Uint32Array(1))[0] });
+// Stand einer Lounge, die dieser Tab vor einem Reload gehostet hat: { version, code, hostId, state, seats }.
+// Nach einem Update passt der alte Stand womöglich nicht mehr zum Code und wird verworfen.
+export function savedLounge() {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(STORAGE_KEY));
+    return saved?.version === VERSION ? saved : null;
+  } catch {
+    return null;
+  }
+}
+
+// Eröffnet eine neue Lounge oder, mit saved, die Lounge von vor dem Reload unter demselben Code.
+export function hostLounge(name, events, saved = null) {
+  const hostId = saved?.hostId ?? crypto.randomUUID();
+  const created = saved
+    ? { state: saved.state, error: null }
+    : createLounge({ hostId, hostName: name, seed: crypto.getRandomValues(new Uint32Array(1))[0] });
   if (created.error) {
     events.onEnd(created.error);
     return null;
   }
   let state = created.state;
+  let code = saved?.code ?? null;
   const seats = new Map(); // playerId → { playerId, token, link, kickTimer }
   const links = new Set(); // { conn, playerId, lastSeen }
   let timerHandle = null;
@@ -29,11 +46,22 @@ export function hostLounge(name, events) {
   let turnDeadline = null;
   let botTimer = null;
 
-  openLounge();
+  if (saved) restoreSeats(saved.seats);
+  openLounge(Date.now());
   setInterval(checkLinks, PING_INTERVAL_MS);
 
-  function openLounge() {
-    const code = String(crypto.getRandomValues(new Uint16Array(1))[0] % 10000).padStart(4, '0');
+  // Nach einem Reload ist noch niemand verbunden; wer nicht zurückkommt, fliegt wie bei einem Abbruch raus.
+  function restoreSeats(savedSeats) {
+    for (const { playerId, token } of savedSeats) {
+      const seat = { playerId, token, link: null, kickTimer: null };
+      seats.set(playerId, seat);
+      state = reduce(state, { type: 'setConnected', playerId, connected: false }).state;
+      seat.kickTimer = setTimeout(() => removeSeat(seat), RECONNECT_GRACE_MS);
+    }
+  }
+
+  function openLounge(since) {
+    code ??= String(crypto.getRandomValues(new Uint16Array(1))[0] % 10000).padStart(4, '0');
     const peer = new Peer(PEER_PREFIX + code);
     let opened = false;
     peer.on('open', () => {
@@ -41,15 +69,24 @@ export function hostLounge(name, events) {
       opened = true;
       peer.on('disconnected', () => setTimeout(() => {
         if (!peer.destroyed) peer.reconnect();
-      }, SERVER_RETRY_MS));
+      }, RETRY_MS));
       peer.on('connection', accept);
       events.onReady({ code });
       publish();
     });
     peer.on('error', (error) => {
       if (opened) return;
-      if (error.type === 'unavailable-id') openLounge();
-      else events.onEnd('Die Lounge konnte nicht erstellt werden. Bitte später noch einmal versuchen.');
+      peer.destroy();
+      // Nach einem Reload hält der Server den alten Code oft noch kurz fest.
+      if (error.type === 'unavailable-id' && saved && Date.now() - since < HOST_RETURN_MS) {
+        setTimeout(() => openLounge(since), RETRY_MS);
+      } else if (error.type === 'unavailable-id' && !saved) {
+        code = null;
+        openLounge(since);
+      } else {
+        forget();
+        events.onEnd('Die Lounge konnte nicht geöffnet werden. Bitte später noch einmal versuchen.');
+      }
     });
   }
 
@@ -179,10 +216,28 @@ export function hostLounge(name, events) {
       if (seat.link) send(seat.link, { type: MSG.VIEW, view: { ...viewFor(state, seat.playerId), turnEndsIn } });
     }
     events.onView({ ...viewFor(state, hostId), turnEndsIn });
+    persist();
+  }
+
+  function persist() {
+    const savedSeats = [...seats.values()].map(({ playerId, token }) => ({ playerId, token }));
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ version: VERSION, code, hostId, state, seats: savedSeats }));
+    } catch {
+      // ohne sessionStorage übersteht die Lounge keinen Reload
+    }
   }
 
   function send(link, message) {
     if (link.conn.open) link.conn.send(message);
+  }
+
+  function forget() {
+    try {
+      sessionStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // nichts gespeichert
+    }
   }
 
   return {

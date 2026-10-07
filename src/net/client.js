@@ -2,10 +2,12 @@ import { VERSION } from '../changelog.js';
 import {
   CONNECT_TIMEOUT_MS,
   HOST_LEFT,
+  HOST_RETURN_MS,
   MSG,
   PEER_PREFIX,
   PING_INTERVAL_MS,
   RECONNECT_GRACE_MS,
+  RETRY_MS,
   SILENCE_TIMEOUT_MS,
 } from './protocol.js';
 
@@ -47,7 +49,13 @@ export function joinGame(code, name, events) {
       });
     });
     attempt.on('error', (error) => {
-      if (attempt === peer && error.type === 'peer-unavailable') {
+      if (attempt !== peer || error.type !== 'peer-unavailable') return;
+      // War man schon drin, lädt der Host vielleicht gerade neu: eine Weile weiter versuchen.
+      if (lostSince !== null && Date.now() - lostSince < HOST_RETURN_MS) {
+        setTimeout(() => {
+          if (attempt === peer) connect();
+        }, RETRY_MS);
+      } else {
         end(token ? HOST_LEFT : 'Keine Lobby mit diesem Code gefunden');
       }
     });

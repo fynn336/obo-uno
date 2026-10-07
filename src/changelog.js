@@ -1,6 +1,14 @@
 // Neueste Version zuerst. Die aktuelle Versionsnummer ist immer der oberste Eintrag.
 export const CHANGELOG = [
   {
+    version: '2.6.0',
+    date: '2026-10-07',
+    changes: [
+      'Der Host darf neu laden: Lounge, Abendwertung und laufende Partie bleiben erhalten',
+      'Alle Spieler verbinden sich danach automatisch wieder, der Code bleibt gleich',
+    ],
+  },
+  {
     version: '2.5.0',
     date: '2026-10-07',
     changes: [

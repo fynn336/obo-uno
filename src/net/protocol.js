@@ -5,6 +5,9 @@ export const PING_INTERVAL_MS = 2000;
 export const SILENCE_TIMEOUT_MS = 8000;
 export const CONNECT_TIMEOUT_MS = 15000;
 export const RECONNECT_GRACE_MS = 60000;
+// So lange öffnet ein neu geladener Host seine Lounge wieder und so lange warten die Spieler auf ihn.
+export const HOST_RETURN_MS = 30000;
+export const RETRY_MS = 3000;
 export const HOST_LEFT = 'Der Host hat die Lounge verlassen';
 
 export const MSG = {

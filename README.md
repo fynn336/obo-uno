@@ -21,9 +21,10 @@ per WebRTC ([PeerJS](https://peerjs.com/)). Alles läuft als statische Seite, z.
 **Abendwertung:** Für jede Partie gibt es Sterne: Platz 1 = 3 ⭐, Platz 2 = 2 ⭐, Platz 3 = 1 ⭐. Wer vorne liegt, ist
 Spieler des Abends 🏆. Mit „Neuer Abend“ setzt der Host die Sterne zurück.
 
-> **Wichtig:** Den **Host-Tab nicht schließen oder neu laden.** Der Host hält den einzigen Spielstand. Verlässt er
-> die Lounge, endet sie für alle („Der Host hat die Lounge verlassen“). Der Browser fragt deshalb vor dem
-> Schließen nach.
+> **Wichtig:** Den **Host-Tab nicht schließen.** Der Host hält den einzigen Spielstand. Neu laden ist kein
+> Problem: Der Stand liegt im Tab (`sessionStorage`), die Lounge öffnet sich unter demselben Code wieder und alle
+> verbinden sich automatisch neu. Schließt der Host den Tab, warten die anderen 30 Sekunden auf ihn, danach endet
+> die Lounge für alle („Der Host hat die Lounge verlassen“). Der Browser fragt vor dem Schließen nach.
 
 > **Hinweis zu Netzwerken:** Es wird kein TURN-Server verwendet. In manchen Netzwerken (z. B. Mobilfunk,
 > Firmen-WLAN, Hotspots oder streng gefilterte Uni-Netze) kann deshalb keine direkte Verbindung aufgebaut werden.
