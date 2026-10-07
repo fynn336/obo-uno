@@ -1,4 +1,5 @@
 import { VERSION } from '../changelog.js';
+import { botAction } from '../game/bot.js';
 import { createGame, isRunning, reduce } from '../game/game.js';
 import { viewFor } from '../game/view.js';
 import {
@@ -13,6 +14,7 @@ import {
 } from './protocol.js';
 
 const SERVER_RETRY_MS = 3000;
+const BOT_DELAY_MS = 1100;
 
 export function hostGame(name, events) {
   const hostId = crypto.randomUUID();
@@ -27,6 +29,7 @@ export function hostGame(name, events) {
   let turnTimer = null;
   let turnKey = null;
   let turnDeadline = null;
+  let botTimer = null;
 
   openLobby();
   setInterval(checkLinks, PING_INTERVAL_MS);
@@ -147,7 +150,18 @@ export function hostGame(name, events) {
     if (result.error) return result.error;
     state = result.state;
     scheduleTurnTimer();
+    scheduleBot();
     publish();
+  }
+
+  function scheduleBot() {
+    clearTimeout(botTimer);
+    const current = isRunning(state) ? state.players[state.current] : null;
+    if (!current?.bot) return;
+    botTimer = setTimeout(() => {
+      const action = botAction(state, current.id);
+      if (action) apply(action);
+    }, BOT_DELAY_MS);
   }
 
   // Neue Entscheidung (Zug, Phase, gezogene Karte) startet die Uhr neu; bei getrennten Spielern läuft sie nicht.

@@ -23,6 +23,8 @@ const ACTION_FIELDS = {
   setTarget: { value: 'number' },
   setTurnTime: { value: 'number' },
   setAvatar: { emoji: 'string', color: 'number' },
+  addBot: {},
+  removeBot: { targetId: 'string' },
   start: {},
   play: { cardId: 'number' },
   chooseColor: { color: 'string' },

@@ -3,11 +3,13 @@ import { COLORS, cardPoints, createDeck, isPlayable } from './deck.js';
 import { nextRandom } from './rng.js';
 
 const HAND_SIZE = 7;
-const MAX_PLAYERS = 8;
+export const MAX_PLAYERS = 8;
 const MAX_NAME_LENGTH = 16;
 const MAX_EVENTS = 30;
 export const TARGET_SCORES = [200, 300, 500];
 export const TURN_TIMES = [0, 30, 60];
+const BOT_NAMES = ['Bot Anton', 'Bot Berta', 'Bot Carla', 'Bot Dieter', 'Bot Emil', 'Bot Frieda', 'Bot Gustav'];
+const BOT_EMOJI = '🤖';
 const PENALTIES = { draw2: 2, wild4: 4 };
 const RUNNING_PHASES = ['playing', 'chooseColor', 'challengeWindow'];
 const UNO_WINDOW_CLOSERS = ['play', 'draw', 'pass', 'chooseColor', 'challenge', 'callUno', 'timeout'];
@@ -103,13 +105,34 @@ function join(state, { playerId, name }) {
     return `Der Name muss 1–${MAX_NAME_LENGTH} Zeichen lang sein`;
   }
   if (state.players.length >= MAX_PLAYERS) return 'Die Lobby ist voll';
-  if (state.players.some((p) => p.name.toLowerCase() === trimmed.toLowerCase())) {
-    return 'Dieser Name ist schon vergeben';
-  }
-  const avatar = { emoji: '', color: state.players.length % AVATAR_COLORS.length };
-  state.players.push({
-    id: playerId, name: trimmed, connected: true, hand: [], saidUno: false, score: 0, avatar, stats: emptyStats(),
-  });
+  if (isNameTaken(state, trimmed)) return 'Dieser Name ist schon vergeben';
+  addPlayer(state, playerId, trimmed, false);
+}
+
+function addBot(state, { playerId }) {
+  if (playerId !== state.hostId) return 'Nur der Host kann Computer-Gegner hinzufügen';
+  if (isRunning(state)) return 'Computer-Gegner nur in der Lobby hinzufügen';
+  if (state.players.length >= MAX_PLAYERS) return 'Die Lobby ist voll';
+  const index = BOT_NAMES.findIndex((name) => !isNameTaken(state, name));
+  if (index === -1) return 'Keine Computer-Gegner mehr frei';
+  addPlayer(state, `bot-${index}`, BOT_NAMES[index], true);
+}
+
+function removeBot(state, { playerId, targetId }) {
+  if (playerId !== state.hostId) return 'Nur der Host kann Computer-Gegner entfernen';
+  if (isRunning(state)) return 'Computer-Gegner nur in der Lobby entfernen';
+  const index = state.players.findIndex((p) => p.id === targetId && p.bot);
+  if (index === -1) return 'Kein Computer-Gegner';
+  state.players.splice(index, 1);
+}
+
+function addPlayer(state, id, name, bot) {
+  const avatar = { emoji: bot ? BOT_EMOJI : '', color: state.players.length % AVATAR_COLORS.length };
+  state.players.push({ id, name, bot, connected: true, hand: [], saidUno: false, score: 0, avatar, stats: emptyStats() });
+}
+
+function isNameTaken(state, name) {
+  return state.players.some((p) => p.name.toLowerCase() === name.toLowerCase());
 }
 
 function setTurnTime(state, { playerId, value }) {
@@ -308,7 +331,7 @@ function catchUno(state, { playerId, targetId }) {
 }
 
 const handlers = {
-  join, leave, setConnected, setRule, setTarget, setTurnTime, setAvatar, timeout, start, play, chooseColor, draw, pass, challenge, callUno, catchUno,
+  join, addBot, removeBot, leave, setConnected, setRule, setTarget, setTurnTime, setAvatar, timeout, start, play, chooseColor, draw, pass, challenge, callUno, catchUno,
 };
 
 export function handPoints(hand) {

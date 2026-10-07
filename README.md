@@ -10,7 +10,8 @@ per WebRTC ([PeerJS](https://peerjs.com/)). Das Spiel läuft als statische Seite
 2. **Freunde einladen:** In der Lobby auf „Einladungslink kopieren“ klicken und den Link verschicken. Wer ihn
    öffnet, gibt nur noch seinen Namen ein. Alternativ: dieselbe Seite öffnen, Code und Namen eingeben, „Beitreten“.
 3. **Avatar wählen:** Jeder sucht sich in der Lobby ein Emoji und eine Farbe aus.
-4. **Hausregeln und Punkteziel wählen** (nur der Host, alle aus = offizielle Regeln) und **Runde starten**
+4. **Hausregeln, Punkteziel und Zeit pro Zug wählen** (nur der Host, alle aus = offizielle Regeln). Zu wenige
+   Leute? Mit „Computer-Gegner hinzufügen“ setzt der Host Bots an den Tisch. Dann **Runde starten**
    (ab 2 Spielern).
 5. Nach jeder Runde landen alle wieder in der Lobby, mit Ergebnis und Punktestand. Der Host kann Regeln ändern,
    neue Spieler können beitreten.
@@ -35,6 +36,7 @@ per WebRTC ([PeerJS](https://peerjs.com/)). Das Spiel läuft als statische Seite
 Mit der Maus geht alles ebenso: Karte anklicken legt sie, ein Klick auf den Ziehstapel zieht, die Farbe wählt man
 im Farbrad auf dem Ablagestapel. „Weitergeben“, „Anfechten“ und „Erwischt!“ sind Buttons. Links unten zeigt der
 Verlauf die letzten Züge, wichtige Momente wie UNO, +4 oder Aussetzen werden groß eingeblendet.
+Rechts unten schaltet 🎵 die Musik und 🔊 die Soundeffekte; ein Klick auf die Versionsnummer zeigt, was neu ist.
 
 ### Regeln
 
@@ -43,7 +45,11 @@ Offizielle Regeln mit 108 Karten und 7 Startkarten. Wer zuerst keine Karten mehr
 **Punkte:** Der Rundensieger bekommt die Punkte aller Karten, die die anderen noch auf der Hand haben.
 Zahlkarten zählen ihren Wert, Aktionskarten 20, Wild-Karten 50. Wer das Punkteziel erreicht (200, 300 oder 500,
 wählt der Host), gewinnt den Abend. Danach beginnen alle wieder bei 0. Endet eine Runde, weil nur noch ein
-Spieler übrig ist, gibt es keine Punkte.
+Spieler übrig ist, gibt es keine Punkte. Am Ende des Abends gibt es Auszeichnungen wie „Pechvogel“ oder
+„UNO-Vergesser“.
+
+**Zeit pro Zug** (optional, 30 oder 60 Sekunden): Läuft die Zeit ab, zieht der Spieler automatisch eine Karte
+bzw. die offene Strafe, eine offene Farbwahl wird zufällig getroffen.
 
 - **Ziehen** ist immer erlaubt. Ist die gezogene Karte spielbar, darf *nur diese* sofort gelegt werden,
   sonst ist der Zug vorbei.
@@ -116,12 +122,15 @@ src/game/                 reine Spiellogik, kein DOM, kein Netzwerk
   game.js                 Reducer (state, action) → { state, error }
   deck.js, rng.js         Kartensatz, isPlayable, Punktwerte, Zufall per Seed (mulberry32)
   avatars.js              erlaubte Avatar-Emojis und -Farben
+  awards.js, bot.js       Abend-Auszeichnungen, Strategie der Computer-Gegner
+src/changelog.js          Versionsnummer und Changelog (eine Quelle für beides)
+assets/                   Hintergrundmusik und Kartensound
   view.js                 Sicht pro Spieler: eigene Hand, von anderen nur die Anzahl
 src/net/                  Netzwerk
   protocol.js             alle Nachrichtentypen und die Prüfung jeder Client-Nachricht
   host.js                 hält den Spielstand, prüft Aktionen, Reconnect und Rauswurf
   client.js               Beitritt, Token, automatischer Reconnect
-src/ui/                   Oberfläche: lobby.js, table.js, cards.js, avatar.js, events.js, dom.js
+src/ui/                   Oberfläche: lobby.js, table.js, cards.js, avatar.js, events.js, audio.js, corner.js, dom.js
 ```
 
 **Host-autoritativ:** Nur der Host führt den Reducer aus. Clients schicken ausschließlich Aktionen. Der Host

@@ -1,6 +1,6 @@
 import { AVATAR_COLORS, AVATAR_EMOJIS } from '../game/avatars.js';
 import { eveningAwards } from '../game/awards.js';
-import { TARGET_SCORES, TURN_TIMES } from '../game/game.js';
+import { MAX_PLAYERS, TARGET_SCORES, TURN_TIMES } from '../game/game.js';
 import { avatarBadge } from './avatar.js';
 import { h } from './dom.js';
 
@@ -66,13 +66,26 @@ export function renderLobby(root, view, code, send) {
           h('h2', {}, isOver ? 'Ergebnis der Runde' : `Spieler (${view.players.length})`),
           h('ol', { class: 'lobby-players' }, players.map((p) => h('li', {},
             avatarBadge(p),
-            p.name,
+            h('span', { class: 'name' }, p.name),
             p.id === view.hostId && h('span', { class: 'badge' }, 'Host'),
             p.id === view.you && h('span', { class: 'badge' }, 'du'),
+            p.bot && h('span', { class: 'badge' }, 'Computer'),
             !p.connected && h('span', { class: 'badge offline' }, 'getrennt'),
-            isOver && h('span', { class: 'hint' }, p.cardCount === 0 ? 'fertig' : `${p.cardCount} Karten · ${p.handPoints} P.`),
+            isOver && h('span', { class: 'hint' }, remainingCards(p)),
             h('span', { class: 'score' }, `${p.score} P.`),
-          )))),
+            isHost && p.bot && h('button', {
+              type: 'button',
+              class: 'remove',
+              title: `${p.name} entfernen`,
+              onClick: () => send({ type: 'removeBot', targetId: p.id }),
+            }, '✕'),
+          ))),
+          isHost && h('button', {
+            type: 'button',
+            class: 'add-bot',
+            disabled: view.players.length >= MAX_PLAYERS,
+            onClick: () => send({ type: 'addBot' }),
+          }, '🤖 Computer-Gegner hinzufügen')),
         h('section', { class: 'panel' },
           h('h2', {}, 'Hausregeln'),
           Object.entries(RULE_LABELS).map(([rule, label]) => h('label', { class: 'toggle' },
@@ -105,6 +118,11 @@ export function renderLobby(root, view, code, send) {
     celebratedEventId = win.id;
     throwConfetti();
   }
+}
+
+function remainingCards(player) {
+  if (player.cardCount === 0) return 'fertig';
+  return `${player.cardCount} ${player.cardCount === 1 ? 'Karte' : 'Karten'} · ${player.handPoints} P.`;
 }
 
 function awardList(players) {

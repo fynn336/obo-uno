@@ -155,7 +155,7 @@ kbd {
 
 /* Start und Lobby */
 .page {
-  max-width: 780px;
+  max-width: 920px;
   margin: 0 auto;
   padding: 3rem 1rem;
   text-align: center;
@@ -315,12 +315,25 @@ select {
   gap: 0.4rem;
   align-items: center;
   padding: 0.25rem 0;
+  white-space: nowrap;
+}
+
+.lobby-players .name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .invite {
   margin-left: 0.4rem;
   padding: 0.3rem 0.9rem;
   font-size: 0.9rem;
+}
+
+.lobby-players .avatar,
+.lobby-players .badge,
+.lobby-players .score {
+  flex: none;
 }
 
 .lobby-players .avatar {
@@ -364,6 +377,21 @@ select {
 .choice.selected {
   border-color: var(--accent);
   box-shadow: 0 0 0 2px var(--accent);
+}
+
+.lobby-players .remove {
+  padding: 0 0.5rem;
+  background: transparent;
+  color: var(--muted);
+  box-shadow: none;
+}
+
+.add-bot {
+  margin-top: 0.8rem;
+  padding: 0.35rem 0.9rem;
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--text);
+  font-size: 0.85rem;
 }
 
 .lobby-players .score {

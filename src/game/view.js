@@ -13,6 +13,7 @@ export function viewFor(state, playerId) {
     players: state.players.map((p) => ({
       id: p.id,
       name: p.name,
+      bot: p.bot,
       connected: p.connected,
       cardCount: p.hand.length,
       saidUno: p.saidUno,
