@@ -1,6 +1,14 @@
 // Neueste Version zuerst. Die aktuelle Versionsnummer ist immer der oberste Eintrag.
 export const CHANGELOG = [
   {
+    version: '2.2.0',
+    date: '2026-10-07',
+    changes: [
+      'Einstellungen über ⚙️ unten rechts: Musik, Soundeffekte, Lautstärke und Raum',
+      'Fünf Räume zur Auswahl: Kaminzimmer, Wohnzimmer, Kneipe, Partykeller, Wintergarten',
+    ],
+  },
+  {
     version: '2.1.0',
     date: '2026-10-07',
     changes: [

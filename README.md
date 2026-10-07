@@ -29,8 +29,9 @@ Spieler des Abends 🏆. Mit „Neuer Abend“ setzt der Host die Sterne zurück
 > Firmen-WLAN, Hotspots oder streng gefilterte Uni-Netze) kann deshalb keine direkte Verbindung aufgebaut werden.
 > Im selben WLAN oder im Heimnetz klappt es in der Regel.
 
-Rechts unten schaltet 🎵 die Musik und 🔊 die Soundeffekte, der Regler stellt die Lautstärke. Ein Klick auf die
-Versionsnummer zeigt, was neu ist. Nach einem Update reicht normales Neuladen.
+Rechts unten schaltet 🎵 die Musik und 🔊 die Soundeffekte. ⚙️ öffnet die Einstellungen mit Lautstärke und der
+Wahl des Raums (Kaminzimmer, Wohnzimmer, Kneipe, Partykeller, Wintergarten); jeder wählt seinen Raum für sich.
+Ein Klick auf die Versionsnummer zeigt, was neu ist. Nach einem Update reicht normales Neuladen.
 
 ## Farbenchaos (Uno-Regeln)
 
@@ -147,7 +148,7 @@ Die Tests laufen ohne Framework unter `http://localhost:3000/test.html` und müs
 ```
 index.html, style.css      Seite und Aussehen (Karten nur per CSS)
 test.html, tests/          Tests ohne Framework, mit festen Seeds und Kartenstapeln
-assets/                    Hintergrund, Musik und Kartensound
+assets/                    Räume (Hintergründe), Musik und Kartensound
 src/main.js                Ablauf: Start → Lounge → Spiel, Fehlermeldungen
 src/changelog.js           Versionsnummer und Changelog (eine Quelle für beides)
 src/update.js              holt nach einem Update automatisch die neue Version
@@ -161,7 +162,7 @@ src/net/                   Netzwerk
   protocol.js              alle Nachrichtentypen und die Prüfung jeder Client-Nachricht
   host.js                  hält den Spielstand, prüft Aktionen, Reconnect, Rauswurf, Timer und Bots
   client.js                Beitritt, Token, automatischer Reconnect
-src/ui/                    Start, Lounge, Avatare, Musik, Ecke unten rechts, Konfetti
+src/ui/                    Start, Lounge, Avatare, Musik, Räume, Einstellungen, Ecke unten rechts, Konfetti
 ```
 
 **Host-autoritativ:** Nur der Host führt die Reducer aus. Clients schicken ausschließlich Aktionen. Der Host

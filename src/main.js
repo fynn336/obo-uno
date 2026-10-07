@@ -4,6 +4,7 @@ import { hostLounge } from './net/host.js';
 import { unlockAudio } from './ui/audio.js';
 import { renderCorner } from './ui/corner.js';
 import { renderLounge, renderStart, renderWaiting } from './ui/lounge.js';
+import { showRoom } from './ui/rooms.js';
 import { updateIfOutdated } from './update.js';
 
 const TOAST_MS = 3000;
@@ -84,6 +85,7 @@ document.addEventListener('keydown', (event) => {
   if (view?.game && !dialogOpen && !inControl) GAME_UIS[view.gameId].handleKey(event, view.game);
 });
 
+showRoom();
 if (!(await updateIfOutdated())) {
   renderCorner(document.getElementById('corner'));
   document.addEventListener('pointerdown', unlockAudio, { once: true });

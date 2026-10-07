@@ -31,14 +31,15 @@ body {
   font: 16px/1.45 system-ui, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* Wohnzimmer als Hintergrund; der negative Rand versteckt den hellen Saum, den der Blur am Bildrand erzeugt */
+/* Gewählter Raum als Hintergrund (src/ui/rooms.js); der negative Rand versteckt den hellen Saum, den der Blur am
+   Bildrand erzeugt */
 body::before {
   content: '';
   position: fixed;
   inset: -24px;
   z-index: -1;
-  background: url('assets/images/background.webp') center / cover;
-  filter: blur(5px) brightness(0.7);
+  background: var(--room-image) center / cover;
+  filter: blur(5px) brightness(var(--room-brightness));
 }
 
 h1,
@@ -1296,21 +1297,12 @@ select {
   box-shadow: none;
 }
 
-#corner .volume {
-  width: 90px;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  accent-color: var(--accent);
-}
-
 #corner button.off {
   opacity: 0.4;
   text-decoration: line-through;
 }
 
-.changelog {
+.dialog {
   width: min(560px, 92vw);
   max-height: 80vh;
   padding: 1.5rem 1.75rem;
@@ -1321,26 +1313,73 @@ select {
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
 }
 
-.changelog::backdrop {
+.dialog::backdrop {
   background: rgba(0, 0, 0, 0.6);
 }
 
-.changelog h2 {
+/* heller, damit man den gewählten Raum dahinter sieht */
+.settings::backdrop {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.settings input {
+  accent-color: var(--accent);
+}
+
+.settings input[type='range'] {
+  flex: 1;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.room-choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.6rem;
+}
+
+.room-choice {
+  display: grid;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 3px solid transparent;
+  background: rgba(0, 0, 0, 0.4);
+  color: var(--text);
+}
+
+.room-choice[aria-pressed='true'] {
+  border-color: var(--accent);
+}
+
+.room-choice img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.room-choice span {
+  padding: 0.3rem;
+  font-size: 0.85rem;
+}
+
+.dialog h2 {
   color: var(--accent);
   font-size: 1.4rem;
 }
 
-.changelog h3 {
+.dialog h3 {
   margin: 1rem 0 0.3rem;
   font-size: 1rem;
 }
 
-.changelog ul {
+.dialog ul {
   margin: 0;
   padding-left: 1.2rem;
 }
 
-.changelog form {
+.dialog form {
   margin-top: 1.25rem;
   text-align: right;
 }

@@ -1,12 +1,14 @@
 import { CHANGELOG, VERSION } from '../changelog.js';
-import { audioSettings, setVolume, toggleEffects, toggleMusic } from './audio.js';
+import { audioSettings, toggleEffects, toggleMusic } from './audio.js';
 import { h } from './dom.js';
+import { openSettings } from './settings.js';
 
 export function renderCorner(root) {
-  const { music, effects, volume } = audioSettings();
+  const { music, effects } = audioSettings();
+  const refresh = () => renderCorner(root);
   const toggle = (action) => () => {
     action();
-    renderCorner(root);
+    refresh();
   };
   root.replaceChildren(
     h('button', {
@@ -23,22 +25,13 @@ export function renderCorner(root) {
       'aria-pressed': String(effects),
       onClick: toggle(toggleEffects),
     }, '🔊'),
-    h('input', {
-      type: 'range',
-      class: 'volume',
-      min: 0,
-      max: 100,
-      value: Math.round(volume * 100),
-      'aria-label': 'Lautstärke',
-      title: 'Lautstärke',
-      onInput: (event) => setVolume(event.target.value / 100),
-    }),
+    h('button', { type: 'button', title: 'Einstellungen', onClick: () => openSettings(refresh) }, '⚙️'),
     h('button', { type: 'button', class: 'version', title: 'Was ist neu?', onClick: openChangelog }, `v${VERSION}`),
   );
 }
 
 function openChangelog() {
-  const dialog = h('dialog', { class: 'changelog' },
+  const dialog = h('dialog', { class: 'dialog' },
     h('h2', {}, 'Was ist neu?'),
     CHANGELOG.map((entry) => h('section', {},
       h('h3', {}, `v${entry.version}`, h('span', { class: 'hint' }, ` · ${new Date(entry.date).toLocaleDateString('de-DE')}`)),
