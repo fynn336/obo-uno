@@ -36,7 +36,7 @@ Würfelglück und Ludo der Computer den Zug zu Ende; was in Farbenchaos passiert
 > Firmen-WLAN, Hotspots oder streng gefilterte Uni-Netze) kann deshalb keine direkte Verbindung aufgebaut werden.
 > Im selben WLAN oder im Heimnetz klappt es in der Regel.
 
-Rechts unten schaltet 🎵 die Musik und 🔊 die Soundeffekte. ⚙️ öffnet die Einstellungen mit Musikstil
+Rechts unten schaltet 🎵 die Musik und 🔊 die Soundeffekte, ❓ zeigt die Spielregeln. ⚙️ öffnet die Einstellungen mit Musikstil
 (ruhiger Jazz, Funky Jazz oder gemischt), Lautstärke und der Wahl des Raums (Kaminzimmer, Wohnzimmer, Kneipe, Partykeller, Wintergarten); jeder wählt seinen Raum für sich.
 Ein Klick auf die Versionsnummer zeigt, was neu ist. Nach einem Update reicht normales Neuladen.
 

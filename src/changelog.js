@@ -1,6 +1,14 @@
 // Neueste Version zuerst. Die aktuelle Versionsnummer ist immer der oberste Eintrag.
 export const CHANGELOG = [
   {
+    version: '2.13.0',
+    date: '2026-10-08',
+    changes: [
+      'Spielregeln zum Nachlesen: ❓ unten rechts zeigt die Regeln des laufenden oder gewählten Spiels',
+      'Reiter für alle Spiele und die Lounge, außerdem „❓ Regeln“ direkt an der Spielauswahl',
+    ],
+  },
+  {
     version: '2.12.0',
     date: '2026-10-07',
     changes: [

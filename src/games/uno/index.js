@@ -12,6 +12,15 @@ export const uno = {
   description: 'Karten nach Farbe oder Zahl ablegen – wer zuerst keine mehr hat, gewinnt die Runde.',
   minPlayers: 2,
   maxPlayers: 8,
+  rules: [
+    'Ziel: als Erster alle Karten loswerden. Der Rundensieger bekommt die Punkte der Karten, die die anderen noch auf der Hand haben (Zahlen = Augenwert, Aktionskarten 20, Farbwahl 50). Wer das Punkteziel erreicht, gewinnt die Partie.',
+    'Eine Karte passt, wenn Farbe oder Wert gleich sind. Farbwahl-Karten passen immer.',
+    'Wer nicht legen kann oder will, zieht eine Karte. Passt sie, darf man genau diese sofort legen.',
+    'Aussetzen (⊘): Der Nächste setzt aus. Richtungswechsel (⇄): Die Reihenfolge dreht sich. +2: Der Nächste zieht 2 und setzt aus. Farbwahl +4: Der Nächste zieht 4 und setzt aus.',
+    'Mit 2 Karten auf der Hand ruft man beim Legen UNO (Taste U). Wer es vergisst, kann von allen „Erwischt!“ werden und zieht 2 Karten.',
+    'Hausregeln, wenn der Host sie einschaltet: +2 und +4 stapeln, ein +4 anfechten, ziehen bis eine Karte passt, Reinwerfen mit genau der gleichen Karte, 7-0 (7 = Karten tauschen, 0 = alle Hände wandern weiter).',
+    'Tasten: ← → Karte wählen, Enter legen, Leertaste ziehen, U für UNO, die Buchstaben im Farbrad für die Farbwahl.',
+  ],
   settings: [
     { key: 'stacking', label: 'Stapeln von +2/+4', type: 'toggle', default: false },
     { key: 'challenge', label: 'Wild-+4-Anfechtung', type: 'toggle', default: false },

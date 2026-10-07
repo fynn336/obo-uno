@@ -10,6 +10,13 @@ export const ships = {
   description: 'Flotte verteilen, reihum aufs Meer der anderen schießen – bei einem Treffer darf man nochmal.',
   minPlayers: 2,
   maxPlayers: 4,
+  rules: [
+    'Ziel: als Letzter noch Schiffe im Wasser haben.',
+    'Jeder hat fünf Schiffe mit 5, 4, 3, 3 und 2 Feldern, die sich nicht berühren, auch nicht über Eck.',
+    'Vor dem Start die Flotte neu verteilen, bis sie gefällt, dann „Bereit!“.',
+    'Reihum schießt man auf ein Feld im Meer eines Gegners. Treffer: noch einmal schießen. Wasser: Der Nächste ist dran.',
+    'Fremde Schiffe sieht man erst, wenn sie versenkt sind. Wessen Flotte komplett versenkt ist, scheidet aus.',
+  ],
   settings: [TURN_TIME_SETTING],
   moves: {
     shuffleFleet: {},

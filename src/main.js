@@ -87,7 +87,7 @@ document.addEventListener('keydown', (event) => {
 
 showRoom();
 if (!(await updateIfOutdated())) {
-  renderCorner(document.getElementById('corner'));
+  renderCorner(document.getElementById('corner'), () => view?.gameId ?? view?.selectedGameId);
   document.addEventListener('pointerdown', unlockAudio, { once: true });
   document.addEventListener('keydown', unlockAudio, { once: true });
   const hosted = savedLounge();

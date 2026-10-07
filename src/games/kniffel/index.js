@@ -12,6 +12,14 @@ export const kniffel = {
   description: 'Fünf Würfel, drei Würfe, 13 Kategorien – wer am Ende die meisten Punkte hat, gewinnt.',
   minPlayers: 1,
   maxPlayers: 8,
+  rules: [
+    'Ziel: nach 13 Runden die meisten Punkte im Block.',
+    'Pro Zug bis zu drei Würfe mit fünf Würfeln. Würfel antippen (oder 1–5), um sie zu halten; die Leertaste würfelt den Rest.',
+    'Danach trägt man in eine freie Kategorie ein. Passt nichts, wird eine gestrichen (0 Punkte).',
+    'Oben zählen Einser bis Sechser die jeweilige Augenzahl. Ab 63 Punkten oben gibt es 35 Bonus.',
+    'Unten: Dreier- und Viererpasch zählen alle Würfel, Full House 25, Kleine Straße (4 in Folge) 30, Große Straße (5 in Folge) 40, Kniffel (5 gleiche) 50, Chance alle Würfel.',
+    'Der ★ im Block zeigt die beste Kategorie für deinen Wurf.',
+  ],
   settings: [TURN_TIME_SETTING],
   moves: {
     roll: {},

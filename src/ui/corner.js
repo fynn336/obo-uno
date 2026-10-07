@@ -1,11 +1,13 @@
 import { CHANGELOG, VERSION } from '../changelog.js';
 import { audioSettings, toggleEffects, toggleMusic } from './audio.js';
 import { h } from './dom.js';
+import { openRules } from './rules.js';
 import { openSettings } from './settings.js';
 
-export function renderCorner(root) {
+// currentGameId liefert das laufende oder gewählte Spiel, damit ❓ gleich dessen Regeln zeigt.
+export function renderCorner(root, currentGameId) {
   const { music, effects } = audioSettings();
-  const refresh = () => renderCorner(root);
+  const refresh = () => renderCorner(root, currentGameId);
   const toggle = (action) => () => {
     action();
     refresh();
@@ -25,6 +27,7 @@ export function renderCorner(root) {
       'aria-pressed': String(effects),
       onClick: toggle(toggleEffects),
     }, '🔊'),
+    h('button', { type: 'button', title: 'Spielregeln', onClick: () => openRules(currentGameId()) }, '❓'),
     h('button', { type: 'button', title: 'Einstellungen', onClick: () => openSettings(refresh) }, '⚙️'),
     h('button', { type: 'button', class: 'version', title: 'Was ist neu?', onClick: openChangelog }, `v${VERSION}`),
   );

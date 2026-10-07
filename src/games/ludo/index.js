@@ -10,6 +10,15 @@ export const ludo = {
   description: 'Mit einer 6 raus aus dem Haus, einmal ums Brett und rein ins Ziel – und dabei die anderen rauswerfen.',
   minPlayers: 2,
   maxPlayers: 4,
+  rules: [
+    'Ziel: alle vier Figuren einmal ums Brett ins eigene Ziel bringen.',
+    'Mit einer 6 kommt eine Figur aus dem Haus aufs Startfeld. Nach einer 6 wird noch einmal gewürfelt.',
+    'Solange noch Figuren im Haus sind, muss das Startfeld geräumt werden.',
+    'Wer keine Figur auf der Laufbahn hat, hat drei Versuche für eine 6.',
+    'Wer auf einer fremden Figur landet, wirft sie zurück ins Haus. Eigene Figuren blockieren das Feld.',
+    'Ins Ziel geht es nur mit passender Augenzahl.',
+    'Tasten: Leertaste würfelt, eine Figur zieht man per Klick oder mit 1–4.',
+  ],
   settings: [
     {
       key: 'finish', label: 'Partie endet', type: 'choice', values: ['first', 'all'], default: 'first',

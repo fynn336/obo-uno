@@ -4,6 +4,7 @@ import { MAX_PLAYERS } from '../lounge/lounge.js';
 import { avatarBadge } from './avatar.js';
 import { throwConfetti } from './confetti.js';
 import { h } from './dom.js';
+import { openRules } from './rules.js';
 
 let celebratedResultId = null;
 
@@ -121,7 +122,8 @@ function gamesPanel(view, isHost, send) {
     h('span', { class: 'game-icon' }, g.icon),
     h('strong', {}, g.name),
     h('span', { class: 'hint' }, `${g.minPlayers}–${g.maxPlayers} Spieler`)))),
-    h('p', { class: 'hint' }, game.description),
+    h('p', { class: 'hint' }, game.description, ' ',
+      h('button', { type: 'button', class: 'rules-link', onClick: () => openRules(game.id) }, '❓ Regeln')),
     game.settings.map((setting) => settingControl(game, setting, view.settings[game.id][setting.key], canChoose, send)),
     view.phase === 'lounge' && (isHost
       ? h('button', { class: 'primary big', type: 'button', disabled: !fits, onClick: () => send({ type: 'startGame' }) },

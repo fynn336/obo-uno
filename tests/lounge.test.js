@@ -1,3 +1,4 @@
+import { GAMES } from '../src/games/index.js';
 import { uno } from '../src/games/uno/index.js';
 import { isPlaying, nextBotMove, reduce, turnTimer, viewFor } from '../src/lounge/lounge.js';
 import { test, assert, assertEqual } from './testing.js';
@@ -189,4 +190,10 @@ test('Lounge: Neuer Abend zeigt einen Rückblick mit Podest, Siegern und Auszeic
   assertEqual([s.players.map((p) => p.points), s.lastResult], [[0, 0, 0], null], 'Sterne zurückgesetzt');
   s = loungeAct(s, start);
   assertEqual([s.recap, s.history], [null, []], 'nächste Partie räumt den Rückblick weg');
+});
+
+test('Spiele: jedes Spiel bringt Regeln zum Nachlesen mit', () => {
+  for (const game of Object.values(GAMES)) {
+    assert(game.rules.length >= 3 && game.rules.every((rule) => typeof rule === 'string' && rule.length > 10), game.name);
+  }
 });

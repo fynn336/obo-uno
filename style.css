@@ -2208,6 +2208,38 @@ button.cell:hover:not(:disabled) {
   background: rgba(0, 0, 0, 0.6);
 }
 
+.rules-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.5rem 0 0.75rem;
+}
+
+.rules-tabs button {
+  padding: 0.3rem 0.8rem;
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--text);
+  font-size: 0.85rem;
+  box-shadow: none;
+}
+
+.rules-tabs button[aria-pressed='true'] {
+  background: var(--accent);
+  color: #1d1712;
+}
+
+.rules-body li {
+  margin-bottom: 0.45rem;
+}
+
+.rules-link {
+  padding: 0.05rem 0.6rem;
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--text);
+  font-size: 0.8rem;
+  box-shadow: none;
+}
+
 /* heller, damit man den gewählten Raum dahinter sieht */
 .settings::backdrop {
   background: rgba(0, 0, 0, 0.25);
