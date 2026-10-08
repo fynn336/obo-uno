@@ -5,7 +5,7 @@ nach jeder Partie geht es zurück in die Lounge. Es gibt keinen eigenen Server, 
 per WebRTC ([PeerJS](https://peerjs.com/)). Alles läuft als statische Seite, z. B. kostenlos auf GitHub Pages.
 
 **Spiele:** Farbenchaos (Uno-Regeln), Würfelglück (Kniffel-Regeln), Ludo (Mensch-ärgere-dich-nicht-Regeln),
-Mäxchen (Würfeln und Bluffen), Schiffe versenken, Montagsmaler und Galgenmännchen.
+Mäxchen (Würfeln und Bluffen), Schiffe versenken, Montagsmaler, Galgenmännchen und Memory.
 
 ## Spielen
 
@@ -185,6 +185,14 @@ verdecktem Buchstaben; ein falscher Lösungsversuch zählt als Fehler. Nach 10 F
 das Wort verloren. Umlaute und ß sind eigene Buchstaben. Auszeichnungen: Rätselkönig (die meisten gelösten Wörter)
 und Pechvogel (die meisten Fehlversuche).
 
+## Memory
+
+Für 1–8 Spieler, auch gegen Computer-Gegner; der Host wählt 12, 18 oder 24 Paare. Wer dran ist, deckt zwei Karten
+auf. Gleiches Motiv: Das Paar gehört dir, und du bist nochmal dran. Sonst bleiben die Karten zwei Sekunden offen und
+der Nächste ist dran. Computer-Gegner merken sich je nach Stärke die letzten 4 Karten (leicht), die letzten 12
+(mittel) oder alles (schwer). Auszeichnungen: Serienmeister (die meisten Paare am Stück) und Goldfisch (am
+häufigsten danebengegriffen, obwohl die passende Karte schon offen lag).
+
 ## Verbindungsabbrüche
 
 - **Reload eines Spielers:** Wer seinen Tab neu lädt, kommt automatisch auf seinen Platz zurück.
@@ -243,6 +251,7 @@ src/games/                 Spiele; jedes beschreibt Name, Spielerzahl, Einstellu
   ships/                   Schiffe versenken: Regeln, Bot, Oberfläche
   sketch/                  Montagsmaler: Wortliste, Regeln, Zeichenfläche (ui/)
   hangman/                 Galgenmännchen: Regeln, Bot, Schultafel (nutzt die Wortliste von Montagsmaler)
+  memory/                  Memory: Regeln, Bot mit begrenztem Gedächtnis, Oberfläche
 src/shared/                Zufall per Seed (mulberry32), Prüfung von Aktionsfeldern
 src/net/                   Netzwerk
   protocol.js              alle Nachrichtentypen und die Prüfung jeder Client-Nachricht

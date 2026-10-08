@@ -1,6 +1,15 @@
 // Neueste Version zuerst. Die aktuelle Versionsnummer ist immer der oberste Eintrag.
 export const CHANGELOG = [
   {
+    version: '2.18.0',
+    date: '2026-10-08',
+    changes: [
+      'Neues Spiel: Memory für 1–8 Spieler mit 12, 18 oder 24 Paaren, auch gegen Computer-Gegner',
+      'Paar gefunden = nochmal dran; falsche Paare bleiben kurz offen, damit sich alle die Karten merken können',
+      'Computer-Gegner merken sich je nach Stärke wenig oder alles; Auszeichnungen Serienmeister und Goldfisch',
+    ],
+  },
+  {
     version: '2.17.0',
     date: '2026-10-08',
     changes: [

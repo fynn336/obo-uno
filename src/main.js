@@ -82,7 +82,7 @@ function confirmLeave(event) {
 document.addEventListener('keydown', (event) => {
   const dialogOpen = document.querySelector('dialog[open]') !== null;
   const inControl = event.target.closest('input, select');
-  if (view?.game && !dialogOpen && !inControl) GAME_UIS[view.gameId].handleKey(event, view.game);
+  if (view?.game && !dialogOpen && !inControl) GAME_UIS[view.gameId].handleKey?.(event, view.game);
 });
 
 showRoom();

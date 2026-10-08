@@ -1797,6 +1797,92 @@ button.cell:hover:not(:disabled) {
   margin: 0;
 }
 
+/* Memory */
+.memory {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: 100vh;
+}
+
+.memory-main {
+  display: grid;
+  grid-template-columns: auto minmax(240px, 300px);
+  gap: 1.5rem;
+  justify-content: center;
+  align-items: start;
+  padding: 1rem 1.5rem 3rem;
+}
+
+.memory-table {
+  --size: min(88px, calc((100vh - 9rem) / 6.6));
+  display: grid;
+  grid-template-columns: repeat(6, var(--size));
+  grid-auto-rows: var(--size);
+  gap: 0.55rem;
+  padding: 1.1rem;
+  border: 14px solid var(--wood);
+  border-radius: 24px;
+  background: radial-gradient(ellipse at 50% 40%, #2b8a5f, var(--felt) 50%, var(--felt-dark));
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.55), 0 0 0 2px var(--wood-dark), 0 20px 50px rgba(0, 0, 0, 0.6);
+}
+
+.memory-table.wide {
+  grid-template-columns: repeat(8, var(--size));
+}
+
+/* Verdeckt zeigt die Karte ein Muster, aufgedeckt das Motiv; neu aufgedeckte drehen sich um. */
+.mem-card {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 3px solid #fff;
+  border-radius: 12px;
+  background:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.12) 0 6px, transparent 6px 12px),
+    linear-gradient(145deg, #8a3a4a, #5a1f2c);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.45);
+}
+
+.mem-card.shown {
+  background: linear-gradient(145deg, #fffaf0, #efe6d2);
+}
+
+.mem-card:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+.mem-card.claimed {
+  border-color: var(--owner);
+  opacity: 0.55;
+}
+
+.mem-card.flipping {
+  animation: mem-flip 0.35s ease-out;
+}
+
+@keyframes mem-flip {
+  from {
+    rotate: y 90deg;
+  }
+}
+
+.mem-face {
+  font-size: calc(var(--size) * 0.55);
+  line-height: 1;
+}
+
+.memory-side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.memory-side .event-log {
+  display: block;
+  margin: 0;
+}
+
 /* Ludo */
 .team-0 {
   --c: var(--red);
