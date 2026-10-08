@@ -1,6 +1,15 @@
 // Neueste Version zuerst. Die aktuelle Versionsnummer ist immer der oberste Eintrag.
 export const CHANGELOG = [
   {
+    version: '2.17.0',
+    date: '2026-10-08',
+    changes: [
+      'Neues Spiel: Galgenmännchen für 1–8 Spieler, auch gegen Computer-Gegner',
+      'Reihum Buchstaben raten (Klick oder Tastatur), richtig = weiterraten, jederzeit das ganze Wort lösen',
+      'Schultafel mit Kreide-Galgen aus 10 Teilen, Auszeichnungen Rätselkönig und Pechvogel',
+    ],
+  },
+  {
     version: '2.16.0',
     date: '2026-10-08',
     changes: [

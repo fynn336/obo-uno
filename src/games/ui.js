@@ -1,3 +1,4 @@
+import { handleHangmanKey, renderHangman } from './hangman/ui/index.js';
 import { handleKniffelKey, renderKniffel } from './kniffel/ui/index.js';
 import { handleLudoKey, renderLudo } from './ludo/ui/index.js';
 import { handleMaexchenKey, renderMaexchen } from './maexchen/ui/index.js';
@@ -13,4 +14,5 @@ export const GAME_UIS = {
   maexchen: { render: renderMaexchen, handleKey: handleMaexchenKey },
   ships: { render: renderShips, handleKey: handleShipsKey },
   sketch: { render: renderSketch, handleKey: handleSketchKey },
+  hangman: { render: renderHangman, handleKey: handleHangmanKey },
 };

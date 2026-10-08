@@ -15,9 +15,11 @@ function duel(module, levels, seed) {
   const settings = Object.fromEntries(module.settings.map((s) => [s.key, s.default]));
   let s = module.create({ players, hostId: 'a', settings: { ...settings, target: 200 }, seed });
   for (let step = 0; step < 20000 && !module.result(s); step++) {
+    // Ohne Bot-Zug läuft die Uhr ab (Auflösung zwischen zwei Wörtern) oder der Host startet die nächste Runde.
     const turn = players.map((p, i) => ({ id: p.id, move: module.botMove(s, p.id, levels[i]) })).find((t) => t.move);
-    const action = turn ? { ...turn.move, playerId: turn.id } : { type: 'nextRound', playerId: 'a' };
-    const result = module.reduce(s, action);
+    const clock = turn ? null : module.timer(s);
+    const action = turn ? { ...turn.move, playerId: turn.id } : { type: clock ? 'timeout' : 'nextRound', playerId: 'a' };
+    const result = clock ? module.timeout(s, clock.playerId) : module.reduce(s, action);
     if (result.error) throw new Error(`${module.id} ${levels}: ${action.type} abgelehnt: ${result.error}`);
     s = result.state;
   }

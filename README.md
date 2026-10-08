@@ -5,7 +5,7 @@ nach jeder Partie geht es zurück in die Lounge. Es gibt keinen eigenen Server, 
 per WebRTC ([PeerJS](https://peerjs.com/)). Alles läuft als statische Seite, z. B. kostenlos auf GitHub Pages.
 
 **Spiele:** Farbenchaos (Uno-Regeln), Würfelglück (Kniffel-Regeln), Ludo (Mensch-ärgere-dich-nicht-Regeln),
-Mäxchen (Würfeln und Bluffen), Schiffe versenken und Montagsmaler.
+Mäxchen (Würfeln und Bluffen), Schiffe versenken, Montagsmaler und Galgenmännchen.
 
 ## Spielen
 
@@ -176,6 +176,15 @@ daneben“ (ein Buchstabe falsch) verrät ein Hinweis, den nur man selbst sieht.
 weiter schreiben, das sehen aber nur der Zeichner und die anderen, die es schon wissen. Auszeichnungen: Blitzmerker
 (am häufigsten als Erster) und Künstler (die eigenen Bilder wurden am häufigsten erraten).
 
+## Galgenmännchen
+
+Für 1–8 Spieler, auch gegen Computer-Gegner; der Host wählt 3, 5 oder 8 Wörter pro Partie. Reihum rät jeder einen
+Buchstaben (Klick oder Tastatur). Richtig: 2 Punkte je Vorkommen, und man darf weiterraten. Falsch: Der Galgen
+wächst, der Nächste ist dran. Am eigenen Zug kann man jederzeit das ganze Wort lösen – 5 Punkte plus 1 je noch
+verdecktem Buchstaben; ein falscher Lösungsversuch zählt als Fehler. Nach 10 Fehlern ist der Galgen komplett und
+das Wort verloren. Umlaute und ß sind eigene Buchstaben. Auszeichnungen: Rätselkönig (die meisten gelösten Wörter)
+und Pechvogel (die meisten Fehlversuche).
+
 ## Verbindungsabbrüche
 
 - **Reload eines Spielers:** Wer seinen Tab neu lädt, kommt automatisch auf seinen Platz zurück.
@@ -233,6 +242,7 @@ src/games/                 Spiele; jedes beschreibt Name, Spielerzahl, Einstellu
   maexchen/                Mäxchen: Wertung (values.js), Regeln, Bot, Oberfläche
   ships/                   Schiffe versenken: Regeln, Bot, Oberfläche
   sketch/                  Montagsmaler: Wortliste, Regeln, Zeichenfläche (ui/)
+  hangman/                 Galgenmännchen: Regeln, Bot, Schultafel (nutzt die Wortliste von Montagsmaler)
 src/shared/                Zufall per Seed (mulberry32), Prüfung von Aktionsfeldern
 src/net/                   Netzwerk
   protocol.js              alle Nachrichtentypen und die Prüfung jeder Client-Nachricht

@@ -1652,6 +1652,151 @@ button.cell:hover:not(:disabled) {
   margin: 0;
 }
 
+/* Galgenmännchen: Schultafel mit Kreide */
+.hangman {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: 100vh;
+}
+
+.hangman-main {
+  display: grid;
+  grid-template-columns: minmax(420px, 720px) minmax(240px, 300px);
+  gap: 1.5rem;
+  justify-content: center;
+  align-items: start;
+  padding: 1rem 1.5rem 3rem;
+}
+
+.chalkboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.2rem 1.5rem 1.5rem;
+  border: 14px solid var(--wood);
+  border-radius: 10px;
+  background: radial-gradient(ellipse at 40% 30%, #3b5a49, #24392e 70%);
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.5), 0 0 0 2px var(--wood-dark), 0 18px 40px rgba(0, 0, 0, 0.55);
+  color: #f2f0e6;
+  font-family: var(--hand);
+}
+
+.hm-top {
+  position: relative;
+}
+
+.gallows {
+  width: 200px;
+  height: 220px;
+  fill: none;
+  stroke: #f2f0e6;
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.5));
+}
+
+.gallows .newest {
+  stroke: #ffb4a8;
+  animation: chalk 0.6s ease-out;
+}
+
+@keyframes chalk {
+  from {
+    opacity: 0;
+  }
+}
+
+.hm-misses {
+  position: absolute;
+  top: 0;
+  right: -3.5rem;
+  color: rgba(242, 240, 230, 0.7);
+}
+
+.hm-word {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.hm-slot {
+  display: grid;
+  place-items: end center;
+  width: 2.2rem;
+  height: 2.8rem;
+  border-bottom: 3px solid #f2f0e6;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.hm-slot.shown {
+  animation: chalk 0.4s ease-out;
+}
+
+.reveal-note {
+  margin: 0;
+  color: var(--accent);
+  font-size: 1.2rem;
+}
+
+.hm-letters {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 0.35rem;
+  width: 100%;
+  max-width: 560px;
+}
+
+.hm-letter {
+  padding: 0.35rem 0;
+  border: 2px solid rgba(242, 240, 230, 0.6);
+  background: transparent;
+  color: #f2f0e6;
+  font: 700 1.05rem var(--hand);
+  box-shadow: none;
+}
+
+.hm-letter:disabled {
+  opacity: 0.35;
+}
+
+.hm-letter.hit {
+  border-color: #7be08f;
+  color: #7be08f;
+  opacity: 0.8;
+}
+
+.hm-letter.miss {
+  border-color: #ff8a7a;
+  color: #ff8a7a;
+  text-decoration: line-through;
+}
+
+.hm-solve {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 420px;
+}
+
+.hm-solve input {
+  margin: 0;
+}
+
+.hangman-side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.hangman-side .event-log {
+  display: block;
+  margin: 0;
+}
+
 /* Ludo */
 .team-0 {
   --c: var(--red);
