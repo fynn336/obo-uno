@@ -1,10 +1,12 @@
 import { GAMES } from '../games/index.js';
 import { AVATAR_COLORS, AVATAR_EMOJIS } from '../lounge/avatars.js';
-import { MAX_PLAYERS } from '../lounge/lounge.js';
+import { BOT_LEVELS, MAX_PLAYERS } from '../lounge/lounge.js';
 import { avatarBadge } from './avatar.js';
 import { throwConfetti } from './confetti.js';
 import { h } from './dom.js';
 import { openRules } from './rules.js';
+
+const BOT_LEVEL_NAMES = { easy: 'Leicht', medium: 'Mittel', hard: 'Schwer' };
 
 let celebratedResultId = null;
 
@@ -103,7 +105,19 @@ function playersPanel(view, isHost, send) {
         onClick: () => send({ type: 'addBot' }),
       }, '🤖 Computer-Gegner hinzufügen'),
       best > 0 && h('button', { type: 'button', class: 'add-bot', onClick: () => send({ type: 'newEvening' }) }, 'Neuer Abend')),
+    botLevel(view, isHost, send),
     h('p', { class: 'hint' }, 'Pro Partie: Platz 1 = 3 ⭐, Platz 2 = 2 ⭐, Platz 3 = 1 ⭐'));
+}
+
+// Stärke aller Computer-Gegner: der Host wählt, die anderen sehen sie, sobald Bots mitspielen.
+function botLevel(view, isHost, send) {
+  if (isHost) {
+    return h('label', { class: 'toggle' }, 'Computer-Stärke', h('select', {
+      onChange: (event) => send({ type: 'setBotLevel', level: BOT_LEVELS[event.target.selectedIndex] }),
+    }, BOT_LEVELS.map((level) => h('option', { selected: level === view.botLevel }, BOT_LEVEL_NAMES[level]))));
+  }
+  if (!view.players.some((p) => p.bot)) return null;
+  return h('p', { class: 'hint' }, `Computer-Gegner spielen: ${BOT_LEVEL_NAMES[view.botLevel]}`);
 }
 
 function gamesPanel(view, isHost, send) {

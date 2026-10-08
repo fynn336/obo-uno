@@ -28,6 +28,7 @@ const ACTION_FIELDS = {
   setAvatar: { emoji: 'string', color: 'number' },
   addBot: {},
   removeBot: { targetId: 'string' },
+  setBotLevel: { level: 'string' },
   selectGame: { gameId: 'string' },
   setSetting: { gameId: 'string', key: 'string', value: ['boolean', 'number', 'string'] },
   startGame: {},

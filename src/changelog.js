@@ -1,6 +1,15 @@
 // Neueste Version zuerst. Die aktuelle Versionsnummer ist immer der oberste Eintrag.
 export const CHANGELOG = [
   {
+    version: '2.14.0',
+    date: '2026-10-08',
+    changes: [
+      'Computer-Stärke leicht, mittel oder schwer – der Host stellt sie in der Lounge ein, auch mitten im Spiel',
+      'Schwere Bots: erwischen UNO-Vergesser, rechnen in Würfelglück die besten Würfel aus, lesen in Mäxchen die Ansagen mit',
+      'Leichte Bots: vergessen UNO, ziehen in Ludo einfach drauflos, schießen in Schiffe versenken blind',
+    ],
+  },
+  {
     version: '2.13.0',
     date: '2026-10-08',
     changes: [

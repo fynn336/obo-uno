@@ -4,6 +4,7 @@ import { nextRandom } from '../shared/rng.js';
 import { AVATAR_COLORS, AVATAR_EMOJIS } from './avatars.js';
 
 export const MAX_PLAYERS = 8;
+export const BOT_LEVELS = ['easy', 'medium', 'hard'];
 const MAX_NAME_LENGTH = 16;
 const BOT_NAMES = ['Bot Anton', 'Bot Berta', 'Bot Carla', 'Bot Dieter', 'Bot Emil', 'Bot Frieda', 'Bot Gustav'];
 const BOT_EMOJI = '🤖';
@@ -18,6 +19,7 @@ export function createLounge({ hostId, hostName, seed }) {
     hostId,
     players: [],
     selectedGameId: firstGame.id,
+    botLevel: 'medium',
     settings: Object.fromEntries(Object.values(GAMES).map((game) => [game.id, defaultSettings(game)])),
     gameId: null,
     game: null,
@@ -54,7 +56,7 @@ export function nextBotMove(state) {
   if (state.phase !== 'game') return null;
   for (const playerId of state.participants) {
     if (!findPlayer(state, playerId).bot) continue;
-    const move = GAMES[state.gameId].botMove(state.game, playerId);
+    const move = GAMES[state.gameId].botMove(state.game, playerId, state.botLevel);
     if (move) return { playerId, move };
   }
   return null;
@@ -67,6 +69,7 @@ export function viewFor(state, playerId) {
     hostId: state.hostId,
     players: state.players.map(({ id, name, bot, connected, avatar, points }) => ({ id, name, bot, connected, avatar, points })),
     selectedGameId: state.selectedGameId,
+    botLevel: state.botLevel,
     settings: state.settings,
     gameId: state.gameId,
     participants: state.participants,
@@ -127,6 +130,13 @@ function setAvatar(state, { playerId, emoji, color }) {
   if (!player) return 'Unbekannter Spieler';
   if (!AVATAR_EMOJIS.includes(emoji) || !Number.isInteger(color) || !AVATAR_COLORS[color]) return 'Ungültiger Avatar';
   player.avatar = { emoji, color };
+}
+
+// Stärke aller Computer-Gegner; der Host darf sie jederzeit ändern, auch mitten in der Partie.
+function setBotLevel(state, { playerId, level }) {
+  if (playerId !== state.hostId) return 'Das darf nur der Host';
+  if (!BOT_LEVELS.includes(level)) return 'Unbekannte Stärke';
+  state.botLevel = level;
 }
 
 function selectGame(state, { playerId, gameId }) {
@@ -200,8 +210,8 @@ function timeout(state, { playerId }) {
 
 // join, leave, setConnected und timeout löst nur der Host aus.
 const handlers = {
-  join, addBot, removeBot, leave, setConnected, setAvatar, selectGame, setSetting, startGame, abortGame, newEvening,
-  move, timeout,
+  join, addBot, removeBot, setBotLevel, leave, setConnected, setAvatar, selectGame, setSetting, startGame, abortGame,
+  newEvening, move, timeout,
 };
 
 function applyGameStep(state, { state: game, error }) {

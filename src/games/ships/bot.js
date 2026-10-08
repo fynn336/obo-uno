@@ -3,21 +3,28 @@ import { alivePlayers, key, SIZE } from './game.js';
 const NEIGHBORS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 
 // Der Bot nutzt nur, was alle sehen: Treffer, Fehlschüsse und versenkte Schiffe.
-export function botMove(state, botId) {
+// leicht: schießt blind · mittel: macht angeschossene Schiffe fertig
+// schwer: dazu Schachbrettmuster und keine Schüsse neben versenkte Schiffe
+export function botMove(state, botId, level = 'medium') {
   const bot = state.players.find((p) => p.id === botId);
   if (state.phase === 'setup') return bot.ready ? null : { type: 'ready' };
   if (state.phase !== 'playing' || state.players[state.current].id !== botId) return null;
   const opponents = alivePlayers(state).filter((p) => p !== bot);
-  // Angeschossene Schiffe zuerst fertig machen
-  for (const target of opponents) {
-    const cell = finishingShot(target);
-    if (cell) return shot(target, cell);
+  const pick = (list) => list[(state.turnNumber * 7 + state.events.length * 13) % list.length];
+  if (level !== 'easy') {
+    for (const target of opponents) {
+      const cell = finishingShot(target);
+      if (cell) return shot(target, cell);
+    }
   }
-  const target = opponents.reduce((best, p) => (unsunk(p) < unsunk(best) ? p : best));
+  // Mittel und schwer nehmen sich die schwächste Flotte vor.
+  const target = level === 'easy'
+    ? pick(opponents)
+    : opponents.reduce((best, p) => (unsunk(p) < unsunk(best) ? p : best));
+  if (level !== 'hard') return shot(target, pick(unshotCells(target)));
   const free = openCells(target);
   const checkerboard = free.filter(([x, y]) => (x + y) % 2 === 0);
-  const choices = checkerboard.length > 0 ? checkerboard : free;
-  return shot(target, choices[(state.turnNumber * 7 + state.events.length * 13) % choices.length]);
+  return shot(target, pick(checkerboard.length > 0 ? checkerboard : free));
 }
 
 function shot(target, [x, y]) {
@@ -41,6 +48,14 @@ function finishingShot(target) {
     }
   }
   return null;
+}
+
+function unshotCells(target) {
+  const cells = [];
+  for (let y = 0; y < SIZE; y++) {
+    for (let x = 0; x < SIZE; x++) if (!target.shots[key(x, y)]) cells.push([x, y]);
+  }
+  return cells;
 }
 
 // Noch nicht beschossene Felder, ohne die Nachbarn versenkter Schiffe (Schiffe berühren sich nie).

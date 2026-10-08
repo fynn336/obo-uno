@@ -15,7 +15,8 @@ Mäxchen (Würfeln und Bluffen) und Schiffe versenken.
    öffnet, gibt nur noch seinen Namen ein. Alternativ: dieselbe Seite öffnen, Code und Namen eingeben, „Beitreten“.
 3. **Avatar wählen:** Jeder sucht sich in der Lounge ein Emoji und eine Farbe aus.
 4. **Spiel wählen und starten** (nur der Host): Spiel antippen, Einstellungen wählen, starten. Zu wenige Leute?
-   Mit „Computer-Gegner hinzufügen“ setzt der Host Bots an den Tisch.
+   Mit „Computer-Gegner hinzufügen“ setzt der Host Bots an den Tisch. Ihre Stärke (leicht, mittel, schwer) gilt
+   für alle Bots und lässt sich jederzeit ändern. Schwere Bots erwischen in Farbenchaos jeden, der UNO vergisst.
 5. **Nach der Partie** landen alle wieder in der Lounge, mit Ergebnis und Auszeichnungen. Wer während einer Partie
    kommt, wartet in der Lounge und spielt ab der nächsten mit. Der Host kann eine Partie jederzeit beenden.
 

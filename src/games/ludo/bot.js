@@ -4,14 +4,18 @@ import { BASE, fieldOf, legalMoves, targetOf, TRACK } from './game.js';
 const CAPTURE = 100;
 const LEAVE_HOUSE = 80;
 const REACH_GOAL = 60;
-const ESCAPE = 25;
-const DANGER = 40;
+const ENEMY_START = 50;
 const PROGRESS = 0.1;
 
-export function botMove(state, botId) {
+// leicht: zieht die erste mögliche Figur · mittel: rauskommen, ins Ziel, vorderste Figur zuerst und übersieht dabei
+// jede zweite Chance zum Rauswerfen · schwer: wirft immer raus und meidet fremde Startfelder
+export function botMove(state, botId, level = 'medium') {
   if (state.phase !== 'playing' || state.players[state.current].id !== botId) return null;
   if (!state.mustMove) return { type: 'roll' };
   const player = state.players[state.current];
+  const moves = legalMoves(player, state);
+  if (level === 'easy') return { type: 'move', piece: moves[0] };
+  const seesCaptures = level === 'hard' || state.turnNumber % 2 === 0;
   const value = (piece) => {
     const from = player.pieces[piece];
     const to = targetOf(from, state.die);
@@ -19,31 +23,23 @@ export function botMove(state, botId) {
     let score = to * PROGRESS;
     if (from === BASE) score += LEAVE_HOUSE;
     if (!onTrack(to) && onTrack(from)) score += REACH_GOAL;
-    if (onTrack(to) && occupiedByOpponent(state, player, to)) score += CAPTURE;
-    if (onTrack(from) && threatened(state, player, from)) score += ESCAPE;
-    if (onTrack(to) && threatened(state, player, to)) score -= DANGER;
+    if (!onTrack(to)) return score;
+    if (seesCaptures && occupiedByOpponent(state, player, to)) score += CAPTURE;
+    if (level === 'hard' && onEnemyStart(state, player, to)) score -= ENEMY_START;
     return score;
   };
-  const moves = legalMoves(player, state);
   const best = moves.reduce((a, b) => (value(b) > value(a) ? b : a));
   return { type: 'move', piece: best };
 }
 
-function opponentFields(state, player) {
-  return state.players
-    .filter((other) => other !== player)
-    .flatMap((other) => other.pieces.filter((p) => p >= 0 && p < TRACK).map((p) => fieldOf(other.color, p)));
-}
-
 function occupiedByOpponent(state, player, position) {
-  return opponentFields(state, player).includes(fieldOf(player.color, position));
+  const field = fieldOf(player.color, position);
+  return state.players.some((other) => other !== player
+    && other.pieces.some((p) => p >= 0 && p < TRACK && fieldOf(other.color, p) === field));
 }
 
-// Steht eine fremde Figur bis zu sechs Felder dahinter?
-function threatened(state, player, position) {
+// Startfeld eines Gegners, der noch Figuren im Haus hat: Mit seiner nächsten 6 wird man geschlagen.
+function onEnemyStart(state, player, position) {
   const field = fieldOf(player.color, position);
-  return opponentFields(state, player).some((other) => {
-    const distance = (field - other + TRACK) % TRACK;
-    return distance >= 1 && distance <= 6;
-  });
+  return state.players.some((other) => other !== player && other.pieces.includes(BASE) && fieldOf(other.color, 0) === field);
 }
