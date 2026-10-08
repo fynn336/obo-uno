@@ -157,8 +157,9 @@ erwischt) und Spürnase (die meisten Lügen aufgedeckt).
 ## Schiffe versenken
 
 Für 2–4 Spieler, jeder gegen jeden. Jeder bekommt ein Meer mit 10 × 10 Feldern und eine Flotte aus fünf Schiffen
-(5, 4, 3, 3 und 2 Felder lang), die sich nicht berühren. Vor dem Start kann man sie mit „Neu verteilen“ so oft
-neu würfeln, bis sie gefällt, dann „Bereit!“.
+(5, 4, 3, 3 und 2 Felder lang), die sich nicht berühren. Vor dem Start zieht man die Schiffe an ihren Platz und
+dreht sie mit R oder Doppelklick; eine grüne Vorschau zeigt, dass es passt. Alternativ würfelt „Neu verteilen“ die
+ganze Flotte neu. Dann „Bereit!“.
 
 Reihum schießt man auf ein Feld im Meer eines beliebigen Gegners. Bei einem Treffer darf man nochmal, bei Wasser
 ist der Nächste dran. Fremde Schiffe sieht man erst, wenn sie versenkt sind. Wessen Flotte komplett versenkt ist,

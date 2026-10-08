@@ -1438,6 +1438,32 @@ button.cell:hover:not(:disabled) {
   animation: splash 0.6s ease-out;
 }
 
+/* Aufstellen: Schiffe greifen, verschieben und drehen */
+.sea.editable {
+  touch-action: none;
+  user-select: none;
+}
+
+.sea.editable .ship {
+  cursor: grab;
+}
+
+.cell.picked {
+  background: linear-gradient(#f6d45c, #c9a227);
+}
+
+.cell.lifted {
+  opacity: 0.35;
+}
+
+.cell.ghost {
+  background: rgba(90, 210, 120, 0.75);
+}
+
+.cell.ghost-bad {
+  background: rgba(230, 70, 60, 0.75);
+}
+
 @keyframes splash {
   from {
     scale: 1.8;

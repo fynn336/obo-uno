@@ -13,13 +13,14 @@ export const ships = {
   rules: [
     'Ziel: als Letzter noch Schiffe im Wasser haben.',
     'Jeder hat fünf Schiffe mit 5, 4, 3, 3 und 2 Feldern, die sich nicht berühren, auch nicht über Eck.',
-    'Vor dem Start die Flotte neu verteilen, bis sie gefällt, dann „Bereit!“.',
+    'Vor dem Start Schiffe verschieben (ziehen) und drehen (antippen und R oder Doppelklick) oder alles neu verteilen lassen, dann „Bereit!“.',
     'Reihum schießt man auf ein Feld im Meer eines Gegners. Treffer: noch einmal schießen. Wasser: Der Nächste ist dran.',
     'Fremde Schiffe sieht man erst, wenn sie versenkt sind. Wessen Flotte komplett versenkt ist, scheidet aus.',
   ],
   settings: [TURN_TIME_SETTING],
   moves: {
     shuffleFleet: {},
+    placeShip: { index: 'number', x: 'number', y: 'number', across: 'boolean' },
     ready: {},
     shoot: { targetId: 'string', x: 'number', y: 'number' },
   },

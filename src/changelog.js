@@ -1,6 +1,14 @@
 // Neueste Version zuerst. Die aktuelle Versionsnummer ist immer der oberste Eintrag.
 export const CHANGELOG = [
   {
+    version: '2.15.0',
+    date: '2026-10-08',
+    changes: [
+      'Schiffe versenken: Schiffe von Hand aufstellen – ziehen zum Verschieben, R oder Doppelklick zum Drehen',
+      'Vorschau beim Ziehen: grün passt, rot berührt ein anderes Schiff',
+    ],
+  },
+  {
     version: '2.14.0',
     date: '2026-10-08',
     changes: [

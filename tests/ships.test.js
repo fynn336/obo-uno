@@ -115,3 +115,20 @@ test('Schiffe versenken: in der Lounge für 2–4 Spieler', () => {
   assertEqual([s.gameId, s.game.phase], ['ships', 'setup'], 'Aufstellen');
   loungeRejected(loungeAct(lounge(5), { type: 'selectGame', playerId: 'p0', gameId: 'ships' }), { type: 'startGame', playerId: 'p0' });
 });
+
+test('Schiffe versenken: Schiffe von Hand verschieben und drehen', () => {
+  const s = { ...newShips(2), players: newShips(2).players.map((p) => ({ ...p, ships: [
+    { cells: [[0, 0], [1, 0], [2, 0]], sunk: false },
+    { cells: [[5, 5], [5, 6]], sunk: false },
+  ] })) };
+  const place = (index, x, y, across) => ({ type: 'placeShip', playerId: 'p0', index, x, y, across });
+  const moved = act(s, place(0, 7, 9, true));
+  assertEqual(moved.players[0].ships[0].cells, [[7, 9], [8, 9], [9, 9]], 'verschoben');
+  const turned = act(s, place(1, 5, 5, true));
+  assertEqual(turned.players[0].ships[1].cells, [[5, 5], [6, 5]], 'gedreht');
+  rejected(s, place(0, 8, 0, true));
+  rejected(s, place(0, 4, 4, true));
+  rejected(s, place(0, 5, 4, false));
+  rejected(s, place(5, 0, 0, true));
+  rejected(act(s, { type: 'ready', playerId: 'p0' }), place(0, 7, 9, true));
+});

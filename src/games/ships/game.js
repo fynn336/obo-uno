@@ -67,6 +67,32 @@ function shuffleFleet(state, { playerId }) {
   player.ships = randomFleet(state);
 }
 
+// Ein Schiff an eine neue Stelle legen oder drehen; (x, y) ist sein Feld oben links.
+function placeShip(state, { playerId, index, x, y, across }) {
+  const player = findPlayer(state, playerId);
+  if (state.phase !== 'setup' || !player) return 'Die Flotte steht schon';
+  if (player.ready) return 'Du hast dich schon bereit gemeldet';
+  if (!Number.isInteger(index) || !player.ships[index] || typeof across !== 'boolean') return 'Unbekanntes Schiff';
+  const cells = shipCells(x, y, player.ships[index].cells.length, across);
+  if (!fitsFleet(player.ships, index, cells)) return 'Dort ist kein Platz – Schiffe dürfen sich nicht berühren';
+  player.ships[index] = { cells, sunk: false };
+}
+
+export function shipCells(x, y, length, across) {
+  return Array.from({ length }, (_, i) => (across ? [x + i, y] : [x, y + i]));
+}
+
+export function isAcross(ship) {
+  return ship.cells[1][1] === ship.cells[0][1];
+}
+
+// Passt das Schiff ins Meer, ohne ein anderes zu berühren, auch nicht über Eck?
+export function fitsFleet(ships, index, cells) {
+  const inside = cells.every(([x, y]) => [x, y].every((v) => Number.isInteger(v) && v >= 0 && v < SIZE));
+  const others = ships.filter((_, i) => i !== index).flatMap((ship) => ship.cells);
+  return inside && !cells.some(([x, y]) => others.some(([ox, oy]) => Math.abs(ox - x) <= 1 && Math.abs(oy - y) <= 1));
+}
+
 function ready(state, { playerId }) {
   const player = findPlayer(state, playerId);
   if (state.phase !== 'setup' || !player) return 'Die Flotte steht schon';
@@ -124,8 +150,8 @@ function leave(state, { playerId }) {
   state.turnNumber++;
 }
 
-// shuffleFleet, ready und shoot sind Spielzüge, leave löst nur der Host aus.
-const handlers = { shuffleFleet, ready, shoot, leave };
+// shuffleFleet, placeShip, ready und shoot sind Spielzüge, leave löst nur der Host aus.
+const handlers = { shuffleFleet, placeShip, ready, shoot, leave };
 
 function startIfReady(state) {
   if (!state.players.every((p) => p.ready)) return;
@@ -138,20 +164,15 @@ function startIfReady(state) {
 // Zufällige Flotte: Schiffe liegen waagerecht oder senkrecht und berühren sich nicht, auch nicht über Eck.
 function randomFleet(state) {
   const ships = [];
-  const blocked = new Set();
   for (const length of FLEET) {
-    for (;;) {
+    let cells;
+    do {
       const across = random(state) < 0.5;
       const x = Math.floor(random(state) * (across ? SIZE - length + 1 : SIZE));
       const y = Math.floor(random(state) * (across ? SIZE : SIZE - length + 1));
-      const cells = Array.from({ length }, (_, i) => (across ? [x + i, y] : [x, y + i]));
-      if (cells.some(([cx, cy]) => blocked.has(key(cx, cy)))) continue;
-      for (const [cx, cy] of cells) {
-        for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) blocked.add(key(cx + dx, cy + dy));
-      }
-      ships.push({ cells, sunk: false });
-      break;
-    }
+      cells = shipCells(x, y, length, across);
+    } while (!fitsFleet(ships, -1, cells));
+    ships.push({ cells, sunk: false });
   }
   return ships;
 }
