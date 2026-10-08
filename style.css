@@ -1482,6 +1482,176 @@ button.cell:hover:not(:disabled) {
   margin: 0;
 }
 
+/* Montagsmaler */
+.sketch-game {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: 100vh;
+}
+
+.sketch-main {
+  display: grid;
+  grid-template-columns: minmax(420px, 760px) minmax(260px, 320px);
+  gap: 1.5rem;
+  justify-content: center;
+  align-items: start;
+  padding: 1rem 1.5rem 3rem;
+}
+
+.sketch-board {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.8rem;
+  border: 12px solid var(--wood);
+  border-radius: 18px;
+  background: var(--wood-dark);
+  box-shadow: 0 0 0 2px var(--wood-dark), 0 18px 40px rgba(0, 0, 0, 0.55);
+}
+
+.sketch-word {
+  min-height: 1.8rem;
+  text-align: center;
+  font-size: 1.15rem;
+}
+
+.sketch-word strong {
+  color: var(--accent);
+}
+
+.sketch-word .pattern {
+  font: 700 1.4rem ui-monospace, monospace;
+  letter-spacing: 0.15em;
+}
+
+.canvas-wrap {
+  position: relative;
+  aspect-ratio: 4 / 3;
+}
+
+.sketch-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 6px;
+  background: #fff;
+  touch-action: none;
+}
+
+.sketch-canvas.drawing {
+  cursor: crosshair;
+}
+
+.sketch-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  border-radius: 6px;
+  background: rgba(20, 14, 10, 0.78);
+  font-size: 1.2rem;
+  text-align: center;
+}
+
+.sketch-overlay[hidden] {
+  display: none;
+}
+
+.sketch-overlay strong {
+  color: var(--accent);
+  font: 700 2.4rem var(--hand);
+}
+
+.sketch-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: center;
+}
+
+.swatch-button,
+.size-button {
+  display: grid;
+  place-items: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  padding: 0;
+  border: 3px solid transparent;
+  box-shadow: none;
+}
+
+.swatch-button {
+  background: var(--c);
+}
+
+.size-button {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.size-button span {
+  width: var(--dot);
+  height: var(--dot);
+  border-radius: 50%;
+  background: #1d1712;
+}
+
+.swatch-button.active,
+.size-button.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.5);
+}
+
+.sketch-side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.sketch-chat {
+  height: 260px;
+  margin: 0;
+  padding: 0.5rem 0.7rem;
+  overflow-y: auto;
+  border-radius: 12px;
+  background: var(--panel);
+  list-style: none;
+  font-size: 0.85rem;
+}
+
+.sketch-chat li {
+  padding: 0.1rem 0;
+}
+
+.sketch-chat .correct {
+  color: #7be08f;
+  font-weight: 700;
+}
+
+.sketch-chat .close {
+  color: var(--accent);
+  font-style: italic;
+}
+
+.sketch-chat .system {
+  color: var(--muted);
+}
+
+.sketch-chat .chat {
+  font-style: italic;
+}
+
+.sketch-guess {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.sketch-guess input {
+  margin: 0;
+}
+
 /* Ludo */
 .team-0 {
   --c: var(--red);

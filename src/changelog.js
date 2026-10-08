@@ -1,6 +1,15 @@
 // Neueste Version zuerst. Die aktuelle Versionsnummer ist immer der oberste Eintrag.
 export const CHANGELOG = [
   {
+    version: '2.16.0',
+    date: '2026-10-08',
+    changes: [
+      'Neues Spiel: Montagsmaler für 2–8 Spieler – einer zeichnet, alle raten',
+      'Wort aus drei Vorschlägen wählen, 8 Farben, 3 Stiftgrößen, Radierer; „knapp daneben“ als privater Hinweis',
+      'Computer-Gegner setzen bei Montagsmaler aus und warten in der Lounge',
+    ],
+  },
+  {
     version: '2.15.0',
     date: '2026-10-08',
     changes: [

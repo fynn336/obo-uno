@@ -1,6 +1,6 @@
 import { GAMES } from '../games/index.js';
 import { AVATAR_COLORS, AVATAR_EMOJIS } from '../lounge/avatars.js';
-import { BOT_LEVELS, MAX_PLAYERS } from '../lounge/lounge.js';
+import { BOT_LEVELS, MAX_PLAYERS, playersFor } from '../lounge/lounge.js';
 import { avatarBadge } from './avatar.js';
 import { throwConfetti } from './confetti.js';
 import { h } from './dom.js';
@@ -53,7 +53,7 @@ export function renderLounge(root, view, code, send) {
   const celebration = result ?? recap;
   const isNewResult = celebration && celebration.id !== celebratedResultId;
   const game = GAMES[view.selectedGameId];
-  const fits = view.players.length >= game.minPlayers && view.players.length <= game.maxPlayers;
+  const fits = fitsGame(view, game);
   // Nochmal: dasselbe Spiel mit denselben Einstellungen, solange der Host nichts anderes gewählt hat
   const replay = isHost && view.phase === 'lounge' && result?.gameId === game.id && fits
     ? () => send({ type: 'startGame' })
@@ -122,8 +122,8 @@ function botLevel(view, isHost, send) {
 
 function gamesPanel(view, isHost, send) {
   const game = GAMES[view.selectedGameId];
-  const count = view.players.length;
-  const fits = count >= game.minPlayers && count <= game.maxPlayers;
+  const fits = fitsGame(view, game);
+  const botsWait = game.bots === false && view.players.some((p) => p.bot);
   const canChoose = isHost && view.phase === 'lounge';
   return h('section', { class: 'panel' },
     h('h2', {}, 'Spiele'),
@@ -139,10 +139,17 @@ function gamesPanel(view, isHost, send) {
     h('p', { class: 'hint' }, game.description, ' ',
       h('button', { type: 'button', class: 'rules-link', onClick: () => openRules(game.id) }, '❓ Regeln')),
     game.settings.map((setting) => settingControl(game, setting, view.settings[game.id][setting.key], canChoose, send)),
+    botsWait && h('p', { class: 'hint' }, `🤖 Computer-Gegner setzen bei ${game.name} aus und warten in der Lounge.`),
     view.phase === 'lounge' && (isHost
       ? h('button', { class: 'primary big', type: 'button', disabled: !fits, onClick: () => send({ type: 'startGame' }) },
         fits ? `${game.name} starten` : `${game.name}: ${game.minPlayers}–${game.maxPlayers} Spieler`)
       : h('p', { class: 'hint' }, 'Der Host wählt das Spiel und startet die Partie …')));
+}
+
+// Passt die Zahl der Mitspieler? Bei Spielen ohne Computer-Gegner zählen nur die Menschen.
+function fitsGame(view, game) {
+  const count = playersFor(view, game).length;
+  return count >= game.minPlayers && count <= game.maxPlayers;
 }
 
 function settingControl(game, setting, value, editable, send) {

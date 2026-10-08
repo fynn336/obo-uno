@@ -5,7 +5,7 @@ nach jeder Partie geht es zurück in die Lounge. Es gibt keinen eigenen Server, 
 per WebRTC ([PeerJS](https://peerjs.com/)). Alles läuft als statische Seite, z. B. kostenlos auf GitHub Pages.
 
 **Spiele:** Farbenchaos (Uno-Regeln), Würfelglück (Kniffel-Regeln), Ludo (Mensch-ärgere-dich-nicht-Regeln),
-Mäxchen (Würfeln und Bluffen) und Schiffe versenken.
+Mäxchen (Würfeln und Bluffen), Schiffe versenken und Montagsmaler.
 
 ## Spielen
 
@@ -166,6 +166,16 @@ ist der Nächste dran. Fremde Schiffe sieht man erst, wenn sie versenkt sind. We
 scheidet aus; die letzte Flotte gewinnt. Auszeichnungen: Scharfschütze (die meisten Treffer) und Versenker (die
 meisten versenkten Schiffe).
 
+## Montagsmaler
+
+Für 2–8 Spieler; Computer-Gegner setzen aus und warten in der Lounge. Reihum zeichnet jeder (1–3 Runden, 60–100
+Sekunden pro Bild). Der Zeichner wählt eins von drei Wörtern und zeichnet mit 8 Farben, 3 Stiftgrößen und
+Radierer. Die anderen tippen ihre Tipps einfach ein – Groß- und Kleinschreibung und Umlaute sind egal, „knapp
+daneben“ (ein Buchstabe falsch) verrät ein Hinweis, den nur man selbst sieht. Wer zuerst richtig rät, bekommt
+10 Punkte, dann 8, 6 und danach je 5; der Zeichner bekommt 3 Punkte pro richtigem Rater. Wer es erraten hat, kann
+weiter schreiben, das sehen aber nur der Zeichner und die anderen, die es schon wissen. Auszeichnungen: Blitzmerker
+(am häufigsten als Erster) und Künstler (die eigenen Bilder wurden am häufigsten erraten).
+
 ## Verbindungsabbrüche
 
 - **Reload eines Spielers:** Wer seinen Tab neu lädt, kommt automatisch auf seinen Platz zurück.
@@ -222,6 +232,7 @@ src/games/                 Spiele; jedes beschreibt Name, Spielerzahl, Einstellu
   ludo/                    Ludo: Regeln, Bot, Brett (ui/board.js) und Oberfläche
   maexchen/                Mäxchen: Wertung (values.js), Regeln, Bot, Oberfläche
   ships/                   Schiffe versenken: Regeln, Bot, Oberfläche
+  sketch/                  Montagsmaler: Wortliste, Regeln, Zeichenfläche (ui/)
 src/shared/                Zufall per Seed (mulberry32), Prüfung von Aktionsfeldern
 src/net/                   Netzwerk
   protocol.js              alle Nachrichtentypen und die Prüfung jeder Client-Nachricht

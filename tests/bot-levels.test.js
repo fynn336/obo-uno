@@ -7,6 +7,7 @@ import { game, lounge, loungeAct, loungeRejected, play } from './setup.js';
 const LEVELS_PLAYED = [['easy', 'hard'], ['medium', 'medium'], ['hard', 'easy']];
 // Würfelspiele brauchen einige Partien, bis sich Können gegen Glück durchsetzt.
 const GAMES_PER_CHECK = 20;
+const WITH_BOTS = Object.values(GAMES).filter((module) => module.bots !== false);
 
 // Zwei Bots spielen eine ganze Partie, so wie die Lounge sie fragt: der erste mit einem Zug ist dran.
 function duel(module, levels, seed) {
@@ -24,7 +25,7 @@ function duel(module, levels, seed) {
 }
 
 test('Bot-Stärke: jede Stufe spielt jedes Spiel ohne abgelehnten Zug zu Ende', () => {
-  for (const module of Object.values(GAMES)) {
+  for (const module of WITH_BOTS) {
     for (const levels of LEVELS_PLAYED) assert(module.result(duel(module, levels, 3)), `${module.name} ${levels}`);
   }
 });
@@ -48,7 +49,7 @@ test('Bot-Stärke Farbenchaos: leicht vergisst UNO, schwer erwischt jeden Verges
 });
 
 test('Bot-Stärke: schwere Bots gewinnen öfter als leichte', () => {
-  for (const id of Object.keys(GAMES)) {
+  for (const id of WITH_BOTS.map((module) => module.id)) {
     let wins = 0;
     for (let seed = 1; seed <= GAMES_PER_CHECK; seed++) {
       const ranking = GAMES[id].result(duel(GAMES[id], ['hard', 'easy'], seed * 31)).ranking;

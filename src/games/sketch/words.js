@@ -1,0 +1,20 @@
+// Gut zeichenbare Begriffe; der Host zieht daraus per Seed, ohne Wiederholung innerhalb einer Partie.
+export const WORDS = [
+  'Haus', 'Baum', 'Auto', 'Katze', 'Hund', 'Sonne', 'Mond', 'Stern', 'Blume', 'Fisch', 'Vogel', 'Fahrrad', 'Schiff',
+  'Flugzeug', 'Zug', 'Brille', 'Uhr', 'Schlüssel', 'Tür', 'Fenster', 'Bett', 'Stuhl', 'Tisch', 'Lampe', 'Buch',
+  'Stift', 'Schere', 'Gitarre', 'Trommel', 'Pizza', 'Banane', 'Apfel', 'Erdbeere', 'Kuchen', 'Eis', 'Kaffee',
+  'Flasche', 'Löffel', 'Gabel', 'Regenschirm', 'Hut', 'Schuh', 'Socke', 'Hose', 'Krone', 'Ring', 'Geschenk', 'Kerze',
+  'Ball', 'Drache', 'Rakete', 'Roboter', 'Geist', 'Schneemann', 'Weihnachtsbaum', 'Kürbis', 'Spinne', 'Schnecke',
+  'Schlange', 'Elefant', 'Giraffe', 'Pinguin', 'Hase', 'Maus', 'Schwein', 'Kuh', 'Pferd', 'Ente', 'Frosch', 'Biene',
+  'Schmetterling', 'Wal', 'Krake', 'Hai', 'Löwe', 'Affe', 'Igel', 'Eule', 'Berg', 'Insel', 'Vulkan', 'Regenbogen',
+  'Wolke', 'Blitz', 'Schneeflocke', 'Leuchtturm', 'Brücke', 'Zelt', 'Burg', 'Kirche', 'Ampel', 'Zahnbürste', 'Handy',
+  'Fernseher', 'Computer', 'Kamera', 'Kopfhörer', 'Mikrofon', 'Brief', 'Anker', 'Kompass', 'Schatzkiste', 'Pirat',
+  'Ritter', 'Zauberer', 'Hexe', 'Prinzessin', 'Clown', 'Astronaut', 'Feuerwehrauto', 'Fußball', 'Schach', 'Würfel',
+  'Puzzle', 'Leiter', 'Hammer', 'Säge', 'Schraube', 'Kette', 'Glocke', 'Trompete', 'Klavier', 'Herz', 'Pfeil',
+  'Zielscheibe', 'Sanduhr', 'Wecker', 'Ballon', 'Fallschirm', 'Hubschrauber', 'Traktor', 'Bagger', 'Bus', 'U-Boot',
+  'Kanu', 'Surfbrett', 'Skateboard', 'Schlitten', 'Iglu', 'Kaktus', 'Palme', 'Pilz', 'Tannenzapfen', 'Blatt', 'Nest',
+  'Ei', 'Brot', 'Brezel', 'Wurst', 'Käse', 'Pommes', 'Burger', 'Popcorn', 'Lolli', 'Teddy', 'Puppe', 'Schaukel',
+  'Rutsche', 'Sandburg', 'Muschel', 'Seestern', 'Koffer', 'Rucksack', 'Mülleimer', 'Badewanne', 'Dusche', 'Spiegel',
+  'Sofa', 'Kühlschrank', 'Waschmaschine', 'Staubsauger', 'Besen', 'Eimer', 'Gießkanne', 'Vogelscheuche', 'Windmühle',
+  'Zahn', 'Auge', 'Nase', 'Hand', 'Fuß', 'Bart', 'Zwiebel', 'Karotte', 'Ananas', 'Kirsche', 'Zitrone', 'Wassermelone',
+];

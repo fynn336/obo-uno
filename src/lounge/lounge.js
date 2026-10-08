@@ -160,22 +160,28 @@ function startGame(state, { playerId }) {
   const error = checkHostInLounge(state, playerId);
   if (error) return error;
   const game = GAMES[state.selectedGameId];
-  if (state.players.length < game.minPlayers || state.players.length > game.maxPlayers) {
+  const players = playersFor(state, game);
+  if (players.length < game.minPlayers || players.length > game.maxPlayers) {
     return `${game.name} braucht ${game.minPlayers}–${game.maxPlayers} Spieler`;
   }
   const [random, seed] = nextRandom(state.seed);
   state.seed = seed;
   state.game = game.create({
-    players: state.players.map(({ id, name }) => ({ id, name })),
+    players: players.map(({ id, name }) => ({ id, name })),
     hostId: state.hostId,
     settings: state.settings[game.id],
     seed: Math.floor(random * 2 ** 32),
   });
   state.phase = 'game';
   state.gameId = game.id;
-  state.participants = state.players.map((p) => p.id);
+  state.participants = players.map((p) => p.id);
   state.lastResult = null;
   state.recap = null;
+}
+
+// Wer mitspielt: alle in der Lounge, bei Spielen ohne Computer-Gegner nur die Menschen
+export function playersFor(state, game) {
+  return state.players.filter((p) => game.bots !== false || !p.bot);
 }
 
 function abortGame(state, { playerId }) {
