@@ -1920,13 +1920,13 @@ button.cell:hover:not(:disabled) {
   gap: 1.5rem;
   justify-content: center;
   align-items: start;
-  padding: 1rem 1.5rem 3rem;
+  padding: 0.6rem 1.5rem 1rem;
 }
 
 /* Holzbrett mit Maserung; alle Felder und Figuren liegen frei darauf (Lage aus src/games/ludo/ui/board.js) */
 .ludo-board {
   position: relative;
-  width: min(calc(100vh - 6.5rem), 720px);
+  width: min(calc(100vh - 4.5rem), calc(100vw - 23rem), 900px);
   min-width: 420px;
   aspect-ratio: 1;
   border: 14px solid var(--wood);

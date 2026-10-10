@@ -6,8 +6,8 @@ import { BASE, FIELDS_PER_COLOR, fieldOf } from '../game.js';
 // außen und seine Spitze. In der Mitte jedes Arms liegt der Zielweg, das Haus im Zwickel neben dem Startfeld.
 const LANE = 4;
 const HOUSE_DISTANCE = 5.3;
-const LABEL_DISTANCE = 1.9;
-const MARGIN = 0.9;
+const LABEL_DISTANCE = 1.7;
+const MARGIN = 0.55;
 // Eigene Farbe links unten (Winkel des Hauses auf dem Bildschirm)
 const OWN_HOUSE_ANGLE = (3 * Math.PI) / 4;
 const HOUSE_SPOTS = [[-0.5, -0.5], [0.5, -0.5], [-0.5, 0.5], [0.5, 0.5]];
