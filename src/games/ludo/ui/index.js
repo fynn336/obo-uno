@@ -4,12 +4,14 @@ import { avatarBadge } from '../../../ui/avatar.js';
 import { diePips } from '../../../ui/dice.js';
 import { h } from '../../../ui/dom.js';
 import { timerBar } from '../../../ui/timer.js';
-import { BASE, TRACK } from '../game.js';
-import {
-  area, CENTER, cellOf, COLORS, goalCells, houseCells, OWN_CORNER, pathCells, rotate, TRACK_CELLS, yardCells,
-} from './board.js';
+import { BASE, fieldOf } from '../game.js';
+import { boardLayout, cellKey, pathKeys, rotate, startColor, turnFor } from './board.js';
 
-const COLOR_NAMES = ['Rot', 'Blau', 'Grün', 'Gelb'];
+const COLOR_NAMES = ['Rot', 'Blau', 'Grün', 'Gelb', 'Orange', 'Lila'];
+// Größen in Feldbreiten
+const FIELD_SIZE = 0.84;
+const PIECE_SIZE = 0.95;
+const YARD_SIZE = 3;
 const STEP_MS = 110;
 const HOP_PX = 10;
 const FLY_HOME_MS = 400;
@@ -24,11 +26,7 @@ export function renderLudo(root, view, send, abort) {
   const fresh = freshEvents(view);
   const lastMove = fresh.findLast((e) => e.type === 'move');
   const rolled = fresh.some((e) => e.type === 'roll');
-  // Das Brett ist so gedreht, dass die eigene Farbe links unten liegt.
-  const me = view.players.find((p) => p.id === view.you);
-  const turn = (OWN_CORNER - me.color + COLORS.length) % COLORS.length;
-  const at = (cell) => rotate(cell, turn);
-  const boardElement = board(view, turn, at, rolled);
+  const boardElement = board(view, rolled);
   root.replaceChildren(
     h('div', { class: 'ludo' },
       h('header', { class: 'info' },
@@ -46,9 +44,9 @@ export function renderLudo(root, view, send, abort) {
             disabled: !canRoll(view),
             onClick: roll,
           }, 'Würfeln', h('kbd', {}, 'Leertaste')),
-          h('ol', { class: 'event-log', 'aria-label': 'Verlauf' }, view.events.map((event) => h('li', {}, describe(event))))))),
+          h('ol', { class: 'event-log', 'aria-label': 'Verlauf' }, view.events.map((event) => h('li', {}, describe(view, event))))))),
   );
-  animateMove(boardElement, lastMove, at);
+  animateMove(view, boardElement, lastMove);
   announce(fresh);
   if (isMyTurn(view) && !wasMyTurn) alertTurn(() => latest.root.querySelector('.ludo') && isMyTurn(latest.view));
 }
@@ -64,32 +62,41 @@ export function handleLudoKey(event) {
   event.preventDefault();
 }
 
-function board(view, turn, at, rolled) {
+// Das Brett ist so gedreht, dass die eigene Farbe links unten liegt.
+function board(view, rolled) {
+  const layout = boardLayout(view.colors);
+  const me = view.players.find((p) => p.id === view.you);
+  const turn = turnFor(layout, me.color);
+  const spot = (point, size, extra = '') => {
+    const [x, y] = rotate(point, turn);
+    return `left:${50 + (x / layout.extent) * 50}%;top:${50 + (y / layout.extent) * 50}%;--s:${size}${extra}`;
+  };
   const used = new Map(view.players.map((p) => [p.color, p]));
-  const place = (...cells) => area(...cells.map(at));
-  const field = (cell, classes, extraStyle = '') => h('div', {
-    class: `field ${classes}`,
-    style: `${place(cell)}${extraStyle}`,
-    'data-cell': at(cell).join(','),
-  });
   const current = currentPlayer(view);
-  return h('div', { class: 'ludo-board' },
-    COLORS.map((color) => {
+  const colors = Array.from({ length: view.colors }, (_, color) => color);
+  const field = (point, key, classes, extra = '') => h('div', {
+    class: `spot field ${classes}`, style: spot(point, FIELD_SIZE, extra), 'data-cell': key,
+  });
+  const dieSize = Math.min(1.6, 2 * layout.inner - 1);
+  return h('div', { class: 'ludo-board', style: `--u:${50 / layout.extent}%` },
+    colors.map((color) => {
       const owner = used.get(color);
-      const classes = [`yard team-${color} corner-${(color + turn) % COLORS.length}`, !owner && 'unused',
-        owner === current && 'current'];
-      return h('div', { class: classes.filter(Boolean).join(' '), style: place(...yardCells(color)) },
-        owner && h('span', { class: 'yard-name' }, avatarBadge(owner), owner.id === view.you ? 'Du' : owner.name));
+      const classes = ['spot yard', `team-${color}`, !owner && 'unused', owner === current && 'current'];
+      return h('div', { class: classes.filter(Boolean).join(' '), style: spot(layout.yards[color], YARD_SIZE) });
     }),
-    TRACK_CELLS.map((cell, index) => {
-      const startOf = index % (TRACK / COLORS.length) === 0 ? index / (TRACK / COLORS.length) : null;
-      if (startOf === null) return field(cell, '');
-      const direction = `; --arrow: ${angle(at(cell), at(TRACK_CELLS[index + 1]))}deg`;
-      return field(cell, `start team-${startOf}`, direction);
+    colors.map((color) => used.get(color) && h('span', { class: 'spot yard-name', style: spot(layout.labels[color], 0) },
+      avatarBadge(used.get(color)), used.get(color).id === view.you ? 'Du' : used.get(color).name)),
+    layout.track.map((point, index) => {
+      const owner = startColor(index);
+      if (owner === null) return field(point, `t${index}`, '');
+      const next = layout.track[(index + 1) % layout.track.length];
+      const arrow = `;--arrow:${arrowAngle(rotate(point, turn), rotate(next, turn))}deg`;
+      return field(point, `t${index}`, `start team-${owner}`, arrow);
     }),
-    COLORS.flatMap((color) => goalCells(color).map((cell, i) => field(cell, `goal team-${color}`, `; --depth: ${i}`))),
-    COLORS.flatMap((color) => houseCells(color).map((cell) => field(cell, `house team-${color}`))),
-    h('div', { class: `board-center team-${current.color}`, style: place(CENTER) },
+    colors.flatMap((color) => layout.goals[color].map((point, i) => field(point, `g${color}-${i}`, `goal team-${color}`,
+      `;--depth:${i}`))),
+    colors.flatMap((color) => layout.houses[color].map((point, i) => field(point, `h${color}-${i}`, `house team-${color}`))),
+    h('div', { class: `spot board-center team-${current.color}`, style: spot([0, 0], dieSize) },
       h('button', {
         type: 'button',
         class: `die${rolled ? ' rolling' : ''}${view.die ? '' : ' idle'}`,
@@ -98,17 +105,17 @@ function board(view, turn, at, rolled) {
         'aria-label': view.die ? `Würfel: ${view.die}` : 'Würfel',
         onClick: roll,
       }, diePips(view.die ?? 6))),
-    view.players.flatMap((p) => p.pieces.map((position, piece) => pawn(view, p, position, piece, place))));
+    view.players.flatMap((p) => p.pieces.map((position, piece) => pawn(view, p, position, piece, layout, spot))));
 }
 
 // Klassische Spielfigur mit Kopf und Körper; eigene Figuren tragen ihre Nummer für die Tasten 1–4.
-function pawn(view, player, position, piece, place) {
+function pawn(view, player, position, piece, layout, spot) {
   const mine = player.id === view.you;
   const movable = mine && isMyTurn(view) && view.movable.includes(piece);
   return h('button', {
     type: 'button',
-    class: `piece team-${player.color}${movable ? ' movable' : ''}`,
-    style: place(cellOf(player.color, position, piece)),
+    class: `spot piece team-${player.color}${movable ? ' movable' : ''}`,
+    style: spot(pointOf(view, layout, player.color, position, piece), PIECE_SIZE),
     'data-color': player.color,
     'data-piece': piece,
     disabled: !movable,
@@ -118,22 +125,29 @@ function pawn(view, player, position, piece, place) {
   }, h('span', {}, mine ? String(piece + 1) : ''));
 }
 
+function pointOf(view, layout, color, position, piece) {
+  if (position === BASE) return layout.houses[color][piece];
+  if (position < view.track) return layout.track[fieldOf(view, color, position)];
+  return layout.goals[color][position - view.track];
+}
+
 // Die Figur hüpft Feld für Feld; eine geschlagene Figur fliegt danach zurück ins Haus.
-function animateMove(boardElement, event, at) {
+function animateMove(view, boardElement, event) {
   if (!event || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const pieceOf = (color, piece) => boardElement.querySelector(`.piece[data-color="${color}"][data-piece="${piece}"]`);
-  const centerOf = (cell) => {
-    const rect = boardElement.querySelector(`[data-cell="${at(cell).join(',')}"]`).getBoundingClientRect();
+  const centerOf = (key) => {
+    const rect = boardElement.querySelector(`[data-cell="${key}"]`).getBoundingClientRect();
     return [rect.left + rect.width / 2, rect.top + rect.height / 2];
   };
-  const cells = [cellOf(event.color, event.from, event.piece), ...pathCells(event.color, event.piece, event.from, event.to)];
-  const points = cells.map(centerOf);
+  const keys = [cellKey(view, event.color, event.from, event.piece),
+    ...pathKeys(view, event.color, event.piece, event.from, event.to)];
+  const points = keys.map(centerOf);
   const [endX, endY] = points.at(-1);
   const walker = pieceOf(event.color, event.piece);
   walker.classList.add('walking');
   hop(walker, points.map(([x, y]) => [x - endX, y - endY]), { stepMs: STEP_MS, height: HOP_PX, delay: 0 });
   if (event.victim === null) return;
-  const [homeX, homeY] = centerOf(houseCells(event.victimColor)[event.victimPiece]);
+  const [homeX, homeY] = centerOf(cellKey(view, event.victimColor, BASE, event.victimPiece));
   hop(pieceOf(event.victimColor, event.victimPiece), [[endX - homeX, endY - homeY], [0, 0]],
     { stepMs: FLY_HOME_MS, height: FLY_HOME_PX, delay: (points.length - 1) * STEP_MS });
 }
@@ -148,12 +162,12 @@ function hop(element, offsets, { stepMs, height, delay }) {
   element.animate(frames, { duration: (offsets.length - 1) * stepMs, delay, fill: 'backwards' });
 }
 
-function angle([column, row], [nextColumn, nextRow]) {
-  return Math.round((Math.atan2(nextRow - row, nextColumn - column) * 180) / Math.PI);
+function arrowAngle([x, y], [nextX, nextY]) {
+  return Math.round((Math.atan2(nextY - y, nextX - x) * 180) / Math.PI);
 }
 
 function playerRow(view, player) {
-  const inGoal = player.pieces.filter((position) => position >= TRACK).length;
+  const inGoal = player.pieces.filter((position) => position >= view.track).length;
   return h('li', { class: `team-${player.color}${player.id === view.currentId ? ' current' : ''}` },
     h('span', { class: 'swatch', title: COLOR_NAMES[player.color] }),
     avatarBadge(player),
@@ -168,12 +182,12 @@ function statusText(view) {
   return 'Du bist dran – würfle!';
 }
 
-function describe(event) {
+function describe(view, event) {
   if (event.type === 'roll') return `${event.player} würfelt ${event.face}${event.stuck ? ' – kein Zug möglich' : ''}`;
   if (event.type === 'move') {
     if (event.victim) return `${event.player} wirft ${event.victim} raus`;
     if (event.from === BASE) return `${event.player} kommt raus`;
-    if (event.to >= TRACK && event.from < TRACK) return `${event.player} zieht ins Ziel`;
+    if (event.to >= view.track && event.from < view.track) return `${event.player} zieht ins Ziel`;
     const steps = event.to - event.from;
     return `${event.player} zieht ${steps} ${steps === 1 ? 'Feld' : 'Felder'}`;
   }

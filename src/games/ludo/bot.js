@@ -1,4 +1,4 @@
-import { BASE, fieldOf, legalMoves, targetOf, TRACK } from './game.js';
+import { BASE, fieldOf, legalMoves, onTrack, targetOf } from './game.js';
 
 // Gewichte für die Wahl der Figur
 const CAPTURE = 100;
@@ -19,11 +19,10 @@ export function botMove(state, botId, level = 'medium') {
   const value = (piece) => {
     const from = player.pieces[piece];
     const to = targetOf(from, state.die);
-    const onTrack = (position) => position >= 0 && position < TRACK;
     let score = to * PROGRESS;
     if (from === BASE) score += LEAVE_HOUSE;
-    if (!onTrack(to) && onTrack(from)) score += REACH_GOAL;
-    if (!onTrack(to)) return score;
+    if (!onTrack(state, to) && onTrack(state, from)) score += REACH_GOAL;
+    if (!onTrack(state, to)) return score;
     if (seesCaptures && occupiedByOpponent(state, player, to)) score += CAPTURE;
     if (level === 'hard' && onEnemyStart(state, player, to)) score -= ENEMY_START;
     return score;
@@ -33,13 +32,14 @@ export function botMove(state, botId, level = 'medium') {
 }
 
 function occupiedByOpponent(state, player, position) {
-  const field = fieldOf(player.color, position);
+  const field = fieldOf(state, player.color, position);
   return state.players.some((other) => other !== player
-    && other.pieces.some((p) => p >= 0 && p < TRACK && fieldOf(other.color, p) === field));
+    && other.pieces.some((p) => onTrack(state, p) && fieldOf(state, other.color, p) === field));
 }
 
 // Startfeld eines Gegners, der noch Figuren im Haus hat: Mit seiner nächsten 6 wird man geschlagen.
 function onEnemyStart(state, player, position) {
-  const field = fieldOf(player.color, position);
-  return state.players.some((other) => other !== player && other.pieces.includes(BASE) && fieldOf(other.color, 0) === field);
+  const field = fieldOf(state, player.color, position);
+  return state.players.some((other) => other !== player && other.pieces.includes(BASE)
+    && fieldOf(state, other.color, 0) === field);
 }

@@ -1,55 +1,71 @@
-import { BASE, fieldOf, TRACK } from '../game.js';
+import { BASE, FIELDS_PER_COLOR, fieldOf } from '../game.js';
 
-// Brett mit 11 × 11 Zellen als [Spalte, Zeile]. Beschrieben ist das Viertel von Rot (links oben),
-// die anderen Farben sind jeweils um 90° im Uhrzeigersinn gedreht.
-const SIZE = 11;
-const QUARTER = [[0, 4], [1, 4], [2, 4], [3, 4], [4, 4], [4, 3], [4, 2], [4, 1], [4, 0], [5, 0]];
-const GOAL = [[1, 5], [2, 5], [3, 5], [4, 5]];
-const HOUSE = [[0, 0], [1, 0], [0, 1], [1, 1]];
-// Freie Ecke von Rot für Namensschild und Haus
-const YARD = [[0, 0], [3, 3]];
-export const CENTER = [5, 5];
-export const COLORS = [0, 1, 2, 3];
-// Ecke links unten, in der jeder seine eigene Farbe sieht
-export const OWN_CORNER = 3;
+// Das Brett ist ein Stern mit einem Arm je Farbe: 4 Arme ergeben das bekannte Kreuz, 6 Arme das große Brett.
+// Koordinaten in Feldbreiten um die Mitte (0, 0), y nach unten; Rot (Arm 0) zeigt nach links.
+// Je Farbe 10 Felder Laufbahn: 4 auf dem eigenen Arm nach innen, die Ecke zum Nachbarn, 4 auf dessen Arm nach
+// außen und seine Spitze. In der Mitte jedes Arms liegt der Zielweg, das Haus im Zwickel neben dem Startfeld.
+const LANE = 4;
+const HOUSE_DISTANCE = 5.3;
+const LABEL_DISTANCE = 1.9;
+const MARGIN = 0.9;
+// Eigene Farbe links unten (Winkel des Hauses auf dem Bildschirm)
+const OWN_HOUSE_ANGLE = (3 * Math.PI) / 4;
+const HOUSE_SPOTS = [[-0.5, -0.5], [0.5, -0.5], [-0.5, 0.5], [0.5, 0.5]];
 
-export const TRACK_CELLS = COLORS.flatMap((color) => QUARTER.map((cell) => rotate(cell, color)));
-
-export function goalCells(color) {
-  return GOAL.map((cell) => rotate(cell, color));
+export function boardLayout(colors) {
+  const step = (2 * Math.PI) / colors;
+  // Abstand der Ecke zwischen zwei Armen, gemessen entlang des Arms
+  const inner = 1 / Math.tan(Math.PI / colors);
+  const point = (arm, along, side) => {
+    const angle = Math.PI + arm * step;
+    const [ux, uy] = [Math.cos(angle), Math.sin(angle)];
+    return [ux * along - uy * side, uy * along + ux * side];
+  };
+  const track = Array.from({ length: colors }, (_, arm) => [
+    ...Array.from({ length: LANE }, (__, i) => point(arm, inner + LANE - i, 1)),
+    point(arm, inner, 1),
+    ...Array.from({ length: LANE }, (__, i) => point(arm + 1, inner + 1 + i, -1)),
+    point(arm + 1, inner + LANE, 0),
+  ]).flat();
+  const goals = Array.from({ length: colors },
+    (_, arm) => Array.from({ length: LANE }, (__, i) => point(arm, inner + LANE - 1 - i, 0)));
+  const houseAngle = (color) => Math.PI + color * step + step / 2;
+  const toward = (angle, distance, [a, b] = [0, 0]) => [
+    Math.cos(angle) * (distance + a) - Math.sin(angle) * b,
+    Math.sin(angle) * (distance + a) + Math.cos(angle) * b,
+  ];
+  const houses = Array.from({ length: colors },
+    (_, color) => HOUSE_SPOTS.map((spot) => toward(houseAngle(color), inner + HOUSE_DISTANCE, spot)));
+  const yards = Array.from({ length: colors }, (_, color) => toward(houseAngle(color), inner + HOUSE_DISTANCE));
+  const labels = Array.from({ length: colors }, (_, color) => toward(houseAngle(color), inner + HOUSE_DISTANCE + LABEL_DISTANCE));
+  const all = [...track, ...goals.flat(), ...houses.flat(), ...labels];
+  const extent = Math.max(...all.flat().map(Math.abs)) + MARGIN;
+  return { track, goals, houses, yards, labels, extent, inner, houseAngle };
 }
 
-export function houseCells(color) {
-  return HOUSE.map((cell) => rotate(cell, color));
+// Drehwinkel, damit das Haus der eigenen Farbe links unten liegt
+export function turnFor(layout, color) {
+  return OWN_HOUSE_ANGLE - layout.houseAngle(color);
 }
 
-export function yardCells(color) {
-  return YARD.map((cell) => rotate(cell, color));
+export function rotate([x, y], angle) {
+  return [x * Math.cos(angle) - y * Math.sin(angle), x * Math.sin(angle) + y * Math.cos(angle)];
 }
 
-// Zelle einer Figur; im Haus hat jede Figur ihren festen Platz.
-export function cellOf(color, position, piece) {
-  if (position === BASE) return houseCells(color)[piece];
-  if (position < TRACK) return TRACK_CELLS[fieldOf(color, position)];
-  return goalCells(color)[position - TRACK];
+// Name eines Felds für data-cell; im Haus hat jede Figur ihren festen Platz.
+export function cellKey(view, color, position, piece) {
+  if (position === BASE) return `h${color}-${piece}`;
+  if (position < view.track) return `t${fieldOf(view, color, position)}`;
+  return `g${color}-${position - view.track}`;
 }
 
-// Alle Zellen, über die eine Figur von from nach to läuft, ohne die Startzelle
-export function pathCells(color, piece, from, to) {
+// Felder, über die eine Figur von from nach to läuft, ohne das Startfeld
+export function pathKeys(view, color, piece, from, to) {
   const start = from === BASE ? to : from + 1;
-  return Array.from({ length: to - start + 1 }, (_, i) => cellOf(color, start + i, piece));
+  return Array.from({ length: to - start + 1 }, (_, i) => cellKey(view, color, start + i, piece));
 }
 
-// CSS grid-area, die alle Zellen umfasst
-export function area(...cells) {
-  const columns = cells.map(([column]) => column);
-  const rows = cells.map(([, row]) => row);
-  return `grid-area: ${Math.min(...rows) + 1} / ${Math.min(...columns) + 1} / ${Math.max(...rows) + 2} / ${Math.max(...columns) + 2}`;
-}
-
-// Dreht eine Zelle um times × 90° im Uhrzeigersinn um die Brettmitte.
-export function rotate(cell, times) {
-  let [column, row] = cell;
-  for (let i = 0; i < times; i++) [column, row] = [SIZE - 1 - row, column];
-  return [column, row];
+// Farbe, deren Startfeld das ist, sonst null
+export function startColor(index) {
+  return index % FIELDS_PER_COLOR === 0 ? index / FIELDS_PER_COLOR : null;
 }

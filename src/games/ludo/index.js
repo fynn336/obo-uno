@@ -1,5 +1,5 @@
 import { botMove } from './bot.js';
-import { createGame, reduce, TRACK, viewFor } from './game.js';
+import { createGame, reduce, viewFor } from './game.js';
 import { awardsFor } from '../awards.js';
 import { playOutTurn, TURN_TIME_SETTING } from '../turns.js';
 
@@ -9,9 +9,9 @@ export const ludo = {
   icon: '🎯',
   description: 'Mit einer 6 raus aus dem Haus, einmal ums Brett und rein ins Ziel – und dabei die anderen rauswerfen.',
   minPlayers: 2,
-  maxPlayers: 4,
+  maxPlayers: 6,
   rules: [
-    'Ziel: alle vier Figuren einmal ums Brett ins eigene Ziel bringen.',
+    'Ziel: alle vier Figuren einmal ums Brett ins eigene Ziel bringen. Mit 5 oder 6 Spielern gibt es das große Sternbrett mit sechs Armen.',
     'Mit einer 6 kommt eine Figur aus dem Haus aufs Startfeld. Nach einer 6 wird noch einmal gewürfelt.',
     'Solange noch Figuren im Haus sind, muss das Startfeld geräumt werden.',
     'Wer keine Figur auf der Laufbahn hat, hat drei Versuche für eine 6.',
@@ -46,6 +46,7 @@ export const ludo = {
   result(state) {
     if (state.phase !== 'gameOver') return null;
     const done = state.finished.map((id) => state.players.find((p) => p.id === id));
+    const inGoal = (player) => player.pieces.filter((position) => position >= state.track).length;
     const compare = (a, b) => inGoal(b) - inGoal(a) || progress(b) - progress(a);
     const rest = state.players.filter((p) => !state.finished.includes(p.id)).sort(compare);
     const ranking = [
@@ -64,10 +65,6 @@ const AWARDS = [
   { icon: '💥', title: 'Rausschmeißer', count: (p) => p.captures, describe: (n) => `${n}-mal geschlagen` },
   { icon: '🙈', title: 'Pechvogel', count: (p) => p.captured, describe: (n) => `${n}-mal rausgeflogen` },
 ];
-
-function inGoal(player) {
-  return player.pieces.filter((position) => position >= TRACK).length;
-}
 
 function progress(player) {
   return player.pieces.reduce((sum, position) => sum + position + 1, 0);

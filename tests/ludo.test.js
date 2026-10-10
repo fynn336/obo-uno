@@ -45,8 +45,29 @@ function moveAs(state, piece) {
 test('Ludo: zu zweit gegenüber, Startfelder zehn Felder auseinander', () => {
   const s = newLudo(2);
   assertEqual(s.players.map((p) => p.color), [0, 2], 'Farben');
-  assertEqual([fieldOf(0, 0), fieldOf(1, 0), fieldOf(2, 5), fieldOf(3, 15)], [0, 10, 25, 5], 'Felder');
+  assertEqual([fieldOf(s, 0, 0), fieldOf(s, 1, 0), fieldOf(s, 2, 5), fieldOf(s, 3, 15)], [0, 10, 25, 5], 'Felder');
   assertEqual(newLudo(4).players.map((p) => p.color), [0, 1, 2, 3], 'zu viert');
+});
+
+test('Ludo: mit 5 oder 6 Spielern das Sternbrett mit 60 Feldern', () => {
+  const four = newLudo(4);
+  const six = newLudo(6);
+  assertEqual([four.colors, four.track, newLudo(5).colors, six.colors, six.track], [4, 40, 6, 6, 60], 'Brettgröße');
+  assertEqual(six.players.map((p) => p.color), [0, 1, 2, 3, 4, 5], 'sechs Farben');
+  assertEqual([fieldOf(six, 5, 0), fieldOf(six, 5, 15), fieldOf(six, 0, 59)], [50, 5, 59], 'Felder');
+});
+
+test('Ludo: auf dem Sternbrett geht es erst nach 60 Feldern ins Ziel, Schlagen über den Rand hinweg', () => {
+  // Rot steht kurz vor dem Ziel; auf dem Sternbrett sind die Zielfelder 60–63.
+  let s = rollAs(withPieces(newLudo(6), [[60, 62, 63, 58]]), 3);
+  assertEqual(ludo.viewFor(s, 'p0').movable, [3], '58 + 3 = 61: zweites Zielfeld');
+  s = moveAs(s, 3);
+  assertEqual(s.players[0].pieces[3], 61, 'im Ziel');
+  // Rot auf Feld 2, Lila (Farbe 5) auf Feld 58: mit einer 4 landet Lila über den Rand hinweg auf Feld 2.
+  const pieces = [[2, BASE, BASE, BASE], undefined, undefined, undefined, undefined, [8, BASE, BASE, BASE]];
+  let t = { ...withPieces(newLudo(6), pieces), current: 5 };
+  t = moveAs(rollAs(t, 4), 0);
+  assertEqual([t.players[5].pieces[0], t.players[0].pieces[0]], [12, BASE], 'Lila schlägt Rot');
 });
 
 test('Ludo: ohne Figur draußen drei Versuche für eine 6', () => {
@@ -128,7 +149,7 @@ test('Ludo: Rauswurf des Spielers am Zug gibt den Zug weiter', () => {
 });
 
 test('Ludo: Bots spielen ganze Partien ohne abgelehnten Zug', () => {
-  for (const [count, finish] of [[2, 'first'], [3, 'all'], [4, 'first'], [4, 'all']]) {
+  for (const [count, finish] of [[2, 'first'], [3, 'all'], [4, 'first'], [4, 'all'], [5, 'first'], [6, 'all']]) {
     const players = Array.from({ length: count }, (_, i) => ({ id: `b${i}`, name: `B${i}` }));
     let s = createGame({ players, hostId: 'b0', settings: { finish, turnTime: 0 }, seed: count * 11 });
     for (let step = 0; s.phase === 'playing' && step < 20000; step++) {
@@ -140,12 +161,12 @@ test('Ludo: Bots spielen ganze Partien ohne abgelehnten Zug', () => {
   }
 });
 
-test('Ludo: in der Lounge für 2–4 Spieler', () => {
+test('Ludo: in der Lounge für 2–6 Spieler', () => {
   let s = loungeAct(lounge(1), { type: 'selectGame', playerId: 'p0', gameId: 'ludo' });
   loungeRejected(s, { type: 'startGame', playerId: 'p0' });
   s = loungeAct(s, { type: 'setSetting', playerId: 'p0', gameId: 'ludo', key: 'finish', value: 'all' });
   s = loungeAct(s, { type: 'addBot', playerId: 'p0' });
   s = loungeAct(s, { type: 'startGame', playerId: 'p0' });
   assertEqual([s.phase, s.gameId, s.game.finish], ['game', 'ludo', 'all'], 'läuft');
-  loungeRejected(loungeAct(lounge(5), { type: 'selectGame', playerId: 'p0', gameId: 'ludo' }), { type: 'startGame', playerId: 'p0' });
+  loungeRejected(loungeAct(lounge(7), { type: 'selectGame', playerId: 'p0', gameId: 'ludo' }), { type: 'startGame', playerId: 'p0' });
 });

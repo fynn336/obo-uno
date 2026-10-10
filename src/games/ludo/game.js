@@ -1,21 +1,26 @@
 import { nextRandom } from '../../shared/rng.js';
 
-// Figurposition relativ zum eigenen Startfeld: BASE = im Haus, 0–39 = Laufbahn, 40–43 = Zielfelder.
+// Figurposition relativ zum eigenen Startfeld: BASE = im Haus, danach die Laufbahn (track Felder), dann 4 Zielfelder.
 export const BASE = -1;
-export const TRACK = 40;
 export const PIECES = 4;
-const LAST = TRACK + PIECES - 1;
+// Jede Farbe hat ihren Arm mit 10 Feldern Laufbahn: 4 Farben = 40 Felder, 6 Farben = 60 Felder.
+export const FIELDS_PER_COLOR = 10;
 const SIX = 6;
 const TRIES_WITHOUT_PIECE = 3;
-// Farben (0 Rot, 1 Blau, 2 Grün, 3 Gelb) je Spielerzahl; zu zweit sitzt man sich gegenüber.
-const SEATS = { 2: [0, 2], 3: [0, 1, 2], 4: [0, 1, 2, 3] };
+// Bis 4 Spieler das Kreuz-Brett, mit 5 oder 6 das Sternbrett mit sechs Armen
+const BIG_BOARD_FROM = 5;
+// Farben (0 Rot, 1 Blau, 2 Grün, 3 Gelb, 4 Orange, 5 Lila) je Spielerzahl; zu zweit sitzt man sich gegenüber.
+const SEATS = { 2: [0, 2], 3: [0, 1, 2], 4: [0, 1, 2, 3], 5: [0, 1, 2, 3, 4], 6: [0, 1, 2, 3, 4, 5] };
 const MAX_EVENTS = 30;
 const VISIBLE_EVENTS = 8;
 
 export function createGame({ players, hostId, settings, seed }) {
+  const colors = players.length >= BIG_BOARD_FROM ? 6 : 4;
   const state = {
     phase: 'playing',
     hostId,
+    colors,
+    track: colors * FIELDS_PER_COLOR,
     finish: settings.finish,
     turnTime: settings.turnTime,
     players: players.map(({ id, name }, i) => ({
@@ -47,6 +52,8 @@ export function viewFor(state, playerId) {
     you: playerId,
     hostId: state.hostId,
     phase: state.phase,
+    colors: state.colors,
+    track: state.track,
     players: state.players.map(({ id, name, color, pieces }) => ({
       id, name, color, pieces, place: state.finished.indexOf(id) + 1 || null,
     })),
@@ -62,8 +69,12 @@ export function viewFor(state, playerId) {
 }
 
 // Feld auf der gemeinsamen Laufbahn; jede Farbe startet zehn Felder weiter.
-export function fieldOf(color, position) {
-  return (color * (TRACK / 4) + position) % TRACK;
+export function fieldOf(state, color, position) {
+  return (color * FIELDS_PER_COLOR + position) % state.track;
+}
+
+export function onTrack(state, position) {
+  return position >= 0 && position < state.track;
 }
 
 // Figuren, die mit dem aktuellen Wurf ziehen dürfen. Pflichten wie im Original:
@@ -72,7 +83,7 @@ export function legalMoves(player, state) {
   const face = state.die;
   const targets = player.pieces.map((position) => targetOf(position, face));
   const possible = targets
-    .map((target, i) => (target !== null && target <= LAST && !player.pieces.includes(target) ? i : -1))
+    .map((target, i) => (target !== null && target < state.track + PIECES && !player.pieces.includes(target) ? i : -1))
     .filter((i) => i >= 0);
   const leavingHouse = possible.filter((i) => player.pieces[i] === BASE);
   if (leavingHouse.length > 0) return leavingHouse;
@@ -108,13 +119,13 @@ function move(state, { playerId, piece }) {
   const from = player.pieces[piece];
   const to = targetOf(from, state.die);
   player.pieces[piece] = to;
-  const hit = to < TRACK ? capture(state, player, to) : null;
+  const hit = to < state.track ? capture(state, player, to) : null;
   log(state, 'move', {
     player: player.name, color: player.color, piece, from, to,
     victim: hit?.name ?? null, victimColor: hit?.color ?? null, victimPiece: hit?.piece ?? null,
   });
   state.mustMove = false;
-  if (player.pieces.every((position) => position >= TRACK)) {
+  if (player.pieces.every((position) => position >= state.track)) {
     state.finished.push(player.id);
     log(state, 'finished', { player: player.name, place: state.finished.length });
     if (isOver(state)) {
@@ -148,9 +159,9 @@ const handlers = { roll, move, leave };
 
 // Schlägt eine fremde Figur auf diesem Feld; liefert { name, color, piece } des Geschlagenen.
 function capture(state, player, position) {
-  const field = fieldOf(player.color, position);
+  const field = fieldOf(state, player.color, position);
   for (const other of state.players) {
-    const piece = other.pieces.findIndex((p) => p >= 0 && p < TRACK && fieldOf(other.color, p) === field);
+    const piece = other.pieces.findIndex((p) => onTrack(state, p) && fieldOf(state, other.color, p) === field);
     if (other === player || piece === -1) continue;
     other.pieces[piece] = BASE;
     other.captured++;
@@ -181,7 +192,7 @@ function startTurn(state, index) {
   state.current = index;
   state.mustMove = false;
   const pieces = currentPlayer(state).pieces;
-  state.triesLeft = pieces.some((p) => p >= 0 && p < TRACK) ? 1 : TRIES_WITHOUT_PIECE;
+  state.triesLeft = pieces.some((p) => onTrack(state, p)) ? 1 : TRIES_WITHOUT_PIECE;
   state.turnNumber++;
 }
 

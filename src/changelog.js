@@ -1,6 +1,14 @@
 // Neueste Version zuerst. Die aktuelle Versionsnummer ist immer der oberste Eintrag.
 export const CHANGELOG = [
   {
+    version: '2.19.0',
+    date: '2026-10-10',
+    changes: [
+      'Ludo jetzt für bis zu 6 Spieler: Mit 5 oder 6 gibt es das große Sternbrett mit sechs Armen und 60 Feldern',
+      'Zwei neue Farben: Orange und Lila',
+    ],
+  },
+  {
     version: '2.18.0',
     date: '2026-10-08',
     changes: [

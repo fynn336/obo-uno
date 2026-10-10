@@ -123,8 +123,9 @@ Nach 13 Runden gewinnt, wer die meisten Punkte hat. Sonderregeln für einen zwei
 
 ## Ludo
 
-Für 2–4 Spieler, zu zweit sitzt man sich gegenüber. Jeder hat vier Figuren im Haus und bringt sie einmal um das
-Brett ins eigene Ziel. Das Brett ist für jeden so gedreht, dass die eigene Farbe links unten liegt. Gewürfelt wird
+Für 2–6 Spieler, zu zweit sitzt man sich gegenüber. Bis 4 Spieler gibt es das Kreuz-Brett mit 40 Feldern, mit 5
+oder 6 das große Sternbrett mit sechs Armen und 60 Feldern (zusätzlich Orange und Lila). Jeder hat vier Figuren im
+Haus und bringt sie einmal um das Brett ins eigene Ziel. Das Brett ist für jeden so gedreht, dass die eigene Farbe links unten liegt. Gewürfelt wird
 mit dem Würfel in der Brettmitte oder der Leertaste, eine Figur zieht man per Klick oder mit 1–4. Gibt es nur eine
 mögliche Figur, zieht auch die Leertaste.
 
@@ -246,7 +247,7 @@ src/games/                 Spiele; jedes beschreibt Name, Spielerzahl, Einstellu
   index.js, ui.js          Liste aller Spiele und ihrer Oberflächen
   uno/                     Farbenchaos: Regeln (game.js), Sicht, Bot, Auszeichnungen, Oberfläche (ui/)
   kniffel/                 Würfelglück: Wertung (scoring.js), Regeln, Bot, Oberfläche (ui/)
-  ludo/                    Ludo: Regeln, Bot, Brett (ui/board.js) und Oberfläche
+  ludo/                    Ludo: Regeln, Bot, Brett für 4 oder 6 Farben (ui/board.js) und Oberfläche
   maexchen/                Mäxchen: Wertung (values.js), Regeln, Bot, Oberfläche
   ships/                   Schiffe versenken: Regeln, Bot, Oberfläche
   sketch/                  Montagsmaler: Wortliste, Regeln, Zeichenfläche (ui/)
