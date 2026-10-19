@@ -10,6 +10,9 @@ import { openRules } from './rules.js';
 const BOT_LEVEL_NAMES = { easy: 'Leicht', medium: 'Mittel', hard: 'Schwer' };
 
 let celebratedResultId = null;
+// Offen bleiben über das Neuzeichnen hinweg: Avatar-Auswahl und Spiel-Einstellungen
+let pickingAvatar = false;
+let optionsOpen = false;
 
 export function renderStart(root, { message, inviteCode, onCreate, onJoin }) {
   const createName = nameInput();
@@ -25,7 +28,7 @@ export function renderStart(root, { message, inviteCode, onCreate, onJoin }) {
   root.replaceChildren(
     h('div', { class: 'page' },
       h('h1', { class: 'logo' }, h('span', {}, 'OBO'), ' Lounge'),
-      h('p', { class: 'hint' }, 'Spieleabend mit Freunden – direkt im Browser'),
+      h('p', { class: 'tagline' }, 'Spieleabend mit Freunden – direkt im Browser, ohne Anmeldung.'),
       message && h('p', { class: 'message' }, message),
       h('div', { class: 'panels' },
         h('form', { class: 'panel', onSubmit: submit(() => onCreate(createName.value)) },
@@ -38,6 +41,10 @@ export function renderStart(root, { message, inviteCode, onCreate, onJoin }) {
           h('label', {}, 'Dein Name', joinName),
           h('button', { class: 'primary', type: 'submit' }, 'Beitreten')),
       ),
+      h('ul', { class: 'game-preview', 'aria-label': 'Spiele' }, Object.values(GAMES).map((game) => h('li', {},
+        h('span', { class: 'game-icon' }, game.icon),
+        h('strong', {}, game.name),
+        h('span', { class: 'hint' }, `${game.minPlayers}–${game.maxPlayers} Spieler`)))),
     ),
   );
   (inviteCode ? joinName : createName).focus();
@@ -61,16 +68,16 @@ export function renderLounge(root, view, code, send) {
     : null;
   root.replaceChildren(
     h('div', { class: 'page lounge' },
-      h('h1', {}, 'OBO Lounge ', h('span', { class: 'code' }, code)),
-      h('p', { class: 'hint' }, 'Teile den Code oder schick deinen Freunden direkt den Link: ', inviteButton(code)),
+      h('header', { class: 'lounge-head' },
+        h('h1', {}, 'OBO Lounge ', h('span', { class: 'code', title: 'Code zum Beitreten' }, code)),
+        inviteButton(code)),
       recap && recapPanel(recap, isNewResult),
       result && resultPanel(result, isNewResult, replay),
       view.phase === 'game' && h('p', { class: 'message' },
         `Gerade läuft ${GAMES[view.gameId].name} – du spielst ab der nächsten Partie mit.`),
       h('div', { class: 'panels' },
         playersPanel(view, isHost, send),
-        gamesPanel(view, isHost, send),
-        avatarPicker(view, send)),
+        gamesPanel(view, isHost, send)),
     ),
   );
   if (isNewResult) {
@@ -84,7 +91,7 @@ function playersPanel(view, isHost, send) {
   return h('section', { class: 'panel' },
     h('h2', {}, `Am Tisch (${view.players.length}) · Abendwertung`),
     h('ol', { class: 'lobby-players' }, view.players.map((p) => h('li', {},
-      avatarBadge(p),
+      p.id === view.you ? avatarButton(p) : avatarBadge(p),
       h('span', { class: 'name' }, p.name),
       p.id === view.hostId && h('span', { class: 'badge' }, 'Host'),
       p.id === view.you && h('span', { class: 'badge' }, 'du'),
@@ -98,6 +105,7 @@ function playersPanel(view, isHost, send) {
         onClick: () => send({ type: 'removeBot', targetId: p.id }),
       }, icon('close')),
     ))),
+    avatarPicker(view, send),
     isHost && view.phase === 'lounge' && h('div', { class: 'buttons' },
       h('button', {
         type: 'button',
@@ -126,25 +134,42 @@ function gamesPanel(view, isHost, send) {
   const fits = fitsGame(view, game);
   const botsWait = game.bots === false && view.players.some((p) => p.bot);
   const canChoose = isHost && view.phase === 'lounge';
-  return h('section', { class: 'panel' },
+  return h('section', { class: 'panel games-panel' },
     h('h2', {}, 'Spiele'),
     h('div', { class: 'game-boxes' }, Object.values(GAMES).map((g) => h('button', {
       type: 'button',
       class: `game-box${g.id === game.id ? ' selected' : ''}`,
       disabled: !canChoose,
+      title: `${g.minPlayers}–${g.maxPlayers} Spieler`,
       onClick: () => send({ type: 'selectGame', gameId: g.id }),
     },
     h('span', { class: 'game-icon' }, g.icon),
-    h('strong', {}, g.name),
-    h('span', { class: 'hint' }, `${g.minPlayers}–${g.maxPlayers} Spieler`)))),
-    h('p', { class: 'hint' }, game.description, ' ',
-      h('button', { type: 'button', class: 'rules-link', onClick: () => openRules(game.id) }, icon('help'), 'Regeln')),
-    game.settings.map((setting) => settingControl(game, setting, view.settings[game.id][setting.key], canChoose, send)),
-    botsWait && h('p', { class: 'hint' }, `Computer-Gegner setzen bei ${game.name} aus und warten in der Lounge.`),
-    view.phase === 'lounge' && (isHost
+    h('strong', {}, g.name)))),
+    h('div', { class: 'game-detail' },
+      h('p', {}, h('strong', {}, game.name), ` · ${game.minPlayers}–${game.maxPlayers} Spieler`),
+      h('p', { class: 'hint' }, game.description, ' ',
+        h('button', { type: 'button', class: 'rules-link', onClick: () => openRules(game.id) }, icon('help'), 'Regeln')),
+      game.settings.length > 0 && h('details', {
+        class: 'game-options',
+        open: optionsOpen,
+        onToggle: (event) => { optionsOpen = event.target.open; },
+      },
+      h('summary', {}, icon('settings'), 'Einstellungen', h('span', { class: 'hint' }, settingsSummary(game, view.settings[game.id]))),
+      game.settings.map((setting) => settingControl(game, setting, view.settings[game.id][setting.key], canChoose, send))),
+      botsWait && h('p', { class: 'hint' }, `Computer-Gegner setzen bei ${game.name} aus und warten in der Lounge.`)),
+    view.phase === 'lounge' && h('div', { class: 'start-bar' }, isHost
       ? h('button', { class: 'primary big', type: 'button', disabled: !fits, onClick: () => send({ type: 'startGame' }) },
         fits ? `${game.name} starten` : `${game.name}: ${game.minPlayers}–${game.maxPlayers} Spieler`)
       : h('p', { class: 'hint' }, 'Der Host wählt das Spiel und startet die Partie …')));
+}
+
+// Kurzfassung für die eingeklappten Einstellungen, z. B. „30 s · 2 Runden“; Schalter zählen nur, wenn sie an sind.
+function settingsSummary(game, values) {
+  const parts = game.settings.map((setting) => {
+    if (setting.type === 'toggle') return values[setting.key] ? setting.label : null;
+    return setting.describe(values[setting.key]);
+  });
+  return parts.filter(Boolean).join(' · ');
 }
 
 // Passt die Zahl der Mitspieler? Bei Spielen ohne Computer-Gegner zählen nur die Menschen.
@@ -233,12 +258,26 @@ function inviteButton(code) {
   return button;
 }
 
+// Der eigene Avatar ist ein Knopf und klappt die Auswahl auf.
+function avatarButton(player) {
+  return h('button', {
+    type: 'button',
+    class: 'avatar-edit',
+    title: 'Avatar ändern',
+    'aria-expanded': String(pickingAvatar),
+    onClick: (event) => {
+      pickingAvatar = !pickingAvatar;
+      event.currentTarget.setAttribute('aria-expanded', String(pickingAvatar));
+      event.currentTarget.closest('.panel').querySelector('.avatar-picker').hidden = !pickingAvatar;
+    },
+  }, avatarBadge(player));
+}
+
 function avatarPicker(view, send) {
   const me = view.players.find((p) => p.id === view.you);
   const choose = (change) => send({ type: 'setAvatar', ...me.avatar, ...change });
   const selected = (isSelected) => (isSelected ? ' selected' : '');
-  return h('section', { class: 'panel wide' },
-    h('h2', {}, 'Dein Avatar'),
+  return h('div', { class: 'avatar-picker', hidden: !pickingAvatar },
     h('div', { class: 'choices' }, AVATAR_EMOJIS.map((emoji) => h('button', {
       type: 'button',
       class: `choice${selected(emoji === me.avatar.emoji)}`,

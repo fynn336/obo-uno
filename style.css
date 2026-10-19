@@ -246,14 +246,55 @@ kbd {
   margin-top: 0.8rem;
 }
 
+.tagline {
+  margin: 0 0 0.5rem;
+  font-size: var(--fs-l);
+}
+
+.game-preview {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.game-preview li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  padding: 0.8rem 0.5rem;
+  border-radius: var(--r-m);
+  background: var(--shade-3);
+}
+
+.game-preview .game-icon {
+  font-size: var(--fs-xl);
+}
+
+.lounge-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.lounge-head h1 {
+  margin: 0;
+}
+
 .lounge .panels {
-  grid-template-columns: 1fr 1.2fr;
+  grid-template-columns: 1fr 1.4fr;
+  align-items: start;
 }
 
 .game-boxes {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  gap: 0.6rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
 }
 
 .game-box {
@@ -261,7 +302,8 @@ kbd {
   flex-direction: column;
   align-items: center;
   gap: 0.15rem;
-  padding: 0.8rem 0.5rem;
+  padding: 0.55rem 0.3rem;
+  font-size: var(--fs-s);
   border: 3px solid transparent;
   border-radius: var(--r-m);
   background: var(--shade-2);
@@ -280,6 +322,76 @@ kbd {
 
 .game-icon {
   font-size: var(--fs-xxl);
+}
+
+.game-box .game-icon {
+  font-size: var(--fs-xl);
+}
+
+.game-detail {
+  margin-top: 1rem;
+  padding: 0.8rem 1rem;
+  border-radius: var(--r-m);
+  background: var(--shade-2);
+}
+
+.game-detail p {
+  margin: 0 0 0.4rem;
+}
+
+.game-options {
+  margin-top: 0.6rem;
+}
+
+.game-options summary {
+  display: flex;
+  gap: 0.45rem;
+  align-items: center;
+  font-weight: 800;
+  cursor: pointer;
+  list-style: none;
+}
+
+.game-options summary::-webkit-details-marker {
+  display: none;
+}
+
+.game-options summary .hint {
+  min-width: 0;
+  margin-left: auto;
+  overflow: hidden;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.game-options[open] summary {
+  margin-bottom: 0.7rem;
+}
+
+.game-options .toggle {
+  margin-bottom: 0.5rem;
+}
+
+/* Bleibt beim Scrollen unten im Fenster, solange die Spiele zu sehen sind */
+.start-bar {
+  position: sticky;
+  bottom: 0.75rem;
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+  padding: 0.5rem;
+  border-radius: var(--r-pill);
+  background: var(--shade-3);
+  backdrop-filter: blur(6px);
+}
+
+.start-bar .big {
+  flex: 1;
+}
+
+.start-bar .hint {
+  margin: 0.3rem;
 }
 
 .result {
@@ -594,8 +706,48 @@ select {
   font-size: var(--fs-s);
 }
 
-.panel.wide {
-  grid-column: 1 / -1;
+.avatar-edit {
+  position: relative;
+  flex: none;
+  padding: 0;
+  border-radius: 50%;
+  background: none;
+  box-shadow: none;
+}
+
+.avatar-edit::after {
+  content: '✎';
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--ink);
+  font-size: 11px;
+  line-height: 1;
+}
+
+.avatar-edit:hover .avatar,
+.avatar-edit[aria-expanded='true'] .avatar {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.avatar-picker {
+  margin: 0.5rem 0;
+  padding: 0.7rem 0.7rem 0.1rem;
+  border-radius: var(--r-m);
+  background: var(--shade-3);
+}
+
+.avatar-picker .choice:not(.color) {
+  width: 36px;
+  height: 36px;
+  font-size: var(--fs-m);
 }
 
 .choices {
@@ -2812,4 +2964,21 @@ button.cell:hover:not(:disabled) {
 #toast.visible {
   opacity: 1;
   transform: translate(-50%, 0);
+}
+
+@media (max-width: 760px) {
+  .panels,
+  .lounge .panels {
+    grid-template-columns: 1fr;
+  }
+
+  .game-boxes,
+  .game-preview {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* über der Eckleiste mit Musik und Version */
+  .start-bar {
+    bottom: 3.2rem;
+  }
 }

@@ -1,6 +1,15 @@
 // Neueste Version zuerst. Die aktuelle Versionsnummer ist immer der oberste Eintrag.
 export const CHANGELOG = [
   {
+    version: '2.22.0',
+    date: '2026-10-19',
+    changes: [
+      'Lounge aufgeräumt: kompakte Spielauswahl, Einstellungen zum Aufklappen und ein Start-Knopf, der immer zu sehen ist',
+      'Avatar ändern: einfach auf den eigenen Avatar in der Spielerliste tippen',
+      'Startseite zeigt alle Spiele auf einen Blick',
+    ],
+  },
+  {
     version: '2.21.0',
     date: '2026-10-19',
     changes: [
