@@ -4,7 +4,7 @@ import { playEffect } from '../../../ui/audio.js';
 import { avatarBadge } from '../../../ui/avatar.js';
 import { diePips } from '../../../ui/dice.js';
 import { h } from '../../../ui/dom.js';
-import { backButton } from '../../../ui/shell.js';
+import { eventLog, gameHeader, turnText } from '../../../ui/shell.js';
 import { timerBar } from '../../../ui/timer.js';
 import { bestCategory } from '../bot.js';
 import { CATEGORIES, scoreFor } from '../scoring.js';
@@ -28,18 +28,19 @@ export function renderKniffel(root, view, send, abort) {
   const written = fresh.findLast((e) => e.type === 'score');
   root.replaceChildren(
     h('div', { class: 'dice-game' },
-      h('header', { class: 'info' },
-        backButton(abort),
-        h('span', { class: 'turn' }, isMyTurn(view) ? 'Du bist am Zug' : `${currentPlayer(view).name} ist am Zug`),
-        h('span', {}, `Runde ${round(view)} von ${ROUNDS}`),
-        h('span', {}, `Wurf ${ROLLS_PER_TURN - view.rollsLeft} von ${ROLLS_PER_TURN}`)),
+      gameHeader({
+        abort,
+        player: currentPlayer(view),
+        turn: turnText(view, currentPlayer(view)),
+        facts: [`Runde ${round(view)} von ${ROUNDS}`, `Wurf ${ROLLS_PER_TURN - view.rollsLeft} von ${ROLLS_PER_TURN}`],
+      }),
       h('div', { class: 'dice-board' },
         h('section', { class: 'dice-zone' },
           heldStrip(view),
           h('div', { class: 'tray-row' }, cup(view, rolled), tray(view, rolled)),
           h('p', { class: 'status' }, statusText(view)),
           view.turnEndsIn !== null && timerBar(view.turnTime, view.turnEndsIn),
-          h('ol', { class: 'event-log', 'aria-label': 'Verlauf' }, view.events.map((event) => h('li', {}, describe(event))))),
+          eventLog(view.events, describe)),
         scoreSheet(view, written)),
     ),
   );

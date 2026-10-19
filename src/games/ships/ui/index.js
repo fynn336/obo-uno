@@ -3,7 +3,7 @@ import { playShot } from '../../../ui/audio.js';
 import { avatarBadge } from '../../../ui/avatar.js';
 import { h } from '../../../ui/dom.js';
 import { icon } from '../../../ui/icons.js';
-import { backButton } from '../../../ui/shell.js';
+import { eventLog, gameHeader, playerList, sidePanel, turnText } from '../../../ui/shell.js';
 import { timerBar } from '../../../ui/timer.js';
 import { fitsFleet, isAcross, key, shipCells, SIZE } from '../game.js';
 
@@ -27,9 +27,11 @@ export function renderShips(root, view, send, abort) {
   const lastShot = fresh.findLast((e) => e.type === 'shot');
   root.replaceChildren(
     h('div', { class: 'ships' },
-      h('header', { class: 'info' },
-        backButton(abort),
-        h('span', { class: 'turn' }, turnText(view))),
+      gameHeader({
+        abort,
+        player: view.phase === 'setup' ? null : currentPlayer(view),
+        turn: view.phase === 'setup' ? 'Flotten aufstellen' : turnText(view, currentPlayer(view)),
+      }),
       view.phase === 'setup' ? setup(view) : battle(view, lastShot)),
   );
   announce(fresh);
@@ -59,10 +61,7 @@ function setup(view) {
         h('button', { type: 'button', disabled: own.ready || picked === null, onClick: () => rotate(picked) }, icon('rotate'), 'Drehen', h('kbd', {}, 'R')),
         h('button', { type: 'button', disabled: own.ready, onClick: () => latest.send({ type: 'shuffleFleet' }) }, icon('shuffle'), 'Neu verteilen'),
         h('button', { type: 'button', class: 'primary', disabled: own.ready, onClick: () => latest.send({ type: 'ready' }) }, 'Bereit!'))),
-    h('aside', { class: 'panel ships-side' },
-      h('ul', { class: 'maex-players' }, view.players.map((p) => h('li', {},
-        avatarBadge(p), h('span', { class: 'name' }, p.id === view.you ? `${p.name} (du)` : p.name),
-        h('span', { class: 'lives' }, p.ready ? '✓ bereit' : '… stellt auf'))))));
+    sidePanel(playerList(view, view.players, (p) => (p.ready ? '✓ bereit' : '… stellt auf'), { current: null })));
 }
 
 function battle(view, lastShot) {
@@ -72,10 +71,12 @@ function battle(view, lastShot) {
     h('div', { class: 'seas' },
       opponents.map((p) => sea(view, p, { cell: CELL.target[count], target: true, lastShot })),
       sea(view, me(view), { cell: CELL.own[count], target: false, lastShot })),
-    h('aside', { class: 'panel ships-side' },
+    sidePanel(
+      playerList(view, view.players, (p) => (p.alive ? `${p.shipsLeft} ${p.shipsLeft === 1 ? 'Schiff' : 'Schiffe'}` : 'versenkt'),
+        { classOf: (p) => (p.alive ? '' : 'out') }),
       h('p', { class: 'status' }, statusText(view)),
       view.turnEndsIn !== null && timerBar(view.turnTime, view.turnEndsIn),
-      h('ol', { class: 'event-log', 'aria-label': 'Verlauf' }, view.events.map((event) => h('li', {}, describe(event))))));
+      eventLog(view.events, describe)));
 }
 
 function sea(view, player, { cell, target, lastShot }) {
@@ -188,11 +189,6 @@ function rotate(index) {
 
 function me(view) {
   return view.players.find((p) => p.id === view.you);
-}
-
-function turnText(view) {
-  if (view.phase === 'setup') return 'Flotten aufstellen';
-  return isMyTurn(view) ? 'Du bist am Zug' : `${currentPlayer(view).name} ist am Zug`;
 }
 
 function statusText(view) {

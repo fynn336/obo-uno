@@ -91,10 +91,8 @@ h3 {
 }
 
 h2 {
-  font-size: var(--fs-s);
+  font-size: var(--fs-m);
   color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
 }
 
 .icon {
@@ -360,6 +358,9 @@ kbd {
 
 .panel h2 {
   color: var(--text);
+  font-size: var(--fs-s);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .message {
@@ -683,7 +684,21 @@ select {
 }
 
 .turn {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
   font-weight: 800;
+}
+
+.turn .avatar {
+  width: 26px;
+  height: 26px;
+  font-size: var(--fs-xs);
+  border-width: 2px;
+}
+
+.fact {
+  color: var(--muted);
 }
 
 .swatch {
@@ -1318,59 +1333,6 @@ select {
   box-shadow: 0 0 0 3px rgba(242, 196, 15, 0.4);
 }
 
-.maex-side {
-  display: flex;
-  flex-direction: column;
-  gap: 0.9rem;
-}
-
-.maex-players {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.maex-players li {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 0.5rem;
-  align-items: center;
-  padding: 0.3rem 0.5rem;
-  border-radius: var(--r-m);
-}
-
-.maex-players li.current {
-  background: var(--light-1);
-  font-weight: 800;
-}
-
-.maex-players li.out {
-  opacity: 0.45;
-}
-
-.maex-players .avatar {
-  width: 30px;
-  height: 30px;
-  font-size: var(--fs-s);
-  border-width: 2px;
-}
-
-.maex-players .name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.lives {
-  font-size: var(--fs-xs);
-  white-space: nowrap;
-}
-
-.maex-side .event-log {
-  display: block;
-  margin: 0;
-}
-
 /* Schiffe versenken */
 .ships {
   display: grid;
@@ -1529,17 +1491,6 @@ button.cell:hover:not(:disabled) {
   }
 }
 
-.ships-side {
-  display: flex;
-  flex-direction: column;
-  gap: 0.9rem;
-}
-
-.ships-side .event-log {
-  display: block;
-  margin: 0;
-}
-
 /* Montagsmaler */
 .sketch-game {
   display: grid;
@@ -1660,12 +1611,6 @@ button.cell:hover:not(:disabled) {
 .size-button.active {
   border-color: var(--accent);
   box-shadow: 0 0 0 2px var(--shade-3);
-}
-
-.sketch-side {
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
 }
 
 .sketch-chat {
@@ -1844,17 +1789,6 @@ button.cell:hover:not(:disabled) {
   margin: 0;
 }
 
-.hangman-side {
-  display: flex;
-  flex-direction: column;
-  gap: 0.9rem;
-}
-
-.hangman-side .event-log {
-  display: block;
-  margin: 0;
-}
-
 /* Memory */
 .memory {
   display: grid;
@@ -1928,17 +1862,6 @@ button.cell:hover:not(:disabled) {
 .mem-face {
   font-size: calc(var(--size) * 0.55);
   line-height: 1;
-}
-
-.memory-side {
-  display: flex;
-  flex-direction: column;
-  gap: 0.9rem;
-}
-
-.memory-side .event-log {
-  display: block;
-  margin: 0;
 }
 
 /* Ludo */
@@ -2164,53 +2087,6 @@ button.cell:hover:not(:disabled) {
   }
 }
 
-.ludo-side {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.9rem;
-}
-
-.ludo-players {
-  align-self: stretch;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.ludo-players li {
-  display: grid;
-  grid-template-columns: auto auto 1fr auto;
-  gap: 0.5rem;
-  align-items: center;
-  padding: 0.3rem 0.5rem;
-  border-radius: var(--r-m);
-}
-
-.ludo-players li.current {
-  background: var(--light-1);
-  font-weight: 800;
-}
-
-.ludo-players .avatar {
-  width: 30px;
-  height: 30px;
-  font-size: var(--fs-s);
-  border-width: 2px;
-}
-
-.ludo-players .name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.ludo-side .event-log {
-  display: block;
-  align-self: stretch;
-  margin: 0;
-}
-
 /* Plätze am Tisch */
 .seat {
   position: absolute;
@@ -2328,6 +2204,75 @@ button.cell:hover:not(:disabled) {
 .hand-main {
   grid-column: 2;
   min-width: 0;
+}
+
+/* Gemeinsamer Spielrahmen: Seitenleiste mit Spielern und Verlauf */
+.game-side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.game-side > button {
+  align-self: center;
+}
+
+.game-side .event-log {
+  display: block;
+  align-self: stretch;
+  margin: 0;
+}
+
+.event-log:empty {
+  display: none;
+}
+
+.player-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.player-list li {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.3rem 0.5rem;
+  border-radius: var(--r-m);
+}
+
+.player-list li.current {
+  background: var(--light-1);
+  font-weight: 800;
+}
+
+.player-list li.out {
+  opacity: 0.45;
+}
+
+.player-list .avatar {
+  width: 30px;
+  height: 30px;
+  font-size: var(--fs-s);
+  border-width: 2px;
+}
+
+.player-list .name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.player-list .detail {
+  color: var(--muted);
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+}
+
+.player-list .swatch {
+  margin: 0;
 }
 
 .event-log {

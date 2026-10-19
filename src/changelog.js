@@ -1,6 +1,14 @@
 // Neueste Version zuerst. Die aktuelle Versionsnummer ist immer der oberste Eintrag.
 export const CHANGELOG = [
   {
+    version: '2.21.0',
+    date: '2026-10-19',
+    changes: [
+      'Alle Spiele haben jetzt dieselbe Kopfzeile: Zurück, wer dran ist (mit Avatar) und die wichtigsten Angaben',
+      'Einheitliche Seitenleiste mit Spielern, Punkten und Verlauf in jedem Spiel',
+    ],
+  },
+  {
     version: '2.20.0',
     date: '2026-10-19',
     changes: [

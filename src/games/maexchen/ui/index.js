@@ -1,9 +1,8 @@
 import { alertTurn, showBanner } from '../../../ui/attention.js';
 import { playEffect } from '../../../ui/audio.js';
-import { avatarBadge } from '../../../ui/avatar.js';
 import { diePips } from '../../../ui/dice.js';
 import { h } from '../../../ui/dom.js';
-import { backButton } from '../../../ui/shell.js';
+import { eventLog, gameHeader, playerList, sidePanel, turnText } from '../../../ui/shell.js';
 import { timerBar } from '../../../ui/timer.js';
 import { isHigher, MAEXCHEN, valueLabel, valueOf, VALUES } from '../values.js';
 
@@ -17,9 +16,7 @@ export function renderMaexchen(root, view, send, abort) {
   const rolled = fresh.some((e) => e.type === 'roll');
   root.replaceChildren(
     h('div', { class: 'dice-game maexchen' },
-      h('header', { class: 'info' },
-        backButton(abort),
-        h('span', { class: 'turn' }, isMyTurn(view) ? 'Du bist am Zug' : `${currentPlayer(view).name} ist am Zug`)),
+      gameHeader({ abort, player: currentPlayer(view), turn: turnText(view, currentPlayer(view)) }),
       h('div', { class: 'dice-board' },
         h('section', { class: 'dice-zone' },
           announcementPlate(view),
@@ -28,9 +25,10 @@ export function renderMaexchen(root, view, send, abort) {
           h('p', { class: 'status' }, statusText(view)),
           view.turnEndsIn !== null && timerBar(view.turnTime, view.turnEndsIn),
           actions(view)),
-        h('aside', { class: 'maex-side panel' },
-          h('ul', { class: 'maex-players' }, view.players.map((p) => playerRow(view, p))),
-          h('ol', { class: 'event-log', 'aria-label': 'Verlauf' }, view.events.map((event) => h('li', {}, describe(event)))))),
+        sidePanel(
+          playerList(view, view.players, (p) => (p.lives === 0 ? 'raus' : '❤️'.repeat(p.lives)),
+            { classOf: (p) => (p.lives === 0 ? 'out' : '') }),
+          eventLog(view.events, describe))),
     ),
   );
   announce(fresh);
@@ -92,14 +90,6 @@ function actions(view) {
 
 function button(label, onClick, classes = '', key = null) {
   return h('button', { type: 'button', class: classes, onClick }, label, key && h('kbd', {}, key));
-}
-
-function playerRow(view, player) {
-  const out = player.lives === 0;
-  return h('li', { class: `${player.id === view.currentId ? 'current' : ''}${out ? ' out' : ''}` },
-    avatarBadge(player),
-    h('span', { class: 'name' }, player.id === view.you ? `${player.name} (du)` : player.name),
-    h('span', { class: 'lives' }, out ? 'raus' : '❤️'.repeat(player.lives)));
 }
 
 function statusText(view) {

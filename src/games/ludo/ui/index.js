@@ -3,7 +3,7 @@ import { playEffect } from '../../../ui/audio.js';
 import { avatarBadge } from '../../../ui/avatar.js';
 import { diePips } from '../../../ui/dice.js';
 import { h } from '../../../ui/dom.js';
-import { backButton } from '../../../ui/shell.js';
+import { eventLog, gameHeader, playerList, sidePanel, turnText } from '../../../ui/shell.js';
 import { timerBar } from '../../../ui/timer.js';
 import { BASE, fieldOf } from '../game.js';
 import { boardLayout, cellKey, pathKeys, rotate, startColor, turnFor } from './board.js';
@@ -30,13 +30,14 @@ export function renderLudo(root, view, send, abort) {
   const boardElement = board(view, rolled);
   root.replaceChildren(
     h('div', { class: 'ludo' },
-      h('header', { class: 'info' },
-        backButton(abort),
-        h('span', { class: 'turn' }, isMyTurn(view) ? 'Du bist am Zug' : `${currentPlayer(view).name} ist am Zug`)),
+      gameHeader({ abort, player: currentPlayer(view), turn: turnText(view, currentPlayer(view)) }),
       h('div', { class: 'ludo-main' },
         boardElement,
-        h('aside', { class: 'ludo-side panel' },
-          h('ul', { class: 'ludo-players' }, view.players.map((p) => playerRow(view, p))),
+        sidePanel(
+          playerList(view, view.players, (p) => progress(view, p), {
+            classOf: (p) => `team-${p.color}`,
+            lead: (p) => h('span', { class: 'swatch', title: COLOR_NAMES[p.color] }),
+          }),
           h('p', { class: 'status' }, statusText(view)),
           view.turnEndsIn !== null && timerBar(view.turnTime, view.turnEndsIn),
           h('button', {
@@ -45,7 +46,7 @@ export function renderLudo(root, view, send, abort) {
             disabled: !canRoll(view),
             onClick: roll,
           }, 'Würfeln', h('kbd', {}, 'Leertaste')),
-          h('ol', { class: 'event-log', 'aria-label': 'Verlauf' }, view.events.map((event) => h('li', {}, describe(view, event))))))),
+          eventLog(view.events, (event) => describe(view, event))))),
   );
   animateMove(view, boardElement, lastMove);
   announce(fresh);
@@ -167,13 +168,9 @@ function arrowAngle([x, y], [nextX, nextY]) {
   return Math.round((Math.atan2(nextY - y, nextX - x) * 180) / Math.PI);
 }
 
-function playerRow(view, player) {
-  const inGoal = player.pieces.filter((position) => position >= view.track).length;
-  return h('li', { class: `team-${player.color}${player.id === view.currentId ? ' current' : ''}` },
-    h('span', { class: 'swatch', title: COLOR_NAMES[player.color] }),
-    avatarBadge(player),
-    h('span', { class: 'name' }, player.id === view.you ? `${player.name} (du)` : player.name),
-    h('span', { class: 'hint' }, player.place ? `🏁 Platz ${player.place}` : `${inGoal}/4 im Ziel`));
+function progress(view, player) {
+  if (player.place) return `🏁 Platz ${player.place}`;
+  return `${player.pieces.filter((position) => position >= view.track).length}/4 im Ziel`;
 }
 
 function statusText(view) {

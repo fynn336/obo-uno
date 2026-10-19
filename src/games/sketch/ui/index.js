@@ -1,9 +1,8 @@
 import { alertTurn, showBanner } from '../../../ui/attention.js';
 import { playEffect } from '../../../ui/audio.js';
-import { avatarBadge } from '../../../ui/avatar.js';
 import { h } from '../../../ui/dom.js';
 import { icon } from '../../../ui/icons.js';
-import { backButton } from '../../../ui/shell.js';
+import { gameHeader, playerList, sidePanel, turnText } from '../../../ui/shell.js';
 import { timerBar } from '../../../ui/timer.js';
 import { CANVAS, PALETTE, SIZES } from '../game.js';
 
@@ -41,11 +40,11 @@ function buildSkeleton(root) {
   const canvas = h('canvas', { width: 1000, height: 750, class: 'sketch-canvas' });
   const input = h('input', { maxlength: 40, autocomplete: 'off', 'aria-label': 'Tipp oder Nachricht' });
   const parts = {
-    header: h('header', { class: 'info' }),
+    header: h('div', { class: 'sketch-header' }),
     word: h('div', { class: 'sketch-word' }),
     overlay: h('div', { class: 'sketch-overlay' }),
     tools: h('div', { class: 'sketch-tools' }),
-    players: h('ul', { class: 'maex-players' }),
+    players: h('div', {}),
     timer: h('div', { class: 'sketch-timer' }),
     chat: h('ol', { class: 'sketch-chat', 'aria-label': 'Tipps und Nachrichten' }),
   };
@@ -58,7 +57,7 @@ function buildSkeleton(root) {
     parts.header,
     h('div', { class: 'sketch-main' },
       h('section', { class: 'sketch-board' }, parts.word, h('div', { class: 'canvas-wrap' }, canvas, parts.overlay), parts.tools),
-      h('aside', { class: 'panel sketch-side' }, parts.players, parts.timer, parts.chat, form)));
+      sidePanel(parts.players, parts.timer, parts.chat, form)));
   root.replaceChildren(element);
   attachPen(canvas);
   return { element, canvas, input, ...parts };
@@ -67,19 +66,19 @@ function buildSkeleton(root) {
 function update(view, before) {
   const drawer = view.players.find((p) => p.id === view.drawerId);
   const amDrawer = isDrawer(view);
-  ui.header.replaceChildren(
-    backButton(latest.abort),
-    h('span', { class: 'turn' }, amDrawer ? 'Du zeichnest' : `${drawer?.name ?? '…'} zeichnet`),
-    h('span', {}, `Runde ${view.round} von ${view.rounds}`));
+  ui.header.replaceChildren(gameHeader({
+    abort: latest.abort,
+    player: drawer,
+    turn: turnText(view, drawer, { mine: 'Du zeichnest', verb: 'zeichnet' }),
+    facts: [`Runde ${view.round} von ${view.rounds}`],
+  }));
   ui.word.replaceChildren(wordLine(view));
   ui.overlay.replaceChildren(...overlay(view, drawer));
   ui.overlay.hidden = view.phase === 'draw';
   ui.tools.replaceChildren(...(amDrawer && view.phase === 'draw' ? tools() : []));
   ui.canvas.classList.toggle('drawing', amDrawer && view.phase === 'draw');
-  ui.players.replaceChildren(...[...view.players].sort((a, b) => b.score - a.score).map((p) => h('li', {
-    class: p.id === view.drawerId ? 'current' : '',
-  }, avatarBadge(p), h('span', { class: 'name' }, p.id === view.you ? `${p.name} (du)` : p.name),
-  h('span', { class: 'lives' }, `${p.id === view.drawerId ? '✏️ ' : ''}${p.guessed ? '✓ ' : ''}${p.score}`))));
+  ui.players.replaceChildren(playerList(view, [...view.players].sort((a, b) => b.score - a.score),
+    (p) => `${p.id === view.drawerId ? '✏️ ' : ''}${p.guessed ? '✓ ' : ''}${p.score}`, { current: view.drawerId }));
   ui.timer.replaceChildren(view.turnEndsIn !== null && view.phase !== 'gameOver' ? timerBar(view.phaseSeconds, view.turnEndsIn) : '');
   ui.chat.replaceChildren(...view.chat.map((entry) => h('li', { class: entry.kind },
     entry.player && h('strong', {}, `${entry.player}: `), entry.text)));

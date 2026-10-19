@@ -1,8 +1,7 @@
 import { alertTurn, showBanner } from '../../../ui/attention.js';
 import { playEffect } from '../../../ui/audio.js';
-import { avatarBadge } from '../../../ui/avatar.js';
 import { h } from '../../../ui/dom.js';
-import { backButton } from '../../../ui/shell.js';
+import { eventLog, gameHeader, playerList, sidePanel, turnText } from '../../../ui/shell.js';
 import { timerBar } from '../../../ui/timer.js';
 import { ALPHABET, letterOf, MAX_MISSES, REVEAL_SECONDS } from '../game.js';
 
@@ -32,10 +31,12 @@ export function renderHangman(root, view, send, abort) {
   const fresh = freshEvents(view);
   root.replaceChildren(
     h('div', { class: 'hangman' },
-      h('header', { class: 'info' },
-        backButton(abort),
-        h('span', { class: 'turn' }, turnText(view)),
-        h('span', {}, `Wort ${view.wordNumber} von ${view.wordCount}`)),
+      gameHeader({
+        abort,
+        player: view.phase === 'guess' ? currentPlayer(view) : null,
+        turn: headline(view),
+        facts: [`Wort ${view.wordNumber} von ${view.wordCount}`],
+      }),
       h('div', { class: 'hangman-main' },
         h('section', { class: 'chalkboard' },
           h('div', { class: 'hm-top' }, gallows(view.misses), h('div', { class: 'hm-misses' }, `${view.misses} / ${MAX_MISSES}`)),
@@ -43,14 +44,12 @@ export function renderHangman(root, view, send, abort) {
           view.phase === 'reveal' && revealNote(view),
           keyboard(view),
           solveForm(view)),
-        h('aside', { class: 'panel hangman-side' },
-          h('ul', { class: 'maex-players' }, view.players.map((p) => h('li', { class: p.id === view.currentId ? 'current' : '' },
-            avatarBadge(p), h('span', { class: 'name' }, p.id === view.you ? `${p.name} (du)` : p.name),
-            h('span', { class: 'lives' }, String(p.score))))),
+        sidePanel(
+          playerList(view, view.players, (p) => `${p.score} P.`),
           h('p', { class: 'status' }, statusText(view)),
           view.turnEndsIn !== null && view.phase !== 'gameOver'
             && timerBar(view.phase === 'reveal' ? REVEAL_SECONDS : view.turnTime, view.turnEndsIn),
-          h('ol', { class: 'event-log', 'aria-label': 'Verlauf' }, view.events.map((event) => h('li', {}, describe(event))))))),
+          eventLog(view.events, describe)))),
   );
   announce(fresh);
   if (isMyTurn(view) && view.phase === 'guess' && !wasMyTurn) {
@@ -111,10 +110,10 @@ function revealNote(view) {
     : `Der Galgen ist komplett – gesucht war „${view.word}“.`);
 }
 
-function turnText(view) {
+function headline(view) {
   if (view.phase === 'gameOver') return 'Vorbei';
   if (view.phase === 'reveal') return 'Auflösung';
-  return isMyTurn(view) ? 'Du bist am Zug' : `${currentPlayer(view).name} ist am Zug`;
+  return turnText(view, currentPlayer(view));
 }
 
 function statusText(view) {

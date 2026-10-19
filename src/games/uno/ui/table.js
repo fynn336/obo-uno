@@ -2,7 +2,7 @@ import { alertTurn, showBanner } from '../../../ui/attention.js';
 import { playEffect } from '../../../ui/audio.js';
 import { avatarBadge } from '../../../ui/avatar.js';
 import { h } from '../../../ui/dom.js';
-import { backButton } from '../../../ui/shell.js';
+import { eventLog, gameHeader, turnText } from '../../../ui/shell.js';
 import { timerBar } from '../../../ui/timer.js';
 import { cardBack, cardFace, colorKeys, colorName, useDeck } from './cards.js';
 import { bannerFor, describeEvent } from './events.js';
@@ -82,18 +82,21 @@ export function handleTableKey(event) {
 
 function infoBar(view, abort) {
   const activeRules = Object.keys(RULE_NAMES).filter((rule) => view.rules[rule]);
-  return h('header', { class: 'info' },
-    backButton(abort),
-    h('span', { class: 'turn' }, isMyTurn(view) ? 'Du bist am Zug' : `${currentPlayer(view).name} ist am Zug`),
-    h('span', {}, view.direction === 1 ? '↻ Im Uhrzeigersinn' : '↺ Gegen den Uhrzeigersinn'),
-    h('span', {}, 'Farbe: ', h('span', { class: `swatch ${view.activeColor ?? ''}` }), colorName(view.activeColor) ?? 'wird gewählt'),
-    h('span', { class: 'rules' },
-      h('span', { class: 'chip' }, `Ziel ${view.target} P.`),
-      view.turnTime > 0 && h('span', { class: 'chip' }, `⏱ ${view.turnTime} s`),
-      activeRules.length > 0
-        ? activeRules.map((rule) => h('span', { class: 'chip' }, RULE_NAMES[rule]))
-        : h('span', { class: 'chip' }, 'Offizielle Regeln')),
-  );
+  return gameHeader({
+    abort,
+    player: currentPlayer(view),
+    turn: turnText(view, currentPlayer(view)),
+    facts: [
+      view.direction === 1 ? '↻ Im Uhrzeigersinn' : '↺ Gegen den Uhrzeigersinn',
+      [h('span', { class: `swatch ${view.activeColor ?? ''}` }), colorName(view.activeColor) ?? 'Farbe wird gewählt'],
+      h('span', { class: 'rules' },
+        h('span', { class: 'chip' }, `Ziel ${view.target} P.`),
+        view.turnTime > 0 && h('span', { class: 'chip' }, `⏱ ${view.turnTime} s`),
+        activeRules.length > 0
+          ? activeRules.map((rule) => h('span', { class: 'chip' }, RULE_NAMES[rule]))
+          : h('span', { class: 'chip' }, 'Offizielle Regeln')),
+    ],
+  });
 }
 
 // Mitspieler sitzen in Spielreihenfolge von links über oben nach rechts um den Tisch.
@@ -213,7 +216,7 @@ function handArea(view, hand, send) {
     'data-player': view.you,
     style: myTurn ? pulseDelay() : null,
   },
-  h('ol', { class: 'event-log', 'aria-label': 'Verlauf' }, view.events.map((event) => h('li', {}, describeEvent(event)))),
+  eventLog(view.events, describeEvent),
   h('div', { class: 'hand-main' },
     h('div', { class: 'hand-head' },
       avatar(view, me),

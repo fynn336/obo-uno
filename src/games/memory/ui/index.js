@@ -1,9 +1,8 @@
 import { AVATAR_COLORS } from '../../../lounge/avatars.js';
 import { alertTurn, showBanner } from '../../../ui/attention.js';
 import { playEffect } from '../../../ui/audio.js';
-import { avatarBadge } from '../../../ui/avatar.js';
 import { h } from '../../../ui/dom.js';
-import { backButton } from '../../../ui/shell.js';
+import { eventLog, gameHeader, playerList, sidePanel, turnText } from '../../../ui/shell.js';
 import { timerBar } from '../../../ui/timer.js';
 import { PEEK_SECONDS } from '../game.js';
 
@@ -24,21 +23,21 @@ export function renderMemory(root, view, send, abort) {
   const left = view.cards.filter((card) => card.owner === null).length / 2;
   root.replaceChildren(
     h('div', { class: 'memory' },
-      h('header', { class: 'info' },
-        backButton(abort),
-        h('span', { class: 'turn' }, isMyTurn(view) ? 'Du bist am Zug' : `${currentPlayer(view)?.name ?? '…'} ist am Zug`),
-        h('span', {}, `Noch ${left} ${left === 1 ? 'Paar' : 'Paare'}`)),
+      gameHeader({
+        abort,
+        player: currentPlayer(view),
+        turn: turnText(view, currentPlayer(view)),
+        facts: [`Noch ${left} ${left === 1 ? 'Paar' : 'Paare'}`],
+      }),
       h('div', { class: 'memory-main' },
         h('section', { class: `memory-table${view.cards.length > WIDE_BOARD ? ' wide' : ''}` },
           view.cards.map((card, index) => cardButton(view, card, index, flipped.has(index)))),
-        h('aside', { class: 'panel memory-side' },
-          h('ul', { class: 'maex-players' }, view.players.map((p) => h('li', { class: p.id === view.currentId ? 'current' : '' },
-            avatarBadge(p), h('span', { class: 'name' }, p.id === view.you ? `${p.name} (du)` : p.name),
-            h('span', { class: 'lives' }, `${p.pairs} ${p.pairs === 1 ? 'Paar' : 'Paare'}`)))),
+        sidePanel(
+          playerList(view, view.players, (p) => `${p.pairs} ${p.pairs === 1 ? 'Paar' : 'Paare'}`),
           h('p', { class: 'status' }, statusText(view)),
           view.turnEndsIn !== null && view.phase !== 'gameOver'
             && timerBar(view.phase === 'peek' ? PEEK_SECONDS : view.turnTime, view.turnEndsIn),
-          h('ol', { class: 'event-log', 'aria-label': 'Verlauf' }, view.events.map((event) => h('li', {}, describe(event))))))),
+          eventLog(view.events, describe)))),
   );
   announce(fresh);
   if (isMyTurn(view) && !wasMyTurn) alertTurn(() => latest.root.querySelector('.memory') && isMyTurn(latest.view));
