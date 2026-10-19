@@ -1,6 +1,14 @@
 // Neueste Version zuerst. Die aktuelle Versionsnummer ist immer der oberste Eintrag.
 export const CHANGELOG = [
   {
+    version: '2.20.0',
+    date: '2026-10-19',
+    changes: [
+      'Neues Erscheinungsbild: eigene Schrift (Nunito) und einheitliche Größen, Farben und Rundungen überall',
+      'Klare Symbole statt Emojis auf den Knöpfen, z. B. für Musik, Regeln, Zurück und Drehen',
+    ],
+  },
+  {
     version: '2.19.1',
     date: '2026-10-10',
     changes: ['Ludo: Beide Bretter sind größer und nutzen den Platz im Fenster besser aus'],

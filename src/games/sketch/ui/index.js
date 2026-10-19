@@ -2,6 +2,8 @@ import { alertTurn, showBanner } from '../../../ui/attention.js';
 import { playEffect } from '../../../ui/audio.js';
 import { avatarBadge } from '../../../ui/avatar.js';
 import { h } from '../../../ui/dom.js';
+import { icon } from '../../../ui/icons.js';
+import { backButton } from '../../../ui/shell.js';
 import { timerBar } from '../../../ui/timer.js';
 import { CANVAS, PALETTE, SIZES } from '../game.js';
 
@@ -66,7 +68,7 @@ function update(view, before) {
   const drawer = view.players.find((p) => p.id === view.drawerId);
   const amDrawer = isDrawer(view);
   ui.header.replaceChildren(
-    latest.abort && h('button', { type: 'button', class: 'leave-game', onClick: latest.abort }, '← Lounge'),
+    backButton(latest.abort),
     h('span', { class: 'turn' }, amDrawer ? 'Du zeichnest' : `${drawer?.name ?? '…'} zeichnet`),
     h('span', {}, `Runde ${view.round} von ${view.rounds}`));
   ui.word.replaceChildren(wordLine(view));
@@ -134,11 +136,11 @@ function tools() {
       class: `size-button${tool.color === ERASER ? ' active' : ''}`,
       title: 'Radierer',
       onClick: choose({ color: ERASER, size: SIZES.at(-1) }),
-    }, '🧽'),
+    }, icon('eraser')),
     h('button', { type: 'button', title: 'Alles löschen', onClick: () => {
       mine = [];
       latest.send({ type: 'clear' });
-    } }, '🗑️'),
+    } }, icon('trash')),
   ];
 }
 

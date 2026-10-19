@@ -238,7 +238,7 @@ Die Tests laufen ohne Framework unter `http://localhost:3000/test.html` und müs
 ```
 index.html, style.css      Seite und Aussehen (Karten nur per CSS)
 test.html, tests/          Tests ohne Framework, mit festen Seeds und Kartenstapeln
-assets/                    Räume (Hintergründe), Musik und Kartensound
+assets/                    Räume (Hintergründe), Musik, Kartensound und Schrift (Nunito, OFL in assets/fonts)
 src/main.js                Ablauf: Start → Lounge → Spiel, Fehlermeldungen
 src/changelog.js           Versionsnummer und Changelog (eine Quelle für beides)
 src/update.js              holt nach einem Update automatisch die neue Version

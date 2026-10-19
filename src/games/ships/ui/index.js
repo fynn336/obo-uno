@@ -2,6 +2,8 @@ import { alertTurn, showBanner } from '../../../ui/attention.js';
 import { playShot } from '../../../ui/audio.js';
 import { avatarBadge } from '../../../ui/avatar.js';
 import { h } from '../../../ui/dom.js';
+import { icon } from '../../../ui/icons.js';
+import { backButton } from '../../../ui/shell.js';
 import { timerBar } from '../../../ui/timer.js';
 import { fitsFleet, isAcross, key, shipCells, SIZE } from '../game.js';
 
@@ -26,7 +28,7 @@ export function renderShips(root, view, send, abort) {
   root.replaceChildren(
     h('div', { class: 'ships' },
       h('header', { class: 'info' },
-        abort && h('button', { type: 'button', class: 'leave-game', onClick: abort }, '← Lounge'),
+        backButton(abort),
         h('span', { class: 'turn' }, turnText(view))),
       view.phase === 'setup' ? setup(view) : battle(view, lastShot)),
   );
@@ -54,8 +56,8 @@ function setup(view) {
       sea,
       h('p', { class: 'status' }, status),
       h('div', { class: 'actions' },
-        h('button', { type: 'button', disabled: own.ready || picked === null, onClick: () => rotate(picked) }, '↻ Drehen', h('kbd', {}, 'R')),
-        h('button', { type: 'button', disabled: own.ready, onClick: () => latest.send({ type: 'shuffleFleet' }) }, '🎲 Neu verteilen'),
+        h('button', { type: 'button', disabled: own.ready || picked === null, onClick: () => rotate(picked) }, icon('rotate'), 'Drehen', h('kbd', {}, 'R')),
+        h('button', { type: 'button', disabled: own.ready, onClick: () => latest.send({ type: 'shuffleFleet' }) }, icon('shuffle'), 'Neu verteilen'),
         h('button', { type: 'button', class: 'primary', disabled: own.ready, onClick: () => latest.send({ type: 'ready' }) }, 'Bereit!'))),
     h('aside', { class: 'panel ships-side' },
       h('ul', { class: 'maex-players' }, view.players.map((p) => h('li', {},

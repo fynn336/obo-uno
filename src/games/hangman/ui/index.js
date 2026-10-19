@@ -2,6 +2,7 @@ import { alertTurn, showBanner } from '../../../ui/attention.js';
 import { playEffect } from '../../../ui/audio.js';
 import { avatarBadge } from '../../../ui/avatar.js';
 import { h } from '../../../ui/dom.js';
+import { backButton } from '../../../ui/shell.js';
 import { timerBar } from '../../../ui/timer.js';
 import { ALPHABET, letterOf, MAX_MISSES, REVEAL_SECONDS } from '../game.js';
 
@@ -32,7 +33,7 @@ export function renderHangman(root, view, send, abort) {
   root.replaceChildren(
     h('div', { class: 'hangman' },
       h('header', { class: 'info' },
-        abort && h('button', { type: 'button', class: 'leave-game', onClick: abort }, '← Lounge'),
+        backButton(abort),
         h('span', { class: 'turn' }, turnText(view)),
         h('span', {}, `Wort ${view.wordNumber} von ${view.wordCount}`)),
       h('div', { class: 'hangman-main' },

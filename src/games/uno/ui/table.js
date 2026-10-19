@@ -2,6 +2,7 @@ import { alertTurn, showBanner } from '../../../ui/attention.js';
 import { playEffect } from '../../../ui/audio.js';
 import { avatarBadge } from '../../../ui/avatar.js';
 import { h } from '../../../ui/dom.js';
+import { backButton } from '../../../ui/shell.js';
 import { timerBar } from '../../../ui/timer.js';
 import { cardBack, cardFace, colorKeys, colorName, useDeck } from './cards.js';
 import { bannerFor, describeEvent } from './events.js';
@@ -82,7 +83,7 @@ export function handleTableKey(event) {
 function infoBar(view, abort) {
   const activeRules = Object.keys(RULE_NAMES).filter((rule) => view.rules[rule]);
   return h('header', { class: 'info' },
-    abort && h('button', { type: 'button', class: 'leave-game', onClick: abort }, '← Lounge'),
+    backButton(abort),
     h('span', { class: 'turn' }, isMyTurn(view) ? 'Du bist am Zug' : `${currentPlayer(view).name} ist am Zug`),
     h('span', {}, view.direction === 1 ? '↻ Im Uhrzeigersinn' : '↺ Gegen den Uhrzeigersinn'),
     h('span', {}, 'Farbe: ', h('span', { class: `swatch ${view.activeColor ?? ''}` }), colorName(view.activeColor) ?? 'wird gewählt'),

@@ -4,6 +4,7 @@ import { BOT_LEVELS, MAX_PLAYERS, playersFor } from '../lounge/lounge.js';
 import { avatarBadge } from './avatar.js';
 import { throwConfetti } from './confetti.js';
 import { h } from './dom.js';
+import { icon } from './icons.js';
 import { openRules } from './rules.js';
 
 const BOT_LEVEL_NAMES = { easy: 'Leicht', medium: 'Mittel', hard: 'Schwer' };
@@ -95,7 +96,7 @@ function playersPanel(view, isHost, send) {
         class: 'remove',
         title: `${p.name} entfernen`,
         onClick: () => send({ type: 'removeBot', targetId: p.id }),
-      }, '✕'),
+      }, icon('close')),
     ))),
     isHost && view.phase === 'lounge' && h('div', { class: 'buttons' },
       h('button', {
@@ -103,7 +104,7 @@ function playersPanel(view, isHost, send) {
         class: 'add-bot',
         disabled: view.players.length >= MAX_PLAYERS,
         onClick: () => send({ type: 'addBot' }),
-      }, '🤖 Computer-Gegner hinzufügen'),
+      }, icon('bot'), 'Computer-Gegner hinzufügen'),
       best > 0 && h('button', { type: 'button', class: 'add-bot', onClick: () => send({ type: 'newEvening' }) }, 'Neuer Abend')),
     botLevel(view, isHost, send),
     h('p', { class: 'hint' }, 'Pro Partie: Platz 1 = 3 ⭐, Platz 2 = 2 ⭐, Platz 3 = 1 ⭐'));
@@ -137,9 +138,9 @@ function gamesPanel(view, isHost, send) {
     h('strong', {}, g.name),
     h('span', { class: 'hint' }, `${g.minPlayers}–${g.maxPlayers} Spieler`)))),
     h('p', { class: 'hint' }, game.description, ' ',
-      h('button', { type: 'button', class: 'rules-link', onClick: () => openRules(game.id) }, '❓ Regeln')),
+      h('button', { type: 'button', class: 'rules-link', onClick: () => openRules(game.id) }, icon('help'), 'Regeln')),
     game.settings.map((setting) => settingControl(game, setting, view.settings[game.id][setting.key], canChoose, send)),
-    botsWait && h('p', { class: 'hint' }, `🤖 Computer-Gegner setzen bei ${game.name} aus und warten in der Lounge.`),
+    botsWait && h('p', { class: 'hint' }, `Computer-Gegner setzen bei ${game.name} aus und warten in der Lounge.`),
     view.phase === 'lounge' && (isHost
       ? h('button', { class: 'primary big', type: 'button', disabled: !fits, onClick: () => send({ type: 'startGame' }) },
         fits ? `${game.name} starten` : `${game.name}: ${game.minPlayers}–${game.maxPlayers} Spieler`)
@@ -167,7 +168,7 @@ function settingControl(game, setting, value, editable, send) {
 function resultPanel(result, isNew, replay) {
   const game = GAMES[result.gameId];
   const replayButton = replay && h('div', { class: 'buttons' },
-    h('button', { type: 'button', class: 'primary big', onClick: replay }, `🔁 Nochmal ${game.name}!`));
+    h('button', { type: 'button', class: 'primary big', onClick: replay }, icon('replay'), `Nochmal ${game.name}!`));
   if (result.aborted) {
     return h('div', { class: 'winner' },
       h('strong', {}, `${game.name} wurde beendet`),
@@ -225,10 +226,10 @@ function inviteButton(code) {
     type: 'button',
     class: 'invite',
     onClick: () => navigator.clipboard.writeText(link).then(
-      () => { button.textContent = '✓ Link kopiert'; },
+      () => button.replaceChildren(icon('check'), 'Link kopiert'),
       () => { button.textContent = link; },
     ),
-  }, '🔗 Einladungslink kopieren');
+  }, icon('link'), 'Einladungslink kopieren');
   return button;
 }
 

@@ -1,34 +1,32 @@
 import { CHANGELOG, VERSION } from '../changelog.js';
 import { audioSettings, toggleEffects, toggleMusic } from './audio.js';
 import { h } from './dom.js';
+import { icon } from './icons.js';
 import { openRules } from './rules.js';
 import { openSettings } from './settings.js';
 
-// currentGameId liefert das laufende oder gewählte Spiel, damit ❓ gleich dessen Regeln zeigt.
+// currentGameId liefert das laufende oder gewählte Spiel, damit die Regeln gleich dieses Spiel zeigen.
 export function renderCorner(root, currentGameId) {
   const { music, effects } = audioSettings();
   const refresh = () => renderCorner(root, currentGameId);
+  const button = (label, iconName, onClick, pressed) => h('button', {
+    type: 'button',
+    class: 'icon-button',
+    title: label,
+    'aria-label': label,
+    'aria-pressed': pressed === undefined ? null : String(pressed),
+    onClick,
+  }, icon(iconName));
   const toggle = (action) => () => {
     action();
     refresh();
   };
   root.replaceChildren(
-    h('button', {
-      type: 'button',
-      class: music ? '' : 'off',
-      title: music ? 'Musik ausschalten' : 'Musik einschalten',
-      'aria-pressed': String(music),
-      onClick: toggle(toggleMusic),
-    }, '🎵'),
-    h('button', {
-      type: 'button',
-      class: effects ? '' : 'off',
-      title: effects ? 'Soundeffekte ausschalten' : 'Soundeffekte einschalten',
-      'aria-pressed': String(effects),
-      onClick: toggle(toggleEffects),
-    }, '🔊'),
-    h('button', { type: 'button', title: 'Spielregeln', onClick: () => openRules(currentGameId()) }, '❓'),
-    h('button', { type: 'button', title: 'Einstellungen', onClick: () => openSettings(refresh) }, '⚙️'),
+    button(music ? 'Musik ausschalten' : 'Musik einschalten', music ? 'music' : 'musicOff', toggle(toggleMusic), music),
+    button(effects ? 'Soundeffekte ausschalten' : 'Soundeffekte einschalten', effects ? 'volume' : 'volumeOff',
+      toggle(toggleEffects), effects),
+    button('Spielregeln', 'help', () => openRules(currentGameId())),
+    button('Einstellungen', 'settings', () => openSettings(refresh)),
     h('button', { type: 'button', class: 'version', title: 'Was ist neu?', onClick: openChangelog }, `v${VERSION}`),
   );
 }

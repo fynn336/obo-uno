@@ -3,6 +3,7 @@ import { alertTurn, showBanner } from '../../../ui/attention.js';
 import { playEffect } from '../../../ui/audio.js';
 import { avatarBadge } from '../../../ui/avatar.js';
 import { h } from '../../../ui/dom.js';
+import { backButton } from '../../../ui/shell.js';
 import { timerBar } from '../../../ui/timer.js';
 import { PEEK_SECONDS } from '../game.js';
 
@@ -24,7 +25,7 @@ export function renderMemory(root, view, send, abort) {
   root.replaceChildren(
     h('div', { class: 'memory' },
       h('header', { class: 'info' },
-        abort && h('button', { type: 'button', class: 'leave-game', onClick: abort }, '← Lounge'),
+        backButton(abort),
         h('span', { class: 'turn' }, isMyTurn(view) ? 'Du bist am Zug' : `${currentPlayer(view)?.name ?? '…'} ist am Zug`),
         h('span', {}, `Noch ${left} ${left === 1 ? 'Paar' : 'Paare'}`)),
       h('div', { class: 'memory-main' },

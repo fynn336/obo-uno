@@ -3,6 +3,7 @@ import { playEffect } from '../../../ui/audio.js';
 import { avatarBadge } from '../../../ui/avatar.js';
 import { diePips } from '../../../ui/dice.js';
 import { h } from '../../../ui/dom.js';
+import { backButton } from '../../../ui/shell.js';
 import { timerBar } from '../../../ui/timer.js';
 import { BASE, fieldOf } from '../game.js';
 import { boardLayout, cellKey, pathKeys, rotate, startColor, turnFor } from './board.js';
@@ -30,7 +31,7 @@ export function renderLudo(root, view, send, abort) {
   root.replaceChildren(
     h('div', { class: 'ludo' },
       h('header', { class: 'info' },
-        abort && h('button', { type: 'button', class: 'leave-game', onClick: abort }, '← Lounge'),
+        backButton(abort),
         h('span', { class: 'turn' }, isMyTurn(view) ? 'Du bist am Zug' : `${currentPlayer(view).name} ist am Zug`)),
       h('div', { class: 'ludo-main' },
         boardElement,
